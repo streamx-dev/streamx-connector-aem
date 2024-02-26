@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>dev.streamx</groupId>
-  <artifactId>aem-streamx-connector</artifactId>
+  <artifactId>streamx-connector-aem</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <properties>
@@ -80,7 +80,7 @@
     <!-- StreamX -->
     <dependency>
       <groupId>dev.streamx</groupId>
-      <artifactId>sling-streamx-connector</artifactId>
+      <artifactId>streamx-connector-sling</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <!--AEM-->
