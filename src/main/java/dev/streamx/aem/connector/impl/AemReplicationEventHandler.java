@@ -1,6 +1,7 @@
 package dev.streamx.aem.connector.impl;
 
 import com.day.cq.replication.ReplicationAction;
+import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.Arrays;
 import org.osgi.service.component.annotations.Component;
@@ -35,7 +36,15 @@ public class AemReplicationEventHandler implements EventHandler {
       return;
     }
 
-    LOG.info("Handling replication event: {} - {}", action.getType(), action.getPath());
+    try {
+      handleAction(action);
+    } catch (StreamxPublicationException e) {
+      LOG.error("Cannot publish to StreamX", e);
+    }
+  }
+
+  private void handleAction(ReplicationAction action) throws StreamxPublicationException {
+    LOG.info("Handling replication action: {} - {}", action.getType(), action.getPath());
     switch (action.getType()) {
       case ACTIVATE:
         streamxPublicationService.publish(Arrays.asList(action.getPaths()));
