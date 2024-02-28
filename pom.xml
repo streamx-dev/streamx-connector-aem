@@ -5,8 +5,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>dev.streamx</groupId>
-  <artifactId>streamx-connector-aem</artifactId>
+  <artifactId>streamx-connector-aem-parent</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>connector</module>
+  </modules>
 
   <properties>
     <bnd.version>6.4.0</bnd.version>
