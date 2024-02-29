@@ -10,7 +10,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>streamx-connector-aem</artifactId>
+  <artifactId>streamx-connector-aem-blueprints</artifactId>
 
   <build>
     <plugins>
@@ -44,6 +44,16 @@
     <dependency>
       <groupId>dev.streamx</groupId>
       <artifactId>streamx-connector-sling</artifactId>
+    </dependency>
+    <!-- Sling -->
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.servlet-helpers</artifactId>
+    </dependency>
+    <!-- Miscellaneous -->
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
     </dependency>
   </dependencies>
 
