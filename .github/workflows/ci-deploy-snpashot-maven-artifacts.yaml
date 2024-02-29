@@ -1,19 +1,19 @@
-name: 'CI: verify build'
+name: 'CI: Deploy SNAPSHOT Maven Artifacts'
 
 on:
-  workflow_dispatch:
-  pull_request:
+  push:
+    branches:
+      - 'main'
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
@@ -29,5 +29,5 @@ jobs:
           distribution: 'adopt'
           cache: 'maven'
 
-      - name: Build and test with Maven
-        run: ./mvnw clean verify
+      - name: Build and deploy maven artifacts
+        run: ./mvnw clean deploy
