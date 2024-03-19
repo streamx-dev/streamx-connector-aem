@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.LoginException;
@@ -39,36 +37,6 @@ public class AssetPublicationHandler implements PublicationHandler<Data> {
   private boolean enabled;
   private String assetsPathRegexp;
 
-  private static String getAssetPath(String resourcePath) {
-    // AEM path is /content/dam/<project>
-    // In StreamX we want /published/<project>/assets
-    Path path = Paths.get(resourcePath);
-    if (path.getNameCount() <= 3) {
-      LOG.warn("Cannot get project name from path: {}", resourcePath);
-      return null;
-    }
-
-    String projectName = path.getName(2).toString();
-    Path assetPathRelativeToProject = path.subpath(3, path.getNameCount());
-    String renditionName = getRenditionName(path.getFileName().toString());
-    if (renditionName == null) {
-      LOG.warn("Cannot get rendition name from path: {}", resourcePath);
-      return null;
-    }
-
-    // Also, we will add /jcr:content/renditions/original.<extension>
-    return "/published/" + projectName + "/assets/" + assetPathRelativeToProject
-        + "/jcr:content/renditions/" + renditionName;
-  }
-
-  private static String getRenditionName(String fileName) {
-    int dotIndex = fileName.indexOf(".");
-    if (dotIndex < 0) {
-      return null;
-    }
-    return "original." + fileName.substring(dotIndex + 1);
-  }
-
   @Activate
   private void activate(AssetPublicationHandlerConfig config) {
     enabled = config.enabled();
@@ -85,7 +53,7 @@ public class AssetPublicationHandler implements PublicationHandler<Data> {
     return enabled
         && resourcePath.matches(assetsPathRegexp)
         && !resourcePath.contains("jcr:content")
-        && getAssetPath(resourcePath) != null;
+        && resourcePath.contains(".");
   }
 
   @Override
@@ -99,7 +67,7 @@ public class AssetPublicationHandler implements PublicationHandler<Data> {
       }
 
       return new PublishData<>(
-          getAssetPath(resource.getPath()),
+          resource.getPath(),
           CHANNEL,
           Data.class,
           getAssetModel(resource));
@@ -117,7 +85,7 @@ public class AssetPublicationHandler implements PublicationHandler<Data> {
   @Override
   public UnpublishData<Data> getUnpublishData(String resourcePath) {
     return new UnpublishData<>(
-        getAssetPath(resourcePath),
+        resourcePath,
         CHANNEL,
         Data.class);
   }
