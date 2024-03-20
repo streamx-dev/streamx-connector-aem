@@ -27,11 +27,11 @@ This module provides out-of-the-box `PublicationHandler`s to handle Pages, Templ
 Pages and Templates are published not under `/content` folder but under `/published` folder.
 The rest of the path remains the same.
 
-Assets paths are also modified when publishing.
-Original path  
-`/content/dam/<project>/path-to-a/file.<extension>`  
-will be changed to  
-`/published/<project>/assets/path-to-a/file.<extension>/jcr:content/renditions/original.<extension>`.
+Each handler contains its configuration. See:
+
+- [AssetPublicationHandler](./blueprints/src/main/java/dev/streamx/aem/connector/blueprints/AssetPublicationHandlerConfig.java)
+- [PagePublicationHandler](./blueprints/src/main/java/dev/streamx/aem/connector/blueprints/PagePublicationHandlerConfig.java)
+  (this handler will handle both Pages and Templates)
 
 # Usage:
 
