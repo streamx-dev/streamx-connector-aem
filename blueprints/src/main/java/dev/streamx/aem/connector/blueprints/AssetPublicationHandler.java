@@ -1,7 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
-import com.day.cq.dam.api.Asset;
 import com.day.cq.dam.api.Rendition;
+import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.UnpublishData;
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 @Component(service = PublicationHandler.class)
 @Designate(ocd = AssetPublicationHandlerConfig.class)
-public class AssetPublicationHandler implements PublicationHandler<Data> {
+public class AssetPublicationHandler implements PublicationHandler<Asset> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssetPublicationHandler.class);
 
@@ -57,7 +57,7 @@ public class AssetPublicationHandler implements PublicationHandler<Data> {
   }
 
   @Override
-  public PublishData<Data> getPublishData(String resourcePath) {
+  public PublishData<Asset> getPublishData(String resourcePath) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       Resource resource = resourceResolver.getResource(resourcePath);
 
@@ -69,7 +69,7 @@ public class AssetPublicationHandler implements PublicationHandler<Data> {
       return new PublishData<>(
           resource.getPath(),
           CHANNEL,
-          Data.class,
+          Asset.class,
           getAssetModel(resource));
     }
   }
@@ -83,17 +83,17 @@ public class AssetPublicationHandler implements PublicationHandler<Data> {
   }
 
   @Override
-  public UnpublishData<Data> getUnpublishData(String resourcePath) {
+  public UnpublishData<Asset> getUnpublishData(String resourcePath) {
     return new UnpublishData<>(
         resourcePath,
         CHANNEL,
-        Data.class);
+        Asset.class);
   }
 
-  private Data getAssetModel(Resource resource) {
+  private Asset getAssetModel(Resource resource) {
     InputStream inputStream = Optional.of(resource)
-        .map(assetResource -> assetResource.adaptTo(Asset.class))
-        .map(Asset::getOriginal)
+        .map(assetResource -> assetResource.adaptTo(com.day.cq.dam.api.Asset.class))
+        .map(com.day.cq.dam.api.Asset::getOriginal)
         .map(Rendition::getStream)
         .orElse(null);
     if (inputStream == null) {
@@ -101,7 +101,7 @@ public class AssetPublicationHandler implements PublicationHandler<Data> {
           "Cannot get InputStream from asset's original rendition: " + resource.getPath());
     }
     try {
-      return new Data(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
+      return new Asset(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
     } catch (IOException e) {
       throw new UncheckedIOException("Cannot create asset model", e);
     }
