@@ -4,7 +4,7 @@
 
   <groupId>dev.streamx</groupId>
   <artifactId>streamx-connector-aem-parent</artifactId>
-  <version>0.0.4</version>
+  <version>0.0.5-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <modules>
@@ -66,7 +66,7 @@
     <connection>scm:git:git@github.com:streamx-dev/streamx-connector-aem.git</connection>
     <developerConnection>scm:git:git@github.com:streamx-dev/streamx-connector-aem.git
     </developerConnection>
-    <tag>0.0.4</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/streamx-dev/streamx-connector-aem</url>
   </scm>
 
