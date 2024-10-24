@@ -1,6 +1,6 @@
 package dev.streamx.aem.connector.blueprints;
 
-import dev.streamx.blueprints.data.Page;
+import dev.streamx.blueprints.data.Renderer;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.UnpublishData;
@@ -13,50 +13,48 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.engine.SlingRequestProcessor;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component(service = PublicationHandler.class)
-@Designate(ocd = PagePublicationHandlerConfig.class)
-public class PagePublicationHandler implements PublicationHandler<Page> {
+@Component
+@Designate(ocd = RendererPublicationHandlerConfig.class)
+public class RendererPublicationHandler implements PublicationHandler<Renderer> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PagePublicationHandler.class);
-
-  @Reference
-  private SlingRequestProcessor requestProcessor;
+  private static final Logger LOG = LoggerFactory.getLogger(RendererPublicationHandler.class);
 
   @Reference
-  PageDataService pageDataService;
+  private PageDataService pageDataService;
 
   @Reference
   private ResourceResolverFactory resolverFactory;
 
-  private boolean enabled;
   private String publicationChannel;
+  private boolean enabled;
 
   @Activate
-  private void activate(PagePublicationHandlerConfig config) {
-    enabled = config.enabled();
+  @Modified
+  private void activate(RendererPublicationHandlerConfig config) {
     publicationChannel = config.publication_channel();
+    enabled = config.enabled();
   }
 
   @Override
   public String getId() {
-    return "streamx-page";
+    return "streamx-renderer";
   }
 
   @Override
   public boolean canHandle(String resourcePath) {
-    return enabled && pageDataService.isPage(resourcePath) && !resourcePath.contains("jcr:content");
+    return enabled && pageDataService.isPageTemplate(resourcePath);
   }
 
   @Override
-  public PublishData<Page> getPublishData(String resourcePath) {
+  public PublishData<Renderer> getPublishData(String resourcePath) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       Resource resource = resourceResolver.getResource(resourcePath);
 
@@ -66,32 +64,36 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
       }
 
       return new PublishData<>(
-          getPagePath(resourcePath),
+          getStoragePath(resourcePath),
           publicationChannel,
-          Page.class,
-          getPageModel(resource));
+          Renderer.class,
+          resolveData(resource));
     }
   }
 
   @Override
-  public UnpublishData<Page> getUnpublishData(String resourcePath) {
+  public UnpublishData<Renderer> getUnpublishData(String resourcePath) {
     return new UnpublishData<>(
-        getPagePath(resourcePath),
+        getStoragePath(resourcePath),
         publicationChannel,
-        Page.class);
+        Renderer.class);
   }
 
-  private static String getPagePath(String resourcePath) {
+  private Renderer resolveData(Resource resource) {
+    try (InputStream inputStream = getStorageData(resource)) {
+      return new Renderer(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
+    } catch (IOException e) {
+      throw new UncheckedIOException("Cannot create renderer model", e);
+    }
+  }
+
+  private String getStoragePath(String resourcePath) {
     return resourcePath + ".html";
   }
 
-  private Page getPageModel(Resource resource) {
-    try {
-      InputStream inputStream = pageDataService.getStorageData(resource);
-      return new Page(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
-    } catch (IOException e) {
-      throw new UncheckedIOException("Cannot create page model", e);
-    }
+
+  public InputStream getStorageData(Resource resource) throws IOException {
+    return pageDataService.getStorageData(resource);
   }
 
   private ResourceResolver createResourceResolver() {
@@ -101,5 +103,4 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
       throw new IllegalStateException("Cannot create ResourceResolver", e);
     }
   }
-
 }

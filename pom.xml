@@ -19,7 +19,7 @@
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <streamx-connector-sling.version>0.0.5</streamx-connector-sling.version>
+    <streamx-connector-sling.version>0.2.1</streamx-connector-sling.version>
   </properties>
 
   <repositories>
