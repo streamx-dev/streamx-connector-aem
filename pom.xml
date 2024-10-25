@@ -208,7 +208,7 @@
       <dependency>
         <groupId>org.apache.sling</groupId>
         <artifactId>org.apache.sling.servlet-helpers</artifactId>
-        <version>1.4.2</version>
+        <version>1.4.6</version>
         <scope>provided</scope>
       </dependency>
       <!-- OSGi Metadata (not used in runtime)-->
