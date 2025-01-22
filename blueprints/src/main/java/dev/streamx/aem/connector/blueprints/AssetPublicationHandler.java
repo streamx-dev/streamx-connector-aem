@@ -1,6 +1,5 @@
 package dev.streamx.aem.connector.blueprints;
 
-import com.day.cq.dam.api.Rendition;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
@@ -15,6 +14,7 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.engine.SlingRequestProcessor;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -34,6 +34,9 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   @Reference
   private ResourceResolverFactory resolverFactory;
 
+  @Reference
+  private SlingRequestProcessor requestProcessor;
+
   private boolean enabled;
   private String assetsPathRegexp;
 
@@ -50,10 +53,11 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
 
   @Override
   public boolean canHandle(String resourcePath) {
+    AssetCandidate assetCandidate = new AssetCandidate(resolverFactory, resourcePath);
     return enabled
-        && resourcePath.matches(assetsPathRegexp)
-        && !resourcePath.contains("jcr:content")
-        && resourcePath.contains(".");
+        && assetCandidate.isInTree(assetsPathRegexp)
+        && assetCandidate.notJCRContent()
+        && assetCandidate.isNTDamAsset();
   }
 
   @Override
@@ -67,7 +71,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
       }
 
       return new PublishData<>(
-          resource.getPath(),
+          new AssetKey(resolverFactory, resourcePath).asString(),
           CHANNEL,
           Asset.class,
           getAssetModel(resource));
@@ -85,16 +89,19 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   @Override
   public UnpublishData<Asset> getUnpublishData(String resourcePath) {
     return new UnpublishData<>(
-        resourcePath,
+        new AssetKey(resolverFactory, resourcePath).asString(),
         CHANNEL,
-        Asset.class);
+        Asset.class
+    );
   }
 
   private Asset getAssetModel(Resource resource) {
     InputStream inputStream = Optional.of(resource)
-        .map(assetResource -> assetResource.adaptTo(com.day.cq.dam.api.Asset.class))
-        .map(com.day.cq.dam.api.Asset::getOriginal)
-        .map(Rendition::getStream)
+        .flatMap(
+            assetResource -> Optional.ofNullable(assetResource.adaptTo(com.day.cq.dam.api.Asset.class))
+        ).map(asset -> new WithFallbackOriginalRendition(resolverFactory, requestProcessor, asset))
+        .map(WithFallbackOriginalRendition::originalRendition)
+        .map(WithFallbackIS::getStream)
         .orElse(null);
     if (inputStream == null) {
       throw new IllegalStateException(

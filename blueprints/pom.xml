@@ -62,6 +62,13 @@
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>eu.ciechanowiec</groupId>
+      <artifactId>sneakyfun</artifactId>
+    </dependency>
   </dependencies>
-
 </project>
