@@ -230,18 +230,6 @@
         <artifactId>jsoup</artifactId>
         <version>1.16.1</version>
       </dependency>
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.18.36</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>eu.ciechanowiec</groupId>
-        <artifactId>sneakyfun</artifactId>
-        <version>1.0.0</version>
-        <scope>provided</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 

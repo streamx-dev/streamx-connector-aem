@@ -1,18 +1,19 @@
 package dev.streamx.aem.connector.blueprints;
 
-import eu.ciechanowiec.sneakyfun.SneakyFunction;
+import java.io.IOException;
 import java.util.Optional;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.engine.SlingRequestProcessor;
-import org.apache.sling.servlethelpers.internalrequests.InternalRequest;
 import org.apache.sling.servlethelpers.internalrequests.SlingInternalRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 class JSONableNode {
+
+  private static final Logger LOG = LoggerFactory.getLogger(JSONableNode.class);
 
   private final String pathToJCRNode;
   private final ResourceResolverFactory rrFactory;
@@ -27,10 +28,9 @@ class JSONableNode {
     this.slingRequestProcessor = slingRequestProcessor;
   }
 
-  @SneakyThrows
   @SuppressWarnings({"squid:S1874", "deprecation"})
   String json() {
-    log.trace("Rendering '{}' as JSON", pathToJCRNode);
+    LOG.trace("Rendering '{}' as JSON", pathToJCRNode);
     try (ResourceResolver resourceResolver = rrFactory.getAdministrativeResourceResolver(null)) {
       return Optional.ofNullable(resourceResolver.getResource(pathToJCRNode))
           .map(Resource::getPath)
@@ -40,9 +40,31 @@ class JSONableNode {
               )
           ).map(slingInternalRequest -> slingInternalRequest.withExtension("json"))
           .map(slingInternalRequest -> slingInternalRequest.withSelectors("infinity"))
-          .map(SneakyFunction.sneaky(InternalRequest::execute))
-          .map(SneakyFunction.sneaky(InternalRequest::getResponseAsString))
+          .flatMap(
+              internalRequest -> {
+                try {
+                  return Optional.of(internalRequest.execute());
+                } catch (IOException exception) {
+                  String message = String.format("Cannot execute request for '%s'", pathToJCRNode);
+                  LOG.error(message, exception);
+                  return Optional.empty();
+                }
+              }
+          )
+          .map(internalRequest -> {
+            try {
+              return internalRequest.getResponseAsString();
+            } catch (IOException exception) {
+              String message = String.format("Cannot get response String for '%s'", pathToJCRNode);
+              LOG.error(message, exception);
+              return "{ }";
+            }
+          })
           .orElse("{ }");
+    } catch (LoginException exception) {
+      String message = String.format("Cannot get JSON for '%s'", pathToJCRNode);
+      LOG.error(message, exception);
+      return "{ }";
     }
   }
 }

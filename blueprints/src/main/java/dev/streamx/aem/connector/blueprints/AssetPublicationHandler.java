@@ -71,7 +71,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
       }
 
       return new PublishData<>(
-          new AssetKey(resolverFactory, resourcePath).asString(),
+          new AssetKey(resolverFactory, resourcePath).asString().orElseThrow(),
           CHANNEL,
           Asset.class,
           getAssetModel(resource));
@@ -89,7 +89,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   @Override
   public UnpublishData<Asset> getUnpublishData(String resourcePath) {
     return new UnpublishData<>(
-        new AssetKey(resolverFactory, resourcePath).asString(),
+        new AssetKey(resolverFactory, resourcePath).asString().orElseThrow(),
         CHANNEL,
         Asset.class
     );

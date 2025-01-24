@@ -5,12 +5,14 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.engine.SlingRequestProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 class WithFallbackIS {
+
+  private static final Logger LOG = LoggerFactory.getLogger(WithFallbackIS.class);
 
   private final ResourceResolverFactory rrFactory;
   private final SlingRequestProcessor slingRequestProcessor;
@@ -29,7 +31,7 @@ class WithFallbackIS {
     return Optional.ofNullable(originalAsset.getOriginal())
         .flatMap(originalRendition -> Optional.ofNullable(originalRendition.getStream()))
         .orElseGet(() -> {
-          log.debug(
+          LOG.debug(
               "Unable to get stream from original rendition for {}, creating JSON stream",
               originalAsset
           );

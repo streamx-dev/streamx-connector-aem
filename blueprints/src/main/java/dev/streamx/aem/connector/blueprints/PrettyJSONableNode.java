@@ -1,21 +1,23 @@
 package dev.streamx.aem.connector.blueprints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import eu.ciechanowiec.sneakyfun.SneakyFunction;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.jackrabbit.JcrConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 class PrettyJSONableNode {
+
+  private static final Logger LOG = LoggerFactory.getLogger(PrettyJSONableNode.class);
 
   private final JSONableNode jsoNableNode;
 
@@ -27,25 +29,31 @@ class PrettyJSONableNode {
     return cleanJson(jsoNableNode.json());
   }
 
-  @SneakyThrows
   private String cleanJson(String jsonString) {
     ObjectMapper mapper = new ObjectMapper();
-    JsonNode root = mapper.readTree(jsonString);
-    return removeUnwantedNodes(root)
-        .map(
-            SneakyFunction.sneaky(
-                node -> {
+    try {
+      JsonNode root = mapper.readTree(jsonString);
+      return removeUnwantedNodes(root)
+          .map(
+              node -> {
+                try {
                   String cleanedJSON = mapper.writeValueAsString(node);
-                  log.trace("Cleaned JSON: {}", cleanedJSON);
+                  LOG.trace("Cleaned JSON: {}", cleanedJSON);
                   return cleanedJSON;
+                } catch (JsonProcessingException exception) {
+                  LOG.error("Cannot write JSON", exception);
+                  return "{ }";
                 }
-            )
-        ).orElse("{}");
+              }
+          ).orElse("{ }");
+    } catch (IOException e) {
+      return "{ }";
+    }
   }
 
   /**
-   * Recursively removes nodes that have jcr:* (except jcr:content) or cq:*,
-   * returning Optional.empty() whenever the entire node should be removed.
+   * Recursively removes nodes that have jcr:* (except jcr:content) or cq:*, returning
+   * Optional.empty() whenever the entire node should be removed.
    */
   @SuppressWarnings({
       "squid:S3776", "MethodWithMultipleLoops", "MethodWithMultipleReturnPoints",
@@ -66,7 +74,7 @@ class PrettyJSONableNode {
         // If field is "jcr:*" but not "jcr:content", or "cq:*", remove it
         if (
             (fieldName.startsWith("jcr:") && !fieldName.equals(JcrConstants.JCR_CONTENT))
-            || fieldName.startsWith("cq:")
+                || fieldName.startsWith("cq:")
         ) {
           fieldsToRemove.add(fieldName);
         } else {
@@ -94,7 +102,7 @@ class PrettyJSONableNode {
       ArrayNode arrayNode = (ArrayNode) node;
       // We'll iterate using a manual index so we can remove while iterating
       //noinspection MethodCallInLoopCondition
-      for (int i = 0; i < arrayNode.size();) {
+      for (int i = 0; i < arrayNode.size(); ) {
         JsonNode childNode = arrayNode.get(i);
         Optional<JsonNode> cleanedChild = removeUnwantedNodes(childNode);
         if (cleanedChild.isEmpty()) {

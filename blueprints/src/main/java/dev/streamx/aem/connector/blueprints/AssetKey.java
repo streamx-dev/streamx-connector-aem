@@ -2,13 +2,15 @@ package dev.streamx.aem.connector.blueprints;
 
 import com.adobe.cq.dam.cfm.ContentFragment;
 import java.util.Optional;
-import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class AssetKey {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AssetKey.class);
 
   private final ResourceResolverFactory rrFactory;
   private final String nodePath;
@@ -18,17 +20,19 @@ class AssetKey {
     this.nodePath = nodePath;
   }
 
-  @SneakyThrows
-  String asString() {
+  @SuppressWarnings({"squid:S1874", "deprecation"})
+  Optional<String> asString() {
     try (ResourceResolver resourceResolver = rrFactory.getAdministrativeResourceResolver(null)) {
       return Optional.ofNullable(resourceResolver.getResource(nodePath))
-          .filter( resource -> Optional.ofNullable(resource.adaptTo(ContentFragment.class)).isPresent())
-          .map(Resource::getPath)
-          .map(path -> String.format("%s.json", path))
-          .or(
-              () -> Optional.ofNullable(resourceResolver.getResource(nodePath))
-                  .map(Resource::getPath)
-          ).orElse(StringUtils.EMPTY);
+          .flatMap(resource ->
+              Optional.ofNullable(resource.adaptTo(ContentFragment.class))
+                  .map(contentFragment -> resource.getPath() + ".json")
+                  .or(() -> Optional.of(resource.getPath()))
+          );
+    } catch (LoginException exception) {
+      String message = String.format("Cannot get asset key for %s", nodePath);
+      LOG.error(message, exception);
+      return Optional.empty();
     }
   }
 }
