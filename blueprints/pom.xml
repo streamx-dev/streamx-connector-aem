@@ -36,7 +36,6 @@
     <dependency>
       <groupId>com.adobe.aem</groupId>
       <artifactId>uber-jar</artifactId>
-      <classifier>apis</classifier>
     </dependency>
     <!-- StreamX -->
     <dependency>
@@ -63,5 +62,4 @@
       <artifactId>jsoup</artifactId>
     </dependency>
   </dependencies>
-
 </project>
