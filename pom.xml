@@ -20,6 +20,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <streamx-connector-sling.version>0.2.3</streamx-connector-sling.version>
+    <org.apache.sling.servlet-helpers.version>1.4.6</org.apache.sling.servlet-helpers.version>
   </properties>
 
   <repositories>
@@ -106,11 +107,13 @@
                         Bundle-Developers: Dynamic Solutions sp. z o.o. sp. k.
                         Bundle-Description : ${Bundle-Name}
                         Bundle-Vendor: Dynamic Solutions sp. z o.o. sp. k.
-                        Import-Package: !lombok,javax.annotation;version=0.0.0,*
+                        Bundle-ClassPath: ., lib/org.apache.sling.servlet-helpers-1.4.6.jar
                         -exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
                         -snapshot: SNAPSHOT
                         -noextraheaders: true
                         # generate error (instead of warning) when exported package uses private (non-exported) reference
+                        -includeresource: \
+                          lib/org.apache.sling.servlet-helpers-${org.apache.sling.servlet-helpers.version}.jar=../lib/org.apache.sling.servlet-helpers-${org.apache.sling.servlet-helpers.version}.jar
                         -fixupmessages:"Export *,  has \\d+,  private references"; \
                             restrict:=warning; \
                             is:=error
@@ -193,8 +196,7 @@
       <dependency>
         <groupId>com.adobe.aem</groupId>
         <artifactId>uber-jar</artifactId>
-        <version>6.5.0</version>
-        <classifier>apis</classifier>
+        <version>6.5.22</version>
         <scope>provided</scope>
       </dependency>
       <!-- StreamX -->
@@ -208,7 +210,7 @@
       <dependency>
         <groupId>org.apache.sling</groupId>
         <artifactId>org.apache.sling.servlet-helpers</artifactId>
-        <version>1.4.6</version>
+        <version>${org.apache.sling.servlet-helpers.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- OSGi Metadata (not used in runtime)-->
