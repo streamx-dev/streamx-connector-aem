@@ -1,0 +1,4 @@
+{
+  "pages.path.regexp": "^/content/firsthops/.+",
+  "templates.path.regexp": "^/content/firsthops/pages/templates/.+"
+}

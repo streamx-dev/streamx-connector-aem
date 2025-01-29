@@ -1,39 +1,108 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### IntelliJ IDEA ###
-.idea/*
-*.iws
-*.iml
-*.ipr
+# Created by https://www.gitignore.io/api/eclipse,java,maven
 
 ### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
+*.pydevproject
+.metadata
+.gradle
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+
+# Eclipse Core
 .project
-.settings
-.springBeans
-.sts4-cache
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# External tool builders
+.externalToolBuilders/
+
+# Escape dummy_sdk bin folder
+!dispatcher.cloud/test/dummy_sdk/bin
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+.cproject
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# Java annotation processor (APT)
+.factorypath
+
+# PDT-specific
+.buildpath
+
+# sbteclipse plugin
+.target
+
+# TeXlipse plugin
+.texlipse
+
+
+### Java ###
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+
+### Vault ###
+.vlt
+
+
+### IntelliJ ###
+.idea/
+*.iml
+
+
+### Node.js ###
+
+# Log files
+*.log
+
+# NPM
+node_modules/
+yarn.lock
+
+# Webpack
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+dist/
+actions/common/
 
-### VS Code ###
-.vscode/
+# Frontend Maven Plugin
+node/
 
-### Mac OS ###
-.DS_Store
-/.idea/
+# Tests
+coverage/
+reports/
 
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
-.mvn/wrapper/maven-wrapper.jar
+# Others
+dispatcher/src/conf.d/variables/default.vars
+ui.tests.wdio/test-module/assets/form/themes/**/*diff.png
+ui.tests.wdio/test-module/assets/form/themes/**/*current.png

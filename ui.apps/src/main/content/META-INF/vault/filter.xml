@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/apps/firsthops/clientlibs"/>
+    <filter root="/apps/firsthops/components"/>
+    <filter root="/apps/firsthops/i18n"/>
+    <filter root="/apps/msm/firsthops_blueprint" mode="merge"/>
+</workspaceFilter>

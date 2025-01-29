@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/conf/firsthops" mode="merge"/>
+    <filter root="/content/firsthops" mode="merge"/>
+    <filter root="/content/dam/firsthops" mode="merge">
+        <exclude pattern="/content/dam/firsthops(/.*)?"/>
+        <include pattern="/content/dam/firsthops/jcr:content(/.*)?"/>
+    </filter>
+    <filter root="/content/dam/firsthops/asset.jpg" mode="merge"/>
+    <filter root="/content/experience-fragments/firsthops" mode="merge"/>
+</workspaceFilter>
