@@ -15,6 +15,6 @@
   ~ limitations under the License.
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 <workspaceFilter version="1.0">
-    <filter root="/apps/firsthops-packages"/>
-    <filter root="/apps/firsthops-vendor-packages"/>
+    <filter root="/apps/ubercon-packages"/>
+    <filter root="/apps/ubercon-vendor-packages"/>
 </workspaceFilter>

@@ -1,18 +1,3 @@
-<!--
- |  Copyright 2019 Adobe Systems Incorporated
- |
- |  Licensed under the Apache License, Version 2.0 (the "License");
- |  you may not use this file except in compliance with the License.
- |  You may obtain a copy of the License at
- |
- |      http://www.apache.org/licenses/LICENSE-2.0
- |
- |  Unless required by applicable law or agreed to in writing, software
- |  distributed under the License is distributed on an "AS IS" BASIS,
- |  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- |  See the License for the specific language governing permissions and
- |  limitations under the License.
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -22,8 +7,8 @@
     <!-- P A R E N T  P R O J E C T  D E S C R I P T I O N                      -->
     <!-- ====================================================================== -->
     <parent>
-        <groupId>eu.ciechanowiec</groupId>
-        <artifactId>firsthops</artifactId>
+        <groupId>dev.streamx</groupId>
+        <artifactId>ubercon</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -31,16 +16,16 @@
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
-    <artifactId>firsthops.all</artifactId>
+    <artifactId>ubercon.all</artifactId>
     <packaging>content-package</packaging>
-    <name>First Hops - All</name>
-    <description>All content package for First Hops</description>
+    <name>Uber Connector - All</name>
+    <description>All content package for Uber Connector</description>
 
     <repositories>
         <repository>
             <id>artifact-registry</id>
             <url>
-                artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
+                https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
             </url>
             <releases>
                 <enabled>true</enabled>
@@ -64,92 +49,46 @@
                 <artifactId>filevault-package-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <group>eu.ciechanowiec</group>
+                    <group>dev.streamx</group>
                     <packageType>container</packageType>
                     <!-- skip sub package validation for now as some vendor packages like CIF apps will not pass -->
                     <skipSubPackageValidation>true</skipSubPackageValidation>
                     <embeddeds>
                         <embedded>
-                            <groupId>eu.ciechanowiec</groupId>
-                            <artifactId>conditional</artifactId>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
-                        </embedded>
-                        <embedded>
-                            <groupId>eu.ciechanowiec</groupId>
-                            <artifactId>sneakyfun</artifactId>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
-                        </embedded>
-                        <embedded>
-                            <groupId>eu.ciechanowiec</groupId>
-                            <artifactId>firsthops.ui.apps</artifactId>
+                            <groupId>dev.streamx</groupId>
+                            <artifactId>ubercon.config</artifactId>
                             <type>zip</type>
-                            <target>/apps/firsthops-packages/application/install</target>
+                            <target>/apps/ubercon-packages/application/install</target>
                         </embedded>
-                        <embedded>
-                            <groupId>eu.ciechanowiec</groupId>
-                            <artifactId>firsthops.core</artifactId>
-                            <target>/apps/firsthops-packages/application/install</target>
-                        </embedded>
-                        <embedded>
-                            <groupId>eu.ciechanowiec</groupId>
-                            <artifactId>firsthops.ui.content</artifactId>
-                            <type>zip</type>
-                            <target>/apps/firsthops-packages/content/install</target>
-                        </embedded>
-                        <embedded>
-                            <groupId>eu.ciechanowiec</groupId>
-                            <artifactId>firsthops.ui.config</artifactId>
-                            <type>zip</type>
-                            <target>/apps/firsthops-packages/application/install</target>
-                        </embedded>
-                        <embedded>
-                            <groupId>com.adobe.cq</groupId>
-                            <artifactId>core.wcm.components.examples.ui.config</artifactId>
-                            <type>zip</type>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
-                        </embedded>
-                        <embedded>
-                            <groupId>com.adobe.cq</groupId>
-                            <artifactId>core.wcm.components.examples.ui.apps</artifactId>
-                            <type>zip</type>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
-                        </embedded>
-                        <embedded>
-                            <groupId>com.adobe.cq</groupId>
-                            <artifactId>core.wcm.components.examples.ui.content</artifactId>
-                            <type>zip</type>
-                            <target>/apps/firsthops-vendor-packages/content/install</target>
-                        </embedded>
-                        <!-- StreamX -->
                         <embedded>
                             <groupId>dev.streamx</groupId>
                             <artifactId>streamx-connector-aem</artifactId>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
+                            <target>/apps/ubercon-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>dev.streamx</groupId>
                             <artifactId>streamx-connector-aem-blueprints</artifactId>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
+                            <target>/apps/ubercon-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>dev.streamx</groupId>
                             <artifactId>streamx-connector-sling</artifactId>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
+                            <target>/apps/ubercon-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>dev.streamx</groupId>
                             <artifactId>ingestion-client</artifactId>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
+                            <target>/apps/ubercon-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>org.jsoup</groupId>
                             <artifactId>jsoup</artifactId>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
+                            <target>/apps/ubercon-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>org.apache.avro</groupId>
                             <artifactId>avro</artifactId>
-                            <target>/apps/firsthops-vendor-packages/application/install</target>
+                            <target>/apps/ubercon-vendor-packages/application/install</target>
                         </embedded>
                     </embeddeds>
                 </configuration>
@@ -188,13 +127,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <extensions>
-            <extension>
-                <groupId>com.google.cloud.artifactregistry</groupId>
-                <artifactId>artifactregistry-maven-wagon</artifactId>
-                <version>2.2.4</version>
-            </extension>
-        </extensions>
     </build>
 
     <!-- ====================================================================== -->
@@ -261,41 +193,11 @@
     <!-- ====================================================================== -->
     <dependencies>
         <dependency>
-            <groupId>eu.ciechanowiec</groupId>
-            <artifactId>firsthops.ui.apps</artifactId>
+            <groupId>dev.streamx</groupId>
+            <artifactId>ubercon.config</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>eu.ciechanowiec</groupId>
-            <artifactId>firsthops.ui.content</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>eu.ciechanowiec</groupId>
-            <artifactId>firsthops.ui.config</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-
-        <dependency>
-            <groupId>com.adobe.cq</groupId>
-            <artifactId>core.wcm.components.examples.ui.config</artifactId>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>com.adobe.cq</groupId>
-            <artifactId>core.wcm.components.examples.ui.apps</artifactId>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>com.adobe.cq</groupId>
-            <artifactId>core.wcm.components.examples.ui.content</artifactId>
-            <type>zip</type>
-        </dependency>
-
-        <!-- StreamX -->
         <dependency>
             <groupId>dev.streamx</groupId>
             <artifactId>streamx-connector-aem</artifactId>
@@ -309,29 +211,12 @@
         <dependency>
             <groupId>dev.streamx</groupId>
             <artifactId>streamx-connector-sling</artifactId>
-            <version>0.2.3</version>
+            <version>0.2.4</version>
         </dependency>
         <dependency>
             <groupId>dev.streamx</groupId>
             <artifactId>ingestion-client</artifactId>
             <version>1.0.1</version>
-        </dependency>
-
-        <!-- Serialization -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.16.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.15.3</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>

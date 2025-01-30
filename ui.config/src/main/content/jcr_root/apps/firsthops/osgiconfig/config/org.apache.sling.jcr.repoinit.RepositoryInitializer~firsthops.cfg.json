@@ -1,7 +1,0 @@
-{
-    "scripts": [
-        "create path (sling:OrderedFolder) /content/dam/firsthops",
-        "create path (nt:unstructured) /content/dam/firsthops/jcr:content",
-        "set properties on /content/dam/firsthops/jcr:content\n  set cq:conf{String} to /conf/firsthops\n  set jcr:title{String} to \"First Hops\"\nend"
-    ]
-}
