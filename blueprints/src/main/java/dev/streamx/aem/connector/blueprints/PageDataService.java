@@ -8,10 +8,11 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
-import org.apache.sling.servlethelpers.internalrequests.SlingInternalRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,6 +21,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,18 +32,25 @@ public class PageDataService {
 
   private static final Logger LOG = LoggerFactory.getLogger(PageDataService.class);
 
-  @Reference
-  private SlingRequestProcessor requestProcessor;
-
+  private final SlingRequestProcessor slingRequestProcessor;
   private String pagesPathRegexp;
   private String templatesPathRegexp;
   private boolean shouldShortenContentPaths;
   private boolean shouldAddNofollowToExternalLinks;
-  private HashSet<String> nofollowHostsToSkip;
+  private Set<String> nofollowHostsToSkip;
 
   @Activate
+  public PageDataService(
+      @Reference(cardinality = ReferenceCardinality.MANDATORY)
+      SlingRequestProcessor slingRequestProcessor,
+      PageDataServiceConfig config
+  ) {
+    this.slingRequestProcessor = slingRequestProcessor;
+    configure(config);
+  }
+
   @Modified
-  private void activate(PageDataServiceConfig config) {
+  private void configure(PageDataServiceConfig config) {
     pagesPathRegexp = config.pages_path_regexp();
     templatesPathRegexp = config.templates_path_regexp();
     shouldShortenContentPaths = config.shorten_content_paths();
@@ -50,16 +59,19 @@ public class PageDataService {
   }
 
   public InputStream getStorageData(Resource resource) throws IOException {
-    String pageMarkup = new SlingInternalRequest(resource.getResourceResolver(), requestProcessor,
-        resource.getPath())
-        .withExtension("html")
-        .withParameter("wcmmode", "disabled")
-        .execute()
-        .getResponseAsString();
+    ResourceResolver resourceResolver = resource.getResourceResolver();
+    String resourcePath = resource.getPath();
+    String pageMarkup = new InternalRequestForPage(
+        resourceResolver, slingRequestProcessor, resourcePath
+    ).generateMarkup();
 
-    pageMarkup = addNoFollowToExternalLinksIfNeeded(resource.getPath(), pageMarkup);
+    String pageMarkupWithAdjustedLinks = addNoFollowToExternalLinksIfNeeded(
+        resourcePath, pageMarkup
+    );
 
-    return wrapStreamIfNeeded(resource.getPath(), new ByteArrayInputStream(pageMarkup.getBytes()));
+    return wrapStreamIfNeeded(
+        resourcePath, new ByteArrayInputStream(pageMarkupWithAdjustedLinks.getBytes())
+    );
   }
 
   public boolean isPage(String resourcePath) {
@@ -111,6 +123,7 @@ public class PageDataService {
       return true;
     }
   }
+
   private InputStream wrapStreamIfNeeded(String path, InputStream input) {
     if (shouldShortenContentPaths && path.startsWith("/content")) {
       final String[] elements = path.split("/");
