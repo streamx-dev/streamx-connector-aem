@@ -1,0 +1,214 @@
+[.text-justify]
+= Uber Package with AEM Connector
+:reproducible:
+:doctype: article
+:chapter-signifier:
+:sectnums:
+:sectnumlevels: 5
+:sectanchors:
+:toc: left
+:toclevels: 5
+:icons: font
+
+== Overview
+
+This directory provides an uber https://jackrabbit.apache.org/filevault/index.html[Apache Jackrabbit FileVault] package with the Adobe Experience Manager (AEM) Connector for https://www.streamx.dev/StreamX[StreamX] (*"Uber Package with AEM Connector"*). The term _uber_ signifies that the package includes all necessary dependencies and OSGi configurations required for the AEM Connector to function within AEM.
+
+== Purpose of the AEM Connector
+
+Various web data source systems can push that data to StreamX. StreamX will process the data and deliver it to the end user. One of those source systems can be AEM. AEM can push web data such as pages and assets to StreamX with the purpose of serving it to the end user by StreamX.
+
+In order to push web data to StreamX, AEM should have the AEM Connector installed. AEM Connector listens to all publishing events in AEM and pushes the published web data to StreamX.
+
+== Purpose of the Uber Package with AEM Connector
+
+For the AEM Connector to function correctly, it requires multiple dependencies and OSGi configurations to be deployed in AEM. The Uber Package with AEM Connector bundles all these dependencies and configurations, making it the only artifact required for a complete installation.
+
+The Uber Package with AEM Connector is intended to be used for basic StreamX integrations. For more advanced use cases, alternative installation options should be considered.
+
+The Uber Package with AEM Connector is compatible with both AEM 6.5 and AEM as a Cloud Service.
+
+== Configuration
+
+The Uber Package with AEM Connector includes default OSGi configurations for the AEM Connector.
+
+[upperalpha]
+. All configurations provided in the package can be modified via environment variables.
+. One specific configuration _must_ be modified via an environment variable, while the rest are _optional_ and can be adjusted if necessary. Details of these modifications are outlined below.
+
+[[obligatory-for-change]]
+=== Mandatory Configuration Change
+
+The Uber Package with AEM Connector includes an OSGi configuration `dev.streamx.sling.connector.impl.StreamxClientConfigImpl~streamx-instance`. This configuration defines the URL for the StreamX ingestion HTTP endpoint. The deployer _must_ specify this URL by setting the `STREAMX_CLIENT_URL` environment variable for the target AEM environment.
+
+[TIP]
+Refer to the https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/implementing/using-cloud-manager/environment-variables[Adobe documentation] to learn how to configure environment variables in AEM as a Cloud Service.
+
+=== Optional Configuration Changes
+
+The following OSGi configurations, included in the Uber Package with AEM Connector, _can_ be adjusted via environment variables if required. Consult the respective OSGi configuration documentation for more details on each setting.
+
+[cols="^.^1,^.^1,^.^1"]
+|===
+|Property name in OSGi configuration|Name of corresponding environment variable |Default value set by the Uber Package with AEM Connector
+
+3+| `dev.streamx.aem.connector.blueprints.AssetPublicationHandler`
+| `assets.path.regexp`
+| `ASSETS_PATH_REGEXP`
+| `^/content/dam/.+`
+
+3+| `dev.streamx.aem.connector.blueprints.PageDataService`
+| `pages.path.regexp`
+| `PDS_PAGES_PATH_REGEXP`
+| `^/content/.+`
+
+3+| `dev.streamx.aem.connector.blueprints.PagePublicationHandler`
+| `pages.path.regexp`
+| `PPH_PAGES_PATH_REGEXP`
+| `^/content/.+`
+
+| `templates.path.regexp`
+| `PPH_TEMPLATES_PATH_REGEXP`
+| `^/content/.+`
+|===
+
+== Installation
+
+The Uber Package with AEM Connector can be installed using any standard method for deploying Apache Jackrabbit FileVault packages. The following sections provide installation examples for different AEM setups.
+
+The Maven coordinates for the installation artifact are:
+
+[source, xml]
+....
+<dependency>
+    <groupId>dev.streamx</groupId>
+    <artifactId>ubercon.all</artifactId>
+    <version>0.0.7</version>
+    <type>zip</type>
+</dependency>
+....
+
+[WARNING]
+Installing the Uber Package with AEM Connector alone is insufficient for the AEM Connector to function correctly. See <<obligatory-for-change>> for necessary configuration changes.
+
+=== Embedding in the `all` Deployment Artifact of an AEM Project
+
+One method for installing the Uber Package with AEM Connector is embedding it in the `all` deployment artifact of a standard AEM project. The following steps outline how to do this for a new AEM project based on the https://github.com/adobe/aem-project-archetype[AEM Archetype]. For existing projects, adapt the steps accordingly.
+
+[upperalpha]
+. Generate a new AEM project using the AEM Archetype:
++
+[source, bash]
+....
+mvn -B org.apache.maven.plugins:maven-archetype-plugin:3.2.1:generate \
+    -D archetypeGroupId=com.adobe.aem \
+    -D archetypeArtifactId=aem-project-archetype \
+    -D archetypeVersion=51 \
+    -D appTitle="First Hops" \
+    -D appId="firsthops" \
+    -D groupId="dev.streamx" \
+    -D artifactId="firsthops" \
+    -D package="dev.streamx.firsthops" \
+    -D singleCountry=n \
+    -D includeExamples=y \
+    -D version="1.0-SNAPSHOT" \
+    -D aemVersion="cloud"
+....
+
+. Add the StreamX Maven repository to the `repositories` section of `all/pom.xml`:
++
+[source, xml]
+....
+<repositories>
+    <repository>
+        <id>streamx-maven-public-releases</id>
+        <url>
+            https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
+        </url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+....
+
+. Add the Uber Package with AEM Connector as a dependency in the `dependencies` section of `all/pom.xml`:
++
+[source, xml]
+....
+<dependencies>
+    ...
+    <dependency>
+        <groupId>dev.streamx</groupId>
+        <artifactId>ubercon.all</artifactId>
+        <version>0.0.7</version>
+        <type>zip</type>
+    </dependency>
+    ...
+</dependencies>
+....
+
+. Configure the `filevault-package-maven-plugin` in `all/pom.xml` to embed the Uber Package with AEM Connector:
++
+[source, xml]
+....
+<build>
+    <plugins>
+        ...
+        <plugin>
+            <groupId>org.apache.jackrabbit</groupId>
+            <artifactId>filevault-package-maven-plugin</artifactId>
+            <extensions>true</extensions>
+            <configuration>
+                ...
+                <embeddeds>
+                    ...
+                    <embedded>
+                        <groupId>dev.streamx</groupId>
+                        <artifactId>ubercon.all</artifactId>
+                        <type>zip</type>
+                        <target>/apps/firsthops-vendor-packages/content/install</target>
+                    </embedded>
+                    ...
+                </embeddeds>
+                ...
+            </configuration>
+        </plugin>
+        ...
+    </plugins>
+</build>
+....
+. Deploy the `all` deployment artifact to a running AEM instance. Once deployed, the Uber Package with AEM Connector will be installed.
+
+=== Deploying as a Separate Artifact
+
+Another approach is deploying the Uber Package with AEM Connector as a standalone artifact.
+
+==== Deploying to a Local AEM Author Instance
+
+To deploy the Uber Package with AEM Connector to a running local AEM Author instance, run the following command in this directory:
+
+[source, bash]
+....
+mvn clean install -PautoInstallSinglePackage
+....
+
+==== Deploying to a Rapid Development Environment (RDE)
+
+[upperalpha]
+. To deploy the Uber Package with AEM Connector to a running AEM Author instance in the Rapid Development Environment (RDE), firstly run the command below to build the package in this directory. It will create an artifact at `ubercon.all/target/ubercon.all-0.0.7.zip` path:
++
+[source, bash]
+....
+mvn clean package
+....
+
+. Deploy the artifact to an AEM Author instance in RDE using https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/local-development-environment-set-up/development-tools#aio-cli[AIO CLI]. In the command below, `<your-programId>` and `<your-environmentId>` should be replaced with the relevant values:
++
+[source, bash]
+....
+aio aem:rde:install ubercon.all/target/ubercon.all-0.0.7.zip --programId <your-programId> --environmentId <your-environmentId>
+....

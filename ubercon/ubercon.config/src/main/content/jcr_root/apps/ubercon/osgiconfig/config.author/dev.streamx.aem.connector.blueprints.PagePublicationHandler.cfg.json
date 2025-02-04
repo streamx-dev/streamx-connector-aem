@@ -1,0 +1,4 @@
+{
+  "pages.path.regexp": "$[env:PPH_PAGES_PATH_REGEXP;type=String;default=^/content/.+]",
+  "templates.path.regexp": "$[env:PPH_TEMPLATES_PATH_REGEXP;type=String;default=^/content/.+]"
+}
