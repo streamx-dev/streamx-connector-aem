@@ -2,6 +2,7 @@ package dev.streamx.aem.connector.blueprints;
 
 import com.day.cq.wcm.api.Page;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.servlethelpers.internalrequests.SlingInternalRequest;
@@ -9,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Optional;
 
 class InternalRequestForPage {
@@ -20,36 +20,27 @@ class InternalRequestForPage {
   private final SlingRequestProcessor slingRequestProcessor;
   private final String pathToPage;
 
-  InternalRequestForPage(
-      ResourceResolver resourceResolver, SlingRequestProcessor slingRequestProcessor,
-      String pathToPage
-  ) {
-    this.resourceResolver = resourceResolver;
+  InternalRequestForPage(Resource resourceWithPage, SlingRequestProcessor slingRequestProcessor) {
+    this.resourceResolver = resourceWithPage.getResourceResolver();
     this.slingRequestProcessor = slingRequestProcessor;
-    this.pathToPage = pathToPage;
+    this.pathToPage = resourceWithPage.getPath();
   }
 
   String generateMarkup() throws IOException {
-    String[] selectors = Optional.ofNullable(resourceResolver.getResource(pathToPage))
+    String selector = Optional.ofNullable(resourceResolver.getResource(pathToPage))
         .flatMap(resourceWithPage -> Optional.ofNullable(resourceWithPage.adaptTo(Page.class)))
-        .map(FranklinCheck::new)
         .map(FranklinCheck::isFranklinPage)
         .filter(isFranklinPage -> isFranklinPage)
-        .map(isFranklinPage -> new String[]{"plain"})
-        .orElse(new String[]{StringUtils.EMPTY});
+        .map(isFranklinPage -> "plain")
+        .orElse(StringUtils.EMPTY);
     String pageMarkup = new SlingInternalRequest(
         resourceResolver, slingRequestProcessor, pathToPage
-    ).withSelectors(selectors)
+    ).withSelectors(selector)
      .withExtension("html")
      .withParameter("wcmmode", "disabled")
      .execute()
      .getResponseAsString();
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(
-          "Generated markup for a page at path '{}'. Selectors: {}", pathToPage,
-          Arrays.toString(selectors)
-      );
-    }
+    LOG.debug("Generated markup for a page at path '{}'. Selector: '{}'", pathToPage, selector);
     return pageMarkup;
   }
 }

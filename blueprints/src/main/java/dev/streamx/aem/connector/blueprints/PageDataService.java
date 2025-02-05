@@ -59,10 +59,9 @@ public class PageDataService {
   }
 
   public InputStream getStorageData(Resource resource) throws IOException {
-    ResourceResolver resourceResolver = resource.getResourceResolver();
     String resourcePath = resource.getPath();
     String pageMarkup = new InternalRequestForPage(
-        resourceResolver, slingRequestProcessor, resourcePath
+        resource, slingRequestProcessor
     ).generateMarkup();
 
     String pageMarkupWithAdjustedLinks = addNoFollowToExternalLinksIfNeeded(
