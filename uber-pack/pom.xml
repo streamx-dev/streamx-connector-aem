@@ -9,14 +9,14 @@
         <version>0.0.7-SNAPSHOT</version>
     </parent>
 
-    <artifactId>ubercon</artifactId>
+    <artifactId>streamx-connector-aem-uber-pack-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Uber Package with AEM Connector</name>
+    <name>Uber Package with AEM Connector - Parent</name>
     <description>Uber package with AEM Connector, related dependencies and configurations for StreamX</description>
 
     <modules>
-        <module>ubercon.all</module>
-        <module>ubercon.config</module>
+        <module>uber-pack.all</module>
+        <module>uber-pack.config</module>
     </modules>
 
     <build>

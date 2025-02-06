@@ -5,12 +5,12 @@
 
     <parent>
         <groupId>dev.streamx</groupId>
-        <artifactId>ubercon</artifactId>
+        <artifactId>streamx-connector-aem-uber-pack-parent</artifactId>
         <version>0.0.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>ubercon.config</artifactId>
+    <artifactId>streamx-connector-aem-uber-pack-config</artifactId>
     <packaging>content-package</packaging>
     <name>Uber Package with AEM Connector - Config</name>
     <description>Config package for Uber Package with AEM Connector</description>
@@ -30,7 +30,7 @@
                     <validatorsSettings>
                         <jackrabbit-filter>
                             <options>
-                                <validRoots>/apps/ubercon,/apps/ubercon/osgiconfig</validRoots>
+                                <validRoots>/apps/streamx-connector-aem-uber-pack,/apps/streamx-connector-aem-uber-pack/osgiconfig</validRoots>
                             </options>
                         </jackrabbit-filter>
                     </validatorsSettings>

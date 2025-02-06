@@ -10,7 +10,7 @@
   <modules>
     <module>connector</module>
     <module>blueprints</module>
-    <module>ubercon</module>
+    <module>uber-pack</module>
   </modules>
 
   <properties>
