@@ -28,9 +28,8 @@ class InternalRequestForPage {
 
   String generateMarkup() throws IOException {
     String selector = Optional.ofNullable(resourceResolver.getResource(pathToPage))
-        .flatMap(resourceWithPage -> Optional.ofNullable(resourceWithPage.adaptTo(Page.class)))
-        .map(FranklinCheck::isFranklinPage)
-        .filter(isFranklinPage -> isFranklinPage)
+        .map(resourceWithPage -> resourceWithPage.adaptTo(Page.class))
+        .filter(FranklinCheck::isFranklinPage)
         .map(isFranklinPage -> "plain")
         .orElse(StringUtils.EMPTY);
     String pageMarkup = new SlingInternalRequest(
