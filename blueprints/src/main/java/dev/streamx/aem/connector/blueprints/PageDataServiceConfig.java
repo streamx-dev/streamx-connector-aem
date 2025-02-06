@@ -4,7 +4,7 @@ import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @ObjectClassDefinition(name = "StreamX Blueprints - Pages Data Service Config")
-@interface PageDataServiceConfig {
+public @interface PageDataServiceConfig {
 
   @AttributeDefinition(name = "RegExp to match paths of pages that should be published to StreamX")
   String pages_path_regexp() default "^/content/[^/]+/pages/.*$";

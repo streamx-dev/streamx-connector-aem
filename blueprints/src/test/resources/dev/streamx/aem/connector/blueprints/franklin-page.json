@@ -1,0 +1,8 @@
+{
+  "jcr:primaryType": "cq:Page",
+  "jcr:content": {
+    "jcr:primaryType": "cq:PageContent",
+    "cq:template": "/libs/core/franklin/templates/page",
+    "sling:resourceType": "core/franklin/components/page/v1/page"
+  }
+}
