@@ -167,5 +167,5 @@ mvn clean install -PautoInstallSinglePackage
 2. Deploy the artifact to an AEM Author instance in RDE using [AIO CLI](https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/local-development-environment-set-up/development-tools#aio-cli). Replace `<your-programId>` and `<your-environmentId>` with the relevant values:
 
     ```bash
-    aio aem:rde:install cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.7 --programId <your-programId> --environmentId <your-environmentId>
+    aio aem:rde:install cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.7.zip --programId <your-programId> --environmentId <your-environmentId>
     ```
