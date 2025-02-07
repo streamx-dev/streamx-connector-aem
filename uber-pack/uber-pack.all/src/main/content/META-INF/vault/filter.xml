@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<workspaceFilter version="1.0">
-    <filter root="/apps/streamx-connector-aem-uber-pack-packages"/>
-    <filter root="/apps/streamx-connector-aem-uber-pack-vendor-packages"/>
-</workspaceFilter>

@@ -9,14 +9,14 @@
         <version>0.0.7-SNAPSHOT</version>
     </parent>
 
-    <artifactId>streamx-connector-aem-uber-pack-parent</artifactId>
+    <artifactId>streamx-connector-aem-cloud-pack-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Uber Package with AEM Connector - Parent</name>
-    <description>Uber package with AEM Connector, related dependencies and configurations for StreamX</description>
+    <name>Cloud Package with AEM Connector - Parent</name>
+    <description>Cloud Package with AEM Connector, related dependencies and configurations for StreamX</description>
 
     <modules>
-        <module>uber-pack.all</module>
-        <module>uber-pack.config</module>
+        <module>cloud-pack.all</module>
+        <module>cloud-pack.config</module>
     </modules>
 
     <build>

@@ -10,7 +10,7 @@
   <modules>
     <module>connector</module>
     <module>blueprints</module>
-    <module>uber-pack</module>
+    <module>cloud-pack</module>
   </modules>
 
   <properties>

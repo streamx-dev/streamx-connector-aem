@@ -5,15 +5,15 @@
 
     <parent>
         <groupId>dev.streamx</groupId>
-        <artifactId>streamx-connector-aem-uber-pack-parent</artifactId>
+        <artifactId>streamx-connector-aem-cloud-pack-parent</artifactId>
         <version>0.0.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>streamx-connector-aem-uber-pack</artifactId>
+    <artifactId>streamx-connector-aem-cloud-pack</artifactId>
     <packaging>content-package</packaging>
-    <name>Uber Package with AEM Connector - All</name>
-    <description>All content package for Uber Package with AEM Connector</description>
+    <name>Cloud Package with AEM Connector - All</name>
+    <description>All content package for Cloud Package with AEM Connector</description>
 
     <build>
         <plugins>
@@ -29,39 +29,39 @@
                     <embeddeds>
                         <embedded>
                             <groupId>dev.streamx</groupId>
-                            <artifactId>streamx-connector-aem-uber-pack-config</artifactId>
+                            <artifactId>streamx-connector-aem-cloud-pack-config</artifactId>
                             <type>zip</type>
-                            <target>/apps/streamx-connector-aem-uber-pack-packages/application/install</target>
+                            <target>/apps/streamx-connector-aem-cloud-pack-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>dev.streamx</groupId>
                             <artifactId>streamx-connector-aem</artifactId>
-                            <target>/apps/streamx-connector-aem-uber-pack-vendor-packages/application/install</target>
+                            <target>/apps/streamx-connector-aem-cloud-pack-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>dev.streamx</groupId>
                             <artifactId>streamx-connector-aem-blueprints</artifactId>
-                            <target>/apps/streamx-connector-aem-uber-pack-vendor-packages/application/install</target>
+                            <target>/apps/streamx-connector-aem-cloud-pack-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>dev.streamx</groupId>
                             <artifactId>streamx-connector-sling</artifactId>
-                            <target>/apps/streamx-connector-aem-uber-pack-vendor-packages/application/install</target>
+                            <target>/apps/streamx-connector-aem-cloud-pack-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>dev.streamx</groupId>
                             <artifactId>ingestion-client</artifactId>
-                            <target>/apps/streamx-connector-aem-uber-pack-vendor-packages/application/install</target>
+                            <target>/apps/streamx-connector-aem-cloud-pack-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>org.jsoup</groupId>
                             <artifactId>jsoup</artifactId>
-                            <target>/apps/streamx-connector-aem-uber-pack-vendor-packages/application/install</target>
+                            <target>/apps/streamx-connector-aem-cloud-pack-vendor-packages/application/install</target>
                         </embedded>
                         <embedded>
                             <groupId>org.apache.avro</groupId>
                             <artifactId>avro</artifactId>
-                            <target>/apps/streamx-connector-aem-uber-pack-vendor-packages/application/install</target>
+                            <target>/apps/streamx-connector-aem-cloud-pack-vendor-packages/application/install</target>
                         </embedded>
                     </embeddeds>
                 </configuration>
@@ -154,7 +154,7 @@
     <dependencies>
         <dependency>
             <groupId>dev.streamx</groupId>
-            <artifactId>streamx-connector-aem-uber-pack-config</artifactId>
+            <artifactId>streamx-connector-aem-cloud-pack-config</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

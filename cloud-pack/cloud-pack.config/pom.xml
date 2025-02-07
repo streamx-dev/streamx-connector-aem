@@ -5,15 +5,15 @@
 
     <parent>
         <groupId>dev.streamx</groupId>
-        <artifactId>streamx-connector-aem-uber-pack-parent</artifactId>
+        <artifactId>streamx-connector-aem-cloud-pack-parent</artifactId>
         <version>0.0.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>streamx-connector-aem-uber-pack-config</artifactId>
+    <artifactId>streamx-connector-aem-cloud-pack-config</artifactId>
     <packaging>content-package</packaging>
-    <name>Uber Package with AEM Connector - Config</name>
-    <description>Config package for Uber Package with AEM Connector</description>
+    <name>Cloud Package with AEM Connector - Config</name>
+    <description>Config package for Cloud Package with AEM Connector</description>
 
     <build>
         <sourceDirectory>src/main/content/jcr_root</sourceDirectory>
@@ -30,7 +30,7 @@
                     <validatorsSettings>
                         <jackrabbit-filter>
                             <options>
-                                <validRoots>/apps/streamx-connector-aem-uber-pack,/apps/streamx-connector-aem-uber-pack/osgiconfig</validRoots>
+                                <validRoots>/apps/streamx-connector-aem-cloud-pack,/apps/streamx-connector-aem-cloud-pack/osgiconfig</validRoots>
                             </options>
                         </jackrabbit-filter>
                     </validatorsSettings>
