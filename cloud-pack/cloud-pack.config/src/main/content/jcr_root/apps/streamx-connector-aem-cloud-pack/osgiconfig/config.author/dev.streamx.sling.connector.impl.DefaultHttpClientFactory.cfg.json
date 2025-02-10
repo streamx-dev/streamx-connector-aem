@@ -1,0 +1,3 @@
+{
+  "insecure": "$[env:STREAMX_CLIENT_INSECURE;type=Boolean;default=false]"
+}

@@ -10,16 +10,24 @@
   <modules>
     <module>connector</module>
     <module>blueprints</module>
+    <module>cloud-pack</module>
   </modules>
 
   <properties>
     <aem.host>localhost</aem.host>
     <aem.port>4502</aem.port>
+    <aem.publish.host>localhost</aem.publish.host>
+    <aem.publish.port>4503</aem.publish.port>
+    <sling.user>admin</sling.user>
+    <sling.password>admin</sling.password>
+    <vault.user>admin</vault.user>
+    <vault.password>admin</vault.password>
     <bnd.version>6.4.0</bnd.version>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <streamx-connector-sling.version>0.2.3</streamx-connector-sling.version>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <streamx-connector-sling.version>0.2.5</streamx-connector-sling.version>
     <org.apache.sling.servlet-helpers.version>1.4.6</org.apache.sling.servlet-helpers.version>
     <junit-bom.version>5.10.2</junit-bom.version>
     <mockito-junit-jupiter.version>5.12.0</mockito-junit-jupiter.version>
@@ -152,6 +160,21 @@
             <deploymentMethod>WebConsole</deploymentMethod>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -163,6 +186,29 @@
           <tagNameFormat>@{project.version}</tagNameFormat>
           <scmCommentPrefix>[no ci] [maven-release-plugin]</scmCommentPrefix>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[3.3.9,)</version>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <message>Maven must be executed with a Java 11 JRE or higher.</message>
+                  <version>11</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

@@ -1,0 +1,3 @@
+{
+  "pages.path.regexp": "$[env:PDS_PAGES_PATH_REGEXP;type=String;default=^/content/.+]"
+}
