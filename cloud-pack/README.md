@@ -21,7 +21,9 @@ The Cloud Package with AEM Connector includes default OSGi configurations for th
 
 ### Mandatory Configuration Change
 
-The Cloud Package with AEM Connector includes an OSGi configuration `dev.streamx.sling.connector.impl.StreamxClientConfigImpl~streamx-instance`. This configuration defines the URL for the StreamX ingestion HTTP endpoint. The deployer _must_ specify this URL by setting the `STREAMX_CLIENT_URL` environment variable for the target AEM environment.
+The Cloud Package with AEM Connector includes an OSGi configuration `dev.streamx.sling.connector.impl.StreamxClientConfigImpl~streamx-instance`. This configuration:
+1. Defines the URL for the StreamX ingestion HTTP endpoint. The deployer _must_ specify this URL by setting the `STREAMX_CLIENT_URL` environment variable for the target AEM environment.
+2. Defines the JWT authentication token for the StreamX ingestion HTTP endpoint. If the endpoint requires the authentication, the deployer _must_ specify the token by setting the `STREAMX_CLIENT_AUTH_TOKEN` environment variable for the target AEM environment.
 
 > **Tip:** Refer to the [Adobe documentation](https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/implementing/using-cloud-manager/environment-variables) to learn how to configure environment variables in AEM as a Cloud Service.
 
@@ -30,12 +32,13 @@ The Cloud Package with AEM Connector includes an OSGi configuration `dev.streamx
 The following OSGi configurations, included in the Cloud Package with AEM Connector, _can_ be adjusted via environment variables if required. Consult the respective OSGi configuration documentation for more details on each setting.
 
 | Factory PID/PID                                                | Property name in OSGi configuration | Name of corresponding environment variable | Default value set by the Cloud Package with AEM Connector |
-|----------------------------------------------------------------|-------------------------------------|--------------------------------------------|----------------------------------------------------------|
-| `dev.streamx.aem.connector.blueprints.AssetPublicationHandler` | `assets.path.regexp` | `ASSETS_PATH_REGEXP`                       | `^/content/dam/.+`                                       |
-| `dev.streamx.aem.connector.blueprints.PageDataService`         | `pages.path.regexp` | `PDS_PAGES_PATH_REGEXP`                    | `^/content/.+`                                           |
-| `dev.streamx.aem.connector.blueprints.PagePublicationHandler`  | `pages.path.regexp` | `PPH_PAGES_PATH_REGEXP`                    | `^/content/.+`                                           |
-| `dev.streamx.aem.connector.blueprints.PagePublicationHandler`  | `templates.path.regexp` | `PPH_TEMPLATES_PATH_REGEXP`                | `^/content/.+`                                           |
-| `org.apache.sling.commons.log.LogManager.factory.config`  | `org.apache.sling.commons.log.level` | `STREAMX_LOG_LEVEL`                        | `WARN`                                                   |
+|----------------------------------------------------------------|-------------------------------------|--------------------------------------------|-----------------------------------------------------------|
+| `dev.streamx.aem.connector.blueprints.AssetPublicationHandler` | `assets.path.regexp` | `ASSETS_PATH_REGEXP`                       | `^/content/dam/.+`                                        |
+| `dev.streamx.aem.connector.blueprints.PageDataService`         | `pages.path.regexp` | `PDS_PAGES_PATH_REGEXP`                    | `^/content/.+`                                            |
+| `dev.streamx.aem.connector.blueprints.PagePublicationHandler`  | `pages.path.regexp` | `PPH_PAGES_PATH_REGEXP`                    | `^/content/.+`                                            |
+| `dev.streamx.aem.connector.blueprints.PagePublicationHandler`  | `templates.path.regexp` | `PPH_TEMPLATES_PATH_REGEXP`                | `^/content/.+`                                            |
+| `dev.streamx.sling.connector.impl.DefaultHttpClientFactory`  | `do-trust-all-tls-certs` | `STREAMX_CLIENT_DO_TRUST_ALL_TLS_CERTS`                | `false`                                                   |
+| `org.apache.sling.commons.log.LogManager.factory.config`  | `org.apache.sling.commons.log.level` | `STREAMX_LOG_LEVEL`                        | `WARN`                                                    |
 
 ## Installation
 

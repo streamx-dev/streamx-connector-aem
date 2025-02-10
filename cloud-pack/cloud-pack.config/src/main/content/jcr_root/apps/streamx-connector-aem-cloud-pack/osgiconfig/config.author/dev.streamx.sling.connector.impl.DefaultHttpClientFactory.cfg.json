@@ -1,0 +1,3 @@
+{
+  "do-trust-all-tls-certs": "$[env:STREAMX_CLIENT_DO_TRUST_ALL_TLS_CERTS;type=Boolean;default=false]"
+}
