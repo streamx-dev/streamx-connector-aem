@@ -1,3 +1,4 @@
 {
-  "pages.path.regexp": "$[env:PDS_PAGES_PATH_REGEXP;type=String;default=^/content/.+]"
+  "pages.path.regexp": "$[env:PAGES_PATH_REGEXP;type=String;default=^/content/.+]",
+  "templates.path.regexp": "$[env:TEMPLATES_PATH_REGEXP;type=String;default=^/conf/[^/]+/templates/.*$]"
 }

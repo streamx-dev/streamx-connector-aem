@@ -1,6 +1,8 @@
 package dev.streamx.aem.connector.blueprints;
 
 import com.day.cq.wcm.api.Page;
+import java.io.IOException;
+import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -8,9 +10,6 @@ import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.servlethelpers.internalrequests.SlingInternalRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Optional;
 
 class InternalRequestForPage {
 
