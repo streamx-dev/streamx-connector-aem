@@ -1,10 +1,8 @@
 # AEM StreamX Connector
 
-This project gives the possibility for AEM projects to automatically publish and unpublish data
-to/from StreamX during standard AEM replication.
-It contains two modules: `Connector` and `Blueprints`.
-Both of them depend on the `dev.streamx:streamx-connector-sling` module and don't expose their own
-API.
+This repository contains the source code of AEM Connector. The purpose of AEM Connector is to serve as a bridge between [Adobe Experience Manager (AEM)](https://business.adobe.com/products/experience-manager/adobe-experience-manager.html) and [StreamX](https://www.streamx.dev/). AEM Connector should be installed on AEM, where it will be listening to all publish/unpublish events and respectively publish/unpublish the data to/from StreamX.
+
+It contains two modules: `Connector` and `Blueprints`. Both of them depend on the `dev.streamx:streamx-connector-sling` module and don't expose their own API.
 
 # Connector
 
