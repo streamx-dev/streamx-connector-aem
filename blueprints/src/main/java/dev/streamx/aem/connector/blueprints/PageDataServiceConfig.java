@@ -1,25 +1,53 @@
 package dev.streamx.aem.connector.blueprints;
 
 import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @ObjectClassDefinition(name = "StreamX Blueprints - Pages Data Service Config")
 public @interface PageDataServiceConfig {
 
-  @AttributeDefinition(name = "RegExp to match paths of pages that should be published to StreamX")
-  String pages_path_regexp() default "^/content/[^/]+/pages/.*$";
+  @AttributeDefinition(
+      name = "Pages Path - RexExp",
+      description = "RegExp to match paths of pages that should be published to StreamX.",
+      type = AttributeType.STRING,
+      defaultValue = "^/content/.+"
+  )
+  String pages_path_regexp() default "^/content/.+";
 
-  @AttributeDefinition(name = "RegExp to match paths of templates that should be published to StreamX")
-  String templates_path_regexp() default "^/content/[^/]+/pages/templates/.*$";
+  @AttributeDefinition(
+      name = "Templates Path - RexExp",
+      description = "RegExp to match paths of templates that should be published to StreamX.",
+      type = AttributeType.STRING,
+      defaultValue = "^/conf/[^/]+/templates/.*$"
+  )
+  String templates_path_regexp() default "^/conf/[^/]+/templates/.*$";
 
-  @AttributeDefinition(name = "Shorten content paths", description =
-      "Shorten paths in content to not start with '/content/<space name>/pages' or '/content/<space name>'. "
-          + "Shortening is unaware of the context, therefore replacing all string occurrences.")
+  @AttributeDefinition(
+      name = "Shorten Content Paths",
+      description = "Shorten paths in content to not start with '/content/<space name>/pages' " 
+                  + "or '/content/<space name>'. Shortening is unaware of the context, therefore " 
+                  + "replaces all string occurrences.",
+      type = AttributeType.BOOLEAN,
+      defaultValue = "true"
+  )
   boolean shorten_content_paths() default true;
 
-  @AttributeDefinition(name = "Add nofollow to external links")
+  @AttributeDefinition(
+      name = "Add 'nofollow' to External Links",
+      description = "Add 'nofollow' attribute to external links.",
+      type = AttributeType.BOOLEAN,
+      defaultValue = "false"
+  )
   boolean nofollow_external_links() default false;
 
-  @AttributeDefinition(name = "Skip adding nofollow to external links for hosts")
+  @SuppressWarnings("DefaultAnnotationParam") 
+  @AttributeDefinition(
+      name = "Skip Adding 'nofollow' to External Links for Hosts",
+      description = "List of hosts for which the 'nofollow' attribute should "
+                  + "not be added to external links.",
+      type = AttributeType.STRING,
+      defaultValue = {}
+  )
   String[] nofollow_hosts_to_skip() default {};
 }

@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,12 +21,14 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component(service = PageDataService.class)
 @Designate(ocd = PageDataServiceConfig.class)
+@ServiceDescription("Operations on page data")
 public class PageDataService {
 
   private static final Logger LOG = LoggerFactory.getLogger(PageDataService.class);

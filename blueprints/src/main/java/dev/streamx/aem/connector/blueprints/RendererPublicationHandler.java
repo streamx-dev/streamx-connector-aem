@@ -17,12 +17,14 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
 @Designate(ocd = RendererPublicationHandlerConfig.class)
+@ServiceDescription("Publication handler for renderers")
 public class RendererPublicationHandler implements PublicationHandler<Renderer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RendererPublicationHandler.class);

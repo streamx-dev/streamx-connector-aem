@@ -31,14 +31,13 @@ The Cloud Package with AEM Connector includes an OSGi configuration `dev.streamx
 
 The following OSGi configurations, included in the Cloud Package with AEM Connector, _can_ be adjusted via environment variables if required. Consult the respective OSGi configuration documentation for more details on each setting.
 
-| Factory PID/PID                                                | Property name in OSGi configuration | Name of corresponding environment variable | Default value set by the Cloud Package with AEM Connector |
-|----------------------------------------------------------------|-------------------------------------|--------------------------------------------|-----------------------------------------------------------|
-| `dev.streamx.aem.connector.blueprints.AssetPublicationHandler` | `assets.path.regexp` | `ASSETS_PATH_REGEXP`                       | `^/content/dam/.+`                                        |
-| `dev.streamx.aem.connector.blueprints.PageDataService`         | `pages.path.regexp` | `PDS_PAGES_PATH_REGEXP`                    | `^/content/.+`                                            |
-| `dev.streamx.aem.connector.blueprints.PagePublicationHandler`  | `pages.path.regexp` | `PPH_PAGES_PATH_REGEXP`                    | `^/content/.+`                                            |
-| `dev.streamx.aem.connector.blueprints.PagePublicationHandler`  | `templates.path.regexp` | `PPH_TEMPLATES_PATH_REGEXP`                | `^/content/.+`                                            |
-| `dev.streamx.sling.connector.impl.DefaultHttpClientFactory`  | `insecure` | `STREAMX_CLIENT_INSECURE`                | `false`                                                   |
-| `org.apache.sling.commons.log.LogManager.factory.config`  | `org.apache.sling.commons.log.level` | `STREAMX_LOG_LEVEL`                        | `WARN`                                                    |
+| Factory PID/PID                                                 | Property name in OSGi configuration  | Name of corresponding environment variable | Default value set by the Cloud Package with AEM Connector |
+|-----------------------------------------------------------------|--------------------------------------|--------------------------------------------|-----------------------------------------------------------|
+| `dev.streamx.aem.connector.blueprints.AssetPublicationHandler`  | `assets.path.regexp`                 | `ASSETS_PATH_REGEXP`                       | `^/content/dam/.+`                                        |
+| `dev.streamx.aem.connector.blueprints.PageDataService`          | `pages.path.regexp`                  | `PAGES_PATH_REGEXP`                        | `^/content/.+`                                            |
+| `dev.streamx.aem.connector.blueprints.PageDataService`          | `templates.path.regexp`              | `TEMPLATES_PATH_REGEXP`                    | `^/conf/[^/]+/templates/.*$`                              |
+| `dev.streamx.sling.connector.impl.DefaultHttpClientFactory`     | `insecure`                           | `STREAMX_CLIENT_INSECURE`                  | `false`                                                   |
+| `org.apache.sling.commons.log.LogManager.factory.config`        | `org.apache.sling.commons.log.level` | `STREAMX_LOG_LEVEL`                        | `WARN`                                                    |
 
 ## Installation
 
@@ -50,7 +49,7 @@ The Maven coordinates for the installation artifact are:
 <dependency>
     <groupId>dev.streamx</groupId>
     <artifactId>streamx-connector-aem-cloud-pack-all</artifactId>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
     <type>zip</type>
 </dependency>
 ```
@@ -106,7 +105,7 @@ One method for installing the Cloud Package with AEM Connector is embedding it i
         <dependency>
             <groupId>dev.streamx</groupId>
             <artifactId>streamx-connector-aem-cloud-pack-all</artifactId>
-            <version>0.0.7</version>
+            <version>0.0.8</version>
             <type>zip</type>
         </dependency>
         ...
@@ -165,10 +164,10 @@ mvn clean install -PautoInstallSinglePackage
     mvn clean package
     ```
 
-   This will create an artifact at `cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.7`.
+   This will create an artifact at `cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.8`.
 
 2. Deploy the artifact to an AEM Author instance in RDE using [AIO CLI](https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/local-development-environment-set-up/development-tools#aio-cli). Replace `<your-programId>` and `<your-environmentId>` with the relevant values:
 
     ```bash
-    aio aem:rde:install cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.7.zip --programId <your-programId> --environmentId <your-environmentId>
+    aio aem:rde:install cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.8.zip --programId <your-programId> --environmentId <your-environmentId>
     ```
