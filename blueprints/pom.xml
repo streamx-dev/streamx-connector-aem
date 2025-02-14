@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>streamx-connector-aem-blueprints</artifactId>
+  <name>AEM Connector - Blueprints</name>
 
   <build>
     <plugins>

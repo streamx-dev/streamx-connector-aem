@@ -10,7 +10,7 @@
 
     <artifactId>streamx-connector-aem-cloud-pack-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Cloud Package with AEM Connector - Parent</name>
+    <name>Cloud Package with AEM Connector - Parent POM</name>
     <description>Cloud Package with AEM Connector, related dependencies and configurations for StreamX</description>
 
     <modules>

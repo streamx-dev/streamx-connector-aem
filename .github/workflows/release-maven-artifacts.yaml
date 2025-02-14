@@ -36,7 +36,9 @@ jobs:
           cache: 'maven'
 
       - name: Release
-        run: ./mvnw -B release:prepare release:perform
+        run: ./mvnw -B release:prepare release:perform \
+          -PstreamxDeploy \
+          -Darguments="-PstreamxDeploy"
 
       - name: Jira release
         uses: streamx-dev/streamx-common-github-actions/.github/actions/jira-release@main

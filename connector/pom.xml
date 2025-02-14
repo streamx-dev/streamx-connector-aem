@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>streamx-connector-aem</artifactId>
+  <name>AEM Connector - Core</name>
 
   <build>
     <plugins>
