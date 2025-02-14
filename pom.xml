@@ -6,7 +6,7 @@
 
   <groupId>dev.streamx</groupId>
   <artifactId>streamx-connector-aem-parent</artifactId>
-  <version>0.0.8-SNAPSHOT</version>
+  <version>0.0.9-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>AEM Connector - Parent POM</name>
@@ -63,7 +63,7 @@
   <repositories>
     <repository>
       <id>streamx-maven-snapshots</id>
-      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots
+      <url>https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots
       </url>
       <releases>
         <enabled>false</enabled>
@@ -75,7 +75,7 @@
     <repository>
       <id>streamx-maven-public-releases</id>
       <url>
-        artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
+        https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
       </url>
       <releases>
         <enabled>true</enabled>
@@ -300,6 +300,9 @@
                 <goals>
                   <goal>sign</goal>
                 </goals>
+                <configuration>
+                  <signer>bc</signer>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -316,22 +319,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>streamxDeploy</id>
-      <distributionManagement>
-        <repository>
-          <id>streamx-maven-public-releases</id>
-          <url>
-            artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
-          </url>
-        </repository>
-        <snapshotRepository>
-          <id>streamx-maven-snapshots</id>
-          <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots
-          </url>
-        </snapshotRepository>
-      </distributionManagement>
     </profile>
   </profiles>
 
