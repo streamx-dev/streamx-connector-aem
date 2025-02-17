@@ -23,7 +23,7 @@ The Cloud Package with AEM Connector includes default OSGi configurations for th
 
 The Cloud Package with AEM Connector includes an OSGi configuration `dev.streamx.sling.connector.impl.StreamxClientConfigImpl~streamx-instance`. This configuration:
 1. Defines the URL for the StreamX ingestion HTTP endpoint. The deployer _must_ specify this URL by setting the `STREAMX_CLIENT_URL` environment variable for the target AEM environment.
-2. Defines the JWT authentication token for the StreamX ingestion HTTP endpoint. If the endpoint requires the authentication, the deployer _must_ specify the token by setting the `STREAMX_CLIENT_AUTH_TOKEN` environment variable for the target AEM environment.
+2. Defines the JWT authentication token for the StreamX ingestion HTTP endpoint. If the endpoint requires the authentication, the deployer _must_ specify the token by setting the `STREAMX_CLIENT_AUTH_TOKEN` secret for the target AEM environment.
 
 > **Tip:** Refer to the [Adobe documentation](https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/implementing/using-cloud-manager/environment-variables) to learn how to configure environment variables in AEM as a Cloud Service.
 
