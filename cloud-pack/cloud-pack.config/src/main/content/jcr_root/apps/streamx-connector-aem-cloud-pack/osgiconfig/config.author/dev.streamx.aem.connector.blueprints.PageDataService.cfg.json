@@ -1,4 +1,4 @@
 {
-  "pages.path.regexp": "$[env:PAGES_PATH_REGEXP;type=String;default=^/content/.+]",
-  "templates.path.regexp": "$[env:TEMPLATES_PATH_REGEXP;type=String;default=^/conf/[^/]+/templates/.*$]"
+  "pages.path.regexp": "$[env:STREAMX_PAGES_PATH_REGEXP;type=String;default=^/content/.+]",
+  "templates.path.regexp": "$[env:STREAMX_TEMPLATES_PATH_REGEXP;type=String;default=^/conf/[^/]+/templates/.*$]"
 }

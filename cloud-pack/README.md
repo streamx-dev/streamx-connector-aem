@@ -33,9 +33,9 @@ The following OSGi configurations, included in the Cloud Package with AEM Connec
 
 | Factory PID/PID                                                 | Property name in OSGi configuration  | Name of corresponding environment variable | Default value set by the Cloud Package with AEM Connector |
 |-----------------------------------------------------------------|--------------------------------------|--------------------------------------------|-----------------------------------------------------------|
-| `dev.streamx.aem.connector.blueprints.AssetPublicationHandler`  | `assets.path.regexp`                 | `ASSETS_PATH_REGEXP`                       | `^/content/dam/.+`                                        |
-| `dev.streamx.aem.connector.blueprints.PageDataService`          | `pages.path.regexp`                  | `PAGES_PATH_REGEXP`                        | `^/content/.+`                                            |
-| `dev.streamx.aem.connector.blueprints.PageDataService`          | `templates.path.regexp`              | `TEMPLATES_PATH_REGEXP`                    | `^/conf/[^/]+/templates/.*$`                              |
+| `dev.streamx.aem.connector.blueprints.AssetPublicationHandler`  | `assets.path.regexp`                 | `STREAMX_ASSETS_PATH_REGEXP`                       | `^/content/dam/.+`                                        |
+| `dev.streamx.aem.connector.blueprints.PageDataService`          | `pages.path.regexp`                  | `STREAMX_PAGES_PATH_REGEXP`                        | `^/content/.+`                                            |
+| `dev.streamx.aem.connector.blueprints.PageDataService`          | `templates.path.regexp`              | `STREAMX_TEMPLATES_PATH_REGEXP`                    | `^/conf/[^/]+/templates/.*$`                              |
 | `dev.streamx.sling.connector.impl.DefaultHttpClientFactory`     | `insecure`                           | `STREAMX_CLIENT_INSECURE`                  | `false`                                                   |
 | `org.apache.sling.commons.log.LogManager.factory.config`        | `org.apache.sling.commons.log.level` | `STREAMX_LOG_LEVEL`                        | `WARN`                                                    |
 
