@@ -4,8 +4,28 @@
 
   <groupId>dev.streamx</groupId>
   <artifactId>streamx-connector-aem-parent</artifactId>
-  <version>0.0.8-SNAPSHOT</version>
+  <version>0.0.12-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <name>AEM Connector - Parent POM</name>
+  <description>Bridge between AEM and StreamX</description>
+  <url>${url}</url>
+  <inceptionYear>2024</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>streamx</id>
+      <name>StreamX Team</name>
+      <email>hello@streamx.dev</email>
+    </developer>
+  </developers>
 
   <modules>
     <module>connector</module>
@@ -14,6 +34,7 @@
   </modules>
 
   <properties>
+    <url>https://github.com/streamx-dev/streamx-connector-aem</url>
     <aem.host>localhost</aem.host>
     <aem.port>4502</aem.port>
     <aem.publish.host>localhost</aem.publish.host>
@@ -27,18 +48,20 @@
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <streamx-connector-sling.version>0.2.5</streamx-connector-sling.version>
+    <streamx-connector-sling.version>0.2.7</streamx-connector-sling.version>
     <org.apache.sling.servlet-helpers.version>1.4.6</org.apache.sling.servlet-helpers.version>
     <junit-bom.version>5.10.2</junit-bom.version>
     <mockito-junit-jupiter.version>5.12.0</mockito-junit-jupiter.version>
     <io.wcm.testing.aem-mock.junit5.version>5.6.4</io.wcm.testing.aem-mock.junit5.version>
-    <org.apache.sling.testing.sling-mock-oak.version>4.0.0-1.62.0</org.apache.sling.testing.sling-mock-oak.version>
+    <org.apache.sling.testing.sling-mock-oak.version>4.0.0-1.62.0
+    </org.apache.sling.testing.sling-mock-oak.version>
+    <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
   </properties>
 
   <repositories>
     <repository>
       <id>streamx-maven-snapshots</id>
-      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots
+      <url>https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots
       </url>
       <releases>
         <enabled>false</enabled>
@@ -50,7 +73,7 @@
     <repository>
       <id>streamx-maven-public-releases</id>
       <url>
-        artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
+        https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
       </url>
       <releases>
         <enabled>true</enabled>
@@ -61,36 +84,15 @@
     </repository>
   </repositories>
 
-  <distributionManagement>
-    <repository>
-      <id>streamx-maven-public-releases</id>
-      <url>
-        artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
-      </url>
-    </repository>
-    <snapshotRepository>
-      <id>streamx-maven-snapshots</id>
-      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots
-      </url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <scm>
     <connection>scm:git:git@github.com:streamx-dev/streamx-connector-aem.git</connection>
     <developerConnection>scm:git:git@github.com:streamx-dev/streamx-connector-aem.git
     </developerConnection>
     <tag>HEAD</tag>
-    <url>https://github.com/streamx-dev/streamx-connector-aem</url>
+    <url>${url}</url>
   </scm>
 
   <build>
-    <extensions>
-      <extension>
-        <groupId>com.google.cloud.artifactregistry</groupId>
-        <artifactId>artifactregistry-maven-wagon</artifactId>
-        <version>2.2.1</version>
-      </extension>
-    </extensions>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -123,9 +125,9 @@
                         -exportcontents: ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
                         -snapshot: SNAPSHOT
                         -noextraheaders: true
-                        # generate error (instead of warning) when exported package uses private (non-exported) reference
                         -includeresource: \
                           lib/org.apache.sling.servlet-helpers-${org.apache.sling.servlet-helpers.version}.jar=../lib/org.apache.sling.servlet-helpers-${org.apache.sling.servlet-helpers.version}.jar
+                        # generate error (instead of warning) when exported package uses private (non-exported) reference
                         -fixupmessages:"Export *,  has \\d+,  private references"; \
                             restrict:=warning; \
                             is:=error
@@ -210,6 +212,32 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.11.2</version>
+        <executions>
+          <execution>
+            <id>create-jar-archive-with-javadoc</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -236,6 +264,51 @@
             </plugin>
           </plugins>
         </pluginManagement>
+      </build>
+    </profile>
+    <profile>
+      <id>ossrhDeploy</id>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${maven-gpg-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <signer>bc</signer>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.7.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+              <waitUntil>published</waitUntil>
+            </configuration>
+          </plugin>
+        </plugins>
       </build>
     </profile>
   </profiles>

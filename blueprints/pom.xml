@@ -5,10 +5,11 @@
   <parent>
     <groupId>dev.streamx</groupId>
     <artifactId>streamx-connector-aem-parent</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>0.0.12-SNAPSHOT</version>
   </parent>
 
   <artifactId>streamx-connector-aem-blueprints</artifactId>
+  <name>AEM Connector - Blueprints</name>
 
   <build>
     <plugins>
