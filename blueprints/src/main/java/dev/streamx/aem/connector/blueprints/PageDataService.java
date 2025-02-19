@@ -34,7 +34,6 @@ public class PageDataService {
   private static final Logger LOG = LoggerFactory.getLogger(PageDataService.class);
 
   private final SlingRequestProcessor slingRequestProcessor;
-  private String pagesPathRegexp;
   private String templatesPathRegexp;
   private boolean shouldShortenContentPaths;
   private boolean shouldAddNofollowToExternalLinks;
@@ -52,7 +51,6 @@ public class PageDataService {
 
   @Modified
   private void configure(PageDataServiceConfig config) {
-    pagesPathRegexp = config.pages_path_regexp();
     templatesPathRegexp = config.templates_path_regexp();
     shouldShortenContentPaths = config.shorten_content_paths();
     shouldAddNofollowToExternalLinks = config.nofollow_external_links();
@@ -74,20 +72,12 @@ public class PageDataService {
     );
   }
 
-  public boolean isPage(String resourcePath) {
-    return isMatchingPagesPathPattern(resourcePath) && !isMatchingPageTemplatePattern(resourcePath);
-  }
-
   public boolean isPageTemplate(String resourcePath) {
-    return isMatchingPagesPathPattern(resourcePath) && isMatchingPageTemplatePattern(resourcePath);
+    return isMatchingPageTemplatePattern(resourcePath);
   }
 
   private boolean isMatchingPageTemplatePattern(String resourcePath) {
     return resourcePath.matches(templatesPathRegexp);
-  }
-
-  private boolean isMatchingPagesPathPattern(String resourcePath) {
-    return resourcePath.matches(pagesPathRegexp);
   }
 
   private String addNoFollowToExternalLinksIfNeeded(String pagePath, String pageMarkup) {

@@ -8,14 +8,6 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 public @interface PageDataServiceConfig {
 
   @AttributeDefinition(
-      name = "Pages Path - RexExp",
-      description = "RegExp to match paths of pages that should be published to StreamX.",
-      type = AttributeType.STRING,
-      defaultValue = "^/content/.+"
-  )
-  String pages_path_regexp() default "^/content/.+";
-
-  @AttributeDefinition(
       name = "Templates Path - RexExp",
       description = "RegExp to match paths of templates that should be published to StreamX.",
       type = AttributeType.STRING,
