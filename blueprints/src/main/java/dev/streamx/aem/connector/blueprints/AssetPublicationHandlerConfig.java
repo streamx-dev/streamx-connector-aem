@@ -5,7 +5,7 @@ import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @ObjectClassDefinition(name = "StreamX Blueprints - Asset Publication Handler Config")
-@interface AssetPublicationHandlerConfig {
+public @interface AssetPublicationHandlerConfig {
 
   @AttributeDefinition(
       name = "Is Enabled?",
@@ -20,8 +20,8 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
       name = "Assets Path - RexExp",
       description = "RegExp to match paths of assets that should be published to StreamX.",
       type = AttributeType.STRING,
-      defaultValue = "^/content/dam/.*$"
+      defaultValue = "^/content/.*$"
   )
-  String assets_path_regexp() default "^/content/dam/.*$";
+  String assets_path_regexp() default "^/content/.*$";
 
 }

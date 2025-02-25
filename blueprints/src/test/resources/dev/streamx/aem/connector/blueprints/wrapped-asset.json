@@ -1,0 +1,5 @@
+{
+  "jcr:primaryType": "nt:unstructured",
+  "fileReference": "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg",
+  "sling:resourceType": "firsthops/components/image"
+}

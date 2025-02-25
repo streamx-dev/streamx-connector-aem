@@ -1,0 +1,20 @@
+{
+  "search.regexes": [
+    "src\\s*=\\s*\"(/[^\\\"]+)\"",
+    "srcset\\s*=\\s*\"([^\"]+)\"",
+    "<link[^>]+rel\\s*=\\s*\"stylesheet\"[^>]+href\\s*=\\s*\"(/[^\\\"]+)\"",
+    "<link[^>]+rel\\s*=\\s*\"preload\"[^>]+href\\s*=\\s*\"(/[^\\\"]+)\"",
+    "<script[^>]+src\\s*=\\s*\"(/[^\\\"]+)\"",
+    "<source[^>]+src\\s*=\\s*\"(/[^\\\"]+)\"",
+    "srcset\\s*=\\s*\"([^\"]+)\"",
+    "background-image\\s*:\\s*url\\(['\"]?(/[^'\"]+)['\"]?\\)",
+    "@import\\s+url\\(['\"]?(/[^'\"]+)['\"]?\\)",
+    "src\\s*:\\s*url\\(['\"]?(/[^'\"]+)['\"]?\\)",
+    "data-[a-zA-Z-]+\\s*=\\s*\"(/[^\"]+)\""
+  ],
+  "exclude-from-result.regex": ".*\\{\\.width\\}.*",
+  "required-content-type.regex": "^text/html(?:\\s*;\\s*.*)?$",
+  "required-path.regex": "^/content/(?!dam/).*",
+  "required-primary-node-type.regex": "cq:Page",
+  "extension-to-append": "html"
+}
