@@ -1,0 +1,330 @@
+{
+  "jcr:primaryType": "sling:Folder",
+  "jcr:createdBy": "admin",
+  "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+  "jcr:content": {
+    "jcr:primaryType": "nt:unstructured",
+    "jcr:title": "Sample Assets",
+    "folderThumbnail": {
+      "jcr:primaryType": "nt:file",
+      "jcr:createdBy": "admin",
+      "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+      "jcr:content": {
+        "jcr:primaryType": "nt:unstructured",
+        "dam:folderThumbnailPaths": [
+          "/content/dam/core-components-examples/library/sample-assets/snowy-mountain-glacier.jpg",
+          "/content/dam/core-components-examples/library/sample-assets/lava-into-ocean.jpg",
+          "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg"
+        ],
+        "height": 240,
+        "jcr:mimeType": "application/octet-stream",
+        "bgcolor": -1,
+        "width": 280,
+        "jcr:lastModified": "Mon Feb 24 2025 12:58:40 GMT+0000",
+        ":jcr:data": 61516
+      }
+    }
+  },
+  "lava-rock-formation.jpg": {
+    "jcr:primaryType": "dam:Asset",
+    "jcr:mixinTypes": [
+      "mix:referenceable",
+      "mix:versionable"
+    ],
+    "jcr:createdBy": "admin",
+    "jcr:versionHistory": "f9c8a13b-e2bb-4099-a252-ebae341fddd6",
+    "jcr:predecessors": [
+      "b5105bdd-7654-47f9-96e9-461b7ac386f5"
+    ],
+    "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+    "jcr:baseVersion": "b5105bdd-7654-47f9-96e9-461b7ac386f5",
+    "jcr:isCheckedOut": true,
+    "jcr:uuid": "c58c09f6-e382-4698-bfbd-e8c8d37712c8",
+    "jcr:content": {
+      "jcr:primaryType": "dam:AssetContent",
+      "jcr:mixinTypes": [
+        "cq:ReplicationStatus"
+      ],
+      "jcr:title": "Gray lava rock formation",
+      "cq:lastReplicatedBy_publish": "admin",
+      "cq:isDelivered": false,
+      "cq:lastReplicationAction": "Activate",
+      "cq:lastReplicatedBy": "admin",
+      "jcr:lastModifiedBy": "admin",
+      "cq:lastReplicationAction_publish": "Activate",
+      "cq:lastReplicated": "Thu Feb 20 2025 15:05:39 GMT+0000",
+      "dam:assetState": "processed",
+      "cq:name": "lava-rock-formation.jpg",
+      "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+      "cq:parentPath": "/content/dam/core-components-examples/library/sample-assets",
+      "cq:lastReplicatedBy_flush": "admin",
+      "cq:lastReplicated_flush": "Thu Feb 20 2025 15:05:39 GMT+0000",
+      "cq:lastReplicated_publish": "Thu Feb 20 2025 15:05:39 GMT+0000",
+      "cq:lastReplicationAction_flush": "Activate",
+      "usages": {
+        "jcr:primaryType": "nt:unstructured",
+        "usedBy": [
+          "aem"
+        ],
+        "dam:score": 2,
+        "aem": {
+          "jcr:primaryType": "nt:unstructured",
+          "lastUsed": "Fri Feb 21 2025 13:30:16 GMT+0000",
+          "count": 2
+        }
+      },
+      "renditions": {
+        "jcr:primaryType": "nt:folder",
+        "jcr:createdBy": "admin",
+        "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+        "cq5dam.thumbnail.48.48.png": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "workflow-process-service",
+            "jcr:mimeType": "image/png",
+            "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+            ":jcr:data": 4127
+          }
+        },
+        "cq5dam.thumbnail.140.100.png": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "workflow-process-service",
+            "jcr:mimeType": "image/png",
+            "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+            ":jcr:data": 32397
+          }
+        },
+        "cq5dam.web.1280.1280.jpeg": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "workflow-process-service",
+            "jcr:mimeType": "image/jpeg",
+            "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+            ":jcr:data": 129511
+          }
+        },
+        "original": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "admin",
+            "jcr:mimeType": "image/jpeg",
+            "jcr:lastModified": "Thu Feb 20 2025 14:50:38 GMT+0000",
+            ":jcr:data": 118910
+          }
+        },
+        "cq5dam.thumbnail.319.319.png": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "workflow-process-service",
+            "jcr:mimeType": "image/png",
+            "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+            ":jcr:data": 161881
+          }
+        }
+      },
+      "related": {
+        "jcr:primaryType": "nt:unstructured"
+      },
+      "metadata": {
+        "jcr:primaryType": "nt:unstructured",
+        "jcr:mixinTypes": [
+          "cq:Taggable"
+        ],
+        "jcr:title": "Gray lava rock formation",
+        "dam:Physicalheightininches": "7.06944465637207",
+        "dam:Physicalwidthininches": "11.80555534362793",
+        "dam:Fileformat": "JPEG",
+        "dam:Progressive": "no",
+        "tiff:ImageLength": 509,
+        "tiff:YResolution": "72/1",
+        "dam:extracted": "Thu Feb 20 2025 14:51:48 GMT+0000",
+        "dc:format": "image/jpeg",
+        "dc:description": "Gray lava rock formation",
+        "dam:Bitsperpixel": 24,
+        "dam:MIMEtype": "image/jpeg",
+        "dam:Physicalwidthindpi": 72,
+        "dam:Physicalheightindpi": 72,
+        "tiff:ResolutionUnit": 2,
+        "dc:modified": "Tue Feb 19 2019 22:04:49 GMT+0100",
+        "dam:Numberofimages": 1,
+        "tiff:XResolution": "72/1",
+        "dam:Numberoftextualcomments": 0,
+        "tiff:ImageWidth": 850,
+        "dam:sha1": "b1f1bf6288aa7a74c4c5506164bb4fd942ffcdc9",
+        "dam:size": 118910,
+        "dc:title": "Gray lava rock formation",
+        "Iptc4xmpCore:CreatorContactInfo": {
+          "jcr:primaryType": "nt:unstructured",
+          "xmpNodeType": "xmpStruct"
+        }
+      }
+    }
+  },
+  "mountain-range.jpg": {
+    "jcr:primaryType": "dam:Asset",
+    "jcr:mixinTypes": [
+      "mix:referenceable",
+      "mix:versionable"
+    ],
+    "jcr:createdBy": "admin",
+    "jcr:versionHistory": "96502437-7c61-41c2-b0f3-e03d1f5e1803",
+    "jcr:predecessors": [
+      "38209364-d088-48db-898c-0386efa49d7f"
+    ],
+    "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+    "jcr:baseVersion": "38209364-d088-48db-898c-0386efa49d7f",
+    "jcr:isCheckedOut": true,
+    "jcr:uuid": "c0a39183-23f4-48f0-8db7-bb41ba2b0122",
+    "jcr:content": {
+      "jcr:primaryType": "dam:AssetContent",
+      "jcr:mixinTypes": [
+        "cq:ReplicationStatus"
+      ],
+      "jcr:title": "Aerial photo of mountain range at dawn",
+      "cq:lastReplicatedBy_publish": "admin",
+      "cq:isDelivered": false,
+      "cq:lastReplicationAction": "Activate",
+      "cq:lastReplicatedBy": "admin",
+      "jcr:lastModifiedBy": "admin",
+      "cq:lastReplicationAction_publish": "Activate",
+      "cq:lastReplicated": "Fri Feb 21 2025 13:30:29 GMT+0000",
+      "dam:assetState": "processed",
+      "cq:name": "mountain-range.jpg",
+      "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+      "cq:parentPath": "/content/dam/core-components-examples/library/sample-assets",
+      "cq:lastReplicatedBy_flush": "admin",
+      "cq:lastReplicated_flush": "Fri Feb 21 2025 13:30:29 GMT+0000",
+      "cq:lastReplicated_publish": "Fri Feb 21 2025 13:30:29 GMT+0000",
+      "cq:lastReplicationAction_flush": "Activate",
+      "usages": {
+        "jcr:primaryType": "nt:unstructured",
+        "usedBy": [
+          "aem"
+        ],
+        "dam:score": 1,
+        "aem": {
+          "jcr:primaryType": "nt:unstructured",
+          "lastUsed": "Fri Feb 21 2025 13:30:13 GMT+0000",
+          "count": 1
+        }
+      },
+      "renditions": {
+        "jcr:primaryType": "nt:folder",
+        "jcr:createdBy": "admin",
+        "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+        "cq5dam.thumbnail.48.48.png": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "workflow-process-service",
+            "jcr:mimeType": "image/png",
+            "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+            ":jcr:data": 4304
+          }
+        },
+        "cq5dam.thumbnail.140.100.png": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "workflow-process-service",
+            "jcr:mimeType": "image/png",
+            "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+            ":jcr:data": 29582
+          }
+        },
+        "cq5dam.web.1280.1280.jpeg": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "workflow-process-service",
+            "jcr:mimeType": "image/jpeg",
+            "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+            ":jcr:data": 69888
+          }
+        },
+        "original": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "admin",
+            "jcr:mimeType": "image/jpeg",
+            "jcr:lastModified": "Thu Feb 20 2025 14:50:38 GMT+0000",
+            ":jcr:data": 63718
+          }
+        },
+        "cq5dam.thumbnail.319.319.png": {
+          "jcr:primaryType": "nt:file",
+          "jcr:createdBy": "admin",
+          "jcr:created": "Thu Feb 20 2025 14:50:38 GMT+0000",
+          "jcr:content": {
+            "jcr:primaryType": "oak:Resource",
+            "jcr:lastModifiedBy": "workflow-process-service",
+            "jcr:mimeType": "image/png",
+            "jcr:lastModified": "Thu Feb 20 2025 14:51:48 GMT+0000",
+            ":jcr:data": 124025
+          }
+        }
+      },
+      "related": {
+        "jcr:primaryType": "nt:unstructured"
+      },
+      "metadata": {
+        "jcr:primaryType": "nt:unstructured",
+        "jcr:mixinTypes": [
+          "cq:Taggable"
+        ],
+        "jcr:title": "Aerial photo of mountain range",
+        "dam:Physicalheightininches": "7.06944465637207",
+        "dam:Physicalwidthininches": "11.80555534362793",
+        "dam:Fileformat": "JPEG",
+        "dam:Progressive": "no",
+        "tiff:ImageLength": 509,
+        "tiff:YResolution": "72/1",
+        "dam:extracted": "Thu Feb 20 2025 14:51:48 GMT+0000",
+        "dc:format": "image/jpeg",
+        "dc:description": "Aerial photo of mountain range",
+        "dam:Bitsperpixel": 24,
+        "dam:MIMEtype": "image/jpeg",
+        "dam:Physicalwidthindpi": 72,
+        "dam:Physicalheightindpi": 72,
+        "tiff:ResolutionUnit": 2,
+        "dc:modified": "Tue Feb 19 2019 22:04:01 GMT+0100",
+        "dam:Numberofimages": 1,
+        "tiff:XResolution": "72/1",
+        "dam:Numberoftextualcomments": 0,
+        "tiff:ImageWidth": 850,
+        "dam:sha1": "b266cd15c2a95bbe5770fa4f048c4d3707b26cb4",
+        "dam:size": 63718,
+        "dc:title": "Aerial photo of mountain range",
+        "Iptc4xmpCore:CreatorContactInfo": {
+          "jcr:primaryType": "nt:unstructured",
+          "xmpNodeType": "xmpStruct"
+        }
+      }
+    }
+  }
+}
