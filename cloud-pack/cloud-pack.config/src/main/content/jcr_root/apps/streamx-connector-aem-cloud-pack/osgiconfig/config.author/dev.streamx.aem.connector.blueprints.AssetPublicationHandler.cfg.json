@@ -1,3 +1,3 @@
 {
-  "assets.path.regexp": "$[env:STREAMX_ASSETS_PATH_REGEXP;type=String;default=^/content/dam/.+]"
+  "assets.path.regexp": "$[env:STREAMX_ASSETS_PATH_REGEXP;type=String;default=^/content/.+]"
 }

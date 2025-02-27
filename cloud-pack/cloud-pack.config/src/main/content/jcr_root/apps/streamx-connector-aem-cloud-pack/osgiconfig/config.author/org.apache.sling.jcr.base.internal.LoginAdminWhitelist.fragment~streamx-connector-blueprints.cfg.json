@@ -1,6 +1,7 @@
 {
   "whitelist.bundles": [
-    "streamx-connector-aem-blueprints"
+    "streamx-connector-aem-blueprints",
+    "streamx-connector-sling"
   ],
   "whitelist.name": "streamx-connector-aem-blueprints"
 }
