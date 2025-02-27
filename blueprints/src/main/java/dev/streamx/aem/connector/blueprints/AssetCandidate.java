@@ -42,7 +42,7 @@ class AssetCandidate {
     ) {
       Resource resource = resourceResolver.resolve(slingUri.toString());
       boolean isUsualAsset = Optional.ofNullable(resource.adaptTo(Node.class))
-          .map(this::extractPrimaryNT)
+          .map(this::extractPrimaryNt)
           .stream()
           .anyMatch(primaryNT -> primaryNT.equals(DamConstants.NT_DAM_ASSET));
       LOG.trace("Is '{}' a usual asset? Answer: {}", slingUri, isUsualAsset);
@@ -55,7 +55,7 @@ class AssetCandidate {
   }
 
 
-  private String extractPrimaryNT(Node node) {
+  private String extractPrimaryNt(Node node) {
     try {
       NodeType primaryNT = node.getPrimaryNodeType();
       return primaryNT.getName();
