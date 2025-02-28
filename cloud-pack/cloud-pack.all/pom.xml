@@ -170,7 +170,7 @@
         <dependency>
             <groupId>dev.streamx</groupId>
             <artifactId>streamx-connector-sling</artifactId>
-            <version>0.2.6</version>
+            <version>${streamx-connector-sling.version}</version>
         </dependency>
         <dependency>
             <groupId>dev.streamx</groupId>
