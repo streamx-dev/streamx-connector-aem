@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(AemContextExtension.class)
-class ReferencedAssetHandlerTest {
+class AssetResourcePathPublicationHandlerTest {
 
   private static final int DATA_SIZE = 3024;
 
@@ -90,11 +90,11 @@ class ReferencedAssetHandlerTest {
     String irrelevantPath = "/conf/irrelevant-resource";
     @SuppressWarnings("resource")
     ResourceResolver resourceResolver = context.resourceResolver();
-    ReferencedAssetHandler enabled = context.registerInjectActivateService(
-        ReferencedAssetHandler.class, Map.of("enabled", true)
+    AssetResourcePathPublicationHandler enabled = context.registerInjectActivateService(
+        AssetResourcePathPublicationHandler.class, Map.of("enabled", true)
     );
-    ReferencedAssetHandler disabled = context.registerInjectActivateService(
-        ReferencedAssetHandler.class, Map.of("enabled", false)
+    AssetResourcePathPublicationHandler disabled = context.registerInjectActivateService(
+        AssetResourcePathPublicationHandler.class, Map.of("enabled", false)
     );
     assertAll(
         () -> assertNotNull(resourceResolver.getResource(irrelevantPath)),
@@ -128,8 +128,8 @@ class ReferencedAssetHandlerTest {
         "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.jpeg/1740144616999/lava-rock-formation.jpeg",
         DATA_SIZE
     );
-    ReferencedAssetHandler handler = context.registerInjectActivateService(
-        ReferencedAssetHandler.class, Map.of("enabled", true)
+    AssetResourcePathPublicationHandler handler = context.registerInjectActivateService(
+        AssetResourcePathPublicationHandler.class, Map.of("enabled", true)
     );
     assetPaths.forEach(
         (assetPath, expectedSize) -> {

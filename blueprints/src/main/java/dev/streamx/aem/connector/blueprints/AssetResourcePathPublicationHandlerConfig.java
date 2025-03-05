@@ -4,8 +4,9 @@ import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
+@SuppressWarnings("NewClassNamingConvention")
 @ObjectClassDefinition
-public @interface ReferencedAssetHandlerConfig {
+public @interface AssetResourcePathPublicationHandlerConfig {
 
   @AttributeDefinition(
       name = "Is Enabled?",

@@ -2,8 +2,8 @@ package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublicationHandler;
-import dev.streamx.sling.connector.handling.Configuration;
-import dev.streamx.sling.connector.handling.InternalResourcesHandler;
+import dev.streamx.sling.connector.handlers.resourcepath.ResourcePathPublicationHandler;
+import dev.streamx.sling.connector.handlers.resourcepath.ResourcePathPublicationHandlerConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -24,37 +24,37 @@ import org.slf4j.LoggerFactory;
 
 @Component(
     service = {
-        InternalResourcesHandler.class, PublicationHandler.class, ReferencedAssetHandler.class
+        ResourcePathPublicationHandler.class, PublicationHandler.class, AssetResourcePathPublicationHandler.class
     },
     immediate = true,
     configurationPolicy = ConfigurationPolicy.REQUIRE
 )
-@Designate(ocd = ReferencedAssetHandlerConfig.class)
-public class ReferencedAssetHandler extends InternalResourcesHandler<Asset> {
+@Designate(ocd = AssetResourcePathPublicationHandlerConfig.class)
+public class AssetResourcePathPublicationHandler extends ResourcePathPublicationHandler<Asset> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ReferencedAssetHandler.class);
-  private final AtomicReference<ReferencedAssetHandlerConfig> config;
+  private static final Logger LOG = LoggerFactory.getLogger(AssetResourcePathPublicationHandler.class);
+  private final AtomicReference<AssetResourcePathPublicationHandlerConfig> config;
 
   @Activate
-  public ReferencedAssetHandler(
+  public AssetResourcePathPublicationHandler(
       @Reference(cardinality = ReferenceCardinality.MANDATORY)
       ResourceResolverFactory resourceResolverFactory,
       @Reference(cardinality = ReferenceCardinality.MANDATORY)
       SlingRequestProcessor slingRequestProcessor,
-      ReferencedAssetHandlerConfig config
+      AssetResourcePathPublicationHandlerConfig config
   ) {
     super(resourceResolverFactory, slingRequestProcessor);
     this.config = new AtomicReference<>(config);
   }
 
   @Modified
-  void configure(ReferencedAssetHandlerConfig config) {
+  void configure(AssetResourcePathPublicationHandlerConfig config) {
     this.config.set(config);
   }
 
   @Override
-  public Configuration configuration() {
-    return new Configuration() {
+  public ResourcePathPublicationHandlerConfig configuration() {
+    return new ResourcePathPublicationHandlerConfig() {
       @Override
       public String resourcePathRegex() {
         return config.get().assets_path_regexp();
@@ -93,6 +93,6 @@ public class ReferencedAssetHandler extends InternalResourcesHandler<Asset> {
 
   @Override
   public String getId() {
-    return ReferencedAssetHandler.class.getSimpleName();
+    return AssetResourcePathPublicationHandler.class.getSimpleName();
   }
 }

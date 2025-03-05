@@ -90,7 +90,7 @@ class ClientlibsHandlerTest {
 
   @Test
   void canGetPublishData() {
-    Map<String, Integer> assetPaths = Map.of(
+    Map<String, Integer> webResourcePaths = Map.of(
         "/etc.clientlibs/clientlibs/granite/jquery/granite/csrf.lc-56934e461ff6c436f962a5990541a527-lc.min.js",
         1,
         "/etc.clientlibs/core/wcm/components/commons/datalayer/acdl/core.wcm.components.commons.datalayer.acdl.lc-bf921af342fd2c40139671dbf0920a1f-lc.min.js",
@@ -115,11 +115,11 @@ class ClientlibsHandlerTest {
     ClientlibsHandler handler = context.registerInjectActivateService(
         ClientlibsHandler.class, Map.of("enabled", true)
     );
-    assetPaths.forEach(
-        (assetPath, expectedSize) -> {
+    webResourcePaths.forEach(
+        (webResourcePath, expectedSize) -> {
           PublishData<WebResource> publishData;
           try {
-            publishData = handler.getPublishData(assetPath);
+            publishData = handler.getPublishData(webResourcePath);
           } catch (StreamxPublicationException e) {
             throw new RuntimeException(e);
           }
@@ -129,7 +129,7 @@ class ClientlibsHandlerTest {
           String channel = publishData.getChannel();
           assertAll(
               () -> assertEquals(expectedSize, length),
-              () -> assertEquals(key, assetPath),
+              () -> assertEquals(key, webResourcePath),
               () -> assertEquals("web-resources", channel),
               () -> assertEquals(WebResource.class, model.getClass())
           );

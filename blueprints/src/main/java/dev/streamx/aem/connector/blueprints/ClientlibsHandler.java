@@ -2,8 +2,8 @@ package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.WebResource;
 import dev.streamx.sling.connector.PublicationHandler;
-import dev.streamx.sling.connector.handling.Configuration;
-import dev.streamx.sling.connector.handling.InternalResourcesHandler;
+import dev.streamx.sling.connector.handlers.resourcepath.ResourcePathPublicationHandler;
+import dev.streamx.sling.connector.handlers.resourcepath.ResourcePathPublicationHandlerConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -24,13 +24,13 @@ import org.slf4j.LoggerFactory;
 
 @Component(
     service = {
-        InternalResourcesHandler.class, PublicationHandler.class, ClientlibsHandler.class
+        ResourcePathPublicationHandler.class, PublicationHandler.class, ClientlibsHandler.class
     },
     immediate = true,
     configurationPolicy = ConfigurationPolicy.REQUIRE
 )
 @Designate(ocd = ClientlibsHandlerConfig.class)
-public class ClientlibsHandler extends InternalResourcesHandler<WebResource> {
+public class ClientlibsHandler extends ResourcePathPublicationHandler<WebResource> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ClientlibsHandler.class);
   private final AtomicReference<ClientlibsHandlerConfig> config;
@@ -53,8 +53,8 @@ public class ClientlibsHandler extends InternalResourcesHandler<WebResource> {
   }
 
   @Override
-  public Configuration configuration() {
-    return new Configuration() {
+  public ResourcePathPublicationHandlerConfig configuration() {
+    return new ResourcePathPublicationHandlerConfig() {
       @Override
       public String resourcePathRegex() {
         return config.get().clientlibs_path_regexp();
