@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(AemContextExtension.class)
-class ClientlibsHandlerTest {
+class ClientlibsPublicationHandlerTest {
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
@@ -112,8 +112,8 @@ class ClientlibsHandlerTest {
         "/etc.clientlibs/firsthops/clientlibs/clientlib-site.lc-d91e521f6b4cc63fe57186d1b172e7e9-lc.min.js",
         10
     );
-    ClientlibsHandler handler = context.registerInjectActivateService(
-        ClientlibsHandler.class, Map.of("enabled", true)
+    ClientlibsPublicationHandler handler = context.registerInjectActivateService(
+        ClientlibsPublicationHandler.class, Map.of("enabled", true)
     );
     webResourcePaths.forEach(
         (webResourcePath, expectedSize) -> {
