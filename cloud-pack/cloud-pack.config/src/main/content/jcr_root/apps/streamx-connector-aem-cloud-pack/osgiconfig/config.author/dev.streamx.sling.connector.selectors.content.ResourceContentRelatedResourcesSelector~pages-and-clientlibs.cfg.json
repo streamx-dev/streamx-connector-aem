@@ -1,6 +1,6 @@
 {
   "references.search-regexes": [
-    "(/[^\"'\\s]*\\.coreimg\\.[^\"'\\s]*)",
+    "(/content[^\"'\\s]*\\.coreimg\\.[^\"'\\s]*)",
     "(/[^\"'\\s]*etc\\.clientlibs[^\"'\\s]*)"
   ],
   "references.exclude-from-result.regex": ".*\\{\\.width\\}.*",
