@@ -36,6 +36,7 @@ The following OSGi configurations, included in the Cloud Package with AEM Connec
 | `dev.streamx.aem.connector.blueprints.AssetPublicationHandler`  | `assets.path.regexp`                 | `STREAMX_ASSETS_PATH_REGEXP`               | `^/content/dam/.+`                                        |
 | `dev.streamx.aem.connector.blueprints.PageDataService`          | `pages.path.regexp`                  | `STREAMX_PAGES_PATH_REGEXP`                | `^/content/.+`                                            |
 | `dev.streamx.aem.connector.blueprints.PageDataService`          | `templates.path.regexp`              | `STREAMX_TEMPLATES_PATH_REGEXP`            | `^/conf/[^/]+/templates/.*$`                              |
+| `dev.streamx.aem.connector.blueprints.PageDataService`          | `shorten.content.paths`              | `STREAMX_SHORTEN_CONTENT_PATHS`            | `false`                                                   |
 | `dev.streamx.sling.connector.impl.DefaultHttpClientFactory`     | `insecure`                           | `STREAMX_CLIENT_INSECURE`                  | `false`                                                   |
 | `org.apache.sling.commons.log.LogManager.factory.config`        | `org.apache.sling.commons.log.level` | `STREAMX_LOG_LEVEL`                        | `WARN`                                                    |
 

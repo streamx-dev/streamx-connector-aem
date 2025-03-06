@@ -10,6 +10,12 @@
         </layout>
     </appender>
 
+    <!--    &lt;!&ndash; Define a logger for the package "dev.streamx" &ndash;&gt;-->
+    <!--    <logger name="dev.streamx" level="TRACE">-->
+    <!--        <appender-ref ref="STDOUT"/>-->
+    <!--    </logger>-->
+
+    <!-- Disable logging for all other packages -->
     <root level="OFF">
         <appender-ref ref="STDOUT"/>
     </root>
