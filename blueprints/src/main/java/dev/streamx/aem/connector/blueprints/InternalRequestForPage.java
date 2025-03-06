@@ -1,7 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
 import com.day.cq.wcm.api.Page;
-import dev.streamx.sling.connector.SimpleInternalRequest;
+import dev.streamx.sling.connector.util.SimpleInternalRequest;
 import java.util.Optional;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolverFactory;

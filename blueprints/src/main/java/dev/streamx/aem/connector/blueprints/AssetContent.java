@@ -2,7 +2,7 @@ package dev.streamx.aem.connector.blueprints;
 
 import com.day.cq.dam.api.Asset;
 import com.day.cq.dam.api.Rendition;
-import dev.streamx.sling.connector.SimpleInternalRequest;
+import dev.streamx.sling.connector.util.SimpleInternalRequest;
 import java.io.InputStream;
 import java.util.Optional;
 import org.apache.sling.api.resource.LoginException;
