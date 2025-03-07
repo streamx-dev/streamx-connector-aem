@@ -54,7 +54,7 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
 
   @Override
   public boolean canHandle(String resourcePath) {
-    return enabled && pageDataService.isPage(resourcePath) && !resourcePath.contains("jcr:content");
+    return enabled && pageDataService.isPage(resourcePath);
   }
 
   @Override
