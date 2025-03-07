@@ -10,8 +10,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.uri.SlingUri;
+import org.apache.sling.api.uri.SlingUriBuilder;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -79,8 +83,23 @@ public class PageDataService {
     );
   }
 
-  public boolean isPage(String resourcePath) {
-    return isMatchingPagesPathPattern(resourcePath) && !isMatchingPageTemplatePattern(resourcePath);
+  @SuppressWarnings({"squid:1874", "deprecation"})
+  boolean isPage(String resourcePath) {
+    try (
+        ResourceResolver resourceResolver
+            = resourceResolverFactory.getAdministrativeResourceResolver(null)
+    ) {
+      SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
+      boolean isPage = new PageCandidate(
+          resourceResolverFactory, slingUri, pagesPathRegexp, templatesPathRegexp
+      ).isPage();
+      LOG.trace("Is {} a page? Answer: {}", resourcePath, isPage);
+      return isPage;
+    } catch (LoginException exception) {
+      String message = String.format("Cannot check if %s is a page", resourcePath);
+      LOG.error(message, exception);
+      return false;
+    }
   }
 
   public boolean isPageTemplate(String resourcePath) {
