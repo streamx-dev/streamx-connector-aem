@@ -1,0 +1,23 @@
+<configuration>
+
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+<!--    &lt;!&ndash; Define a logger for the package "dev.streamx" &ndash;&gt;-->
+<!--    <logger name="dev.streamx" level="TRACE">-->
+<!--        <appender-ref ref="STDOUT"/>-->
+<!--    </logger>-->
+
+    <!-- Disable logging for all other packages -->
+    <root level="OFF">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
