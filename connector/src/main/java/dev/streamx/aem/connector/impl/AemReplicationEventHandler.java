@@ -2,19 +2,12 @@ package dev.streamx.aem.connector.impl;
 
 import com.day.cq.replication.ReplicationAction;
 import com.day.cq.replication.ReplicationActionType;
-import dev.streamx.sling.connector.IngestionTrigger;
 import dev.streamx.sling.connector.PublicationAction;
+import dev.streamx.sling.connector.StreamxPublicationException;
+import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.sling.api.resource.LoginException;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.api.uri.SlingUri;
-import org.apache.sling.api.uri.SlingUriBuilder;
-import org.apache.sling.event.jobs.JobManager;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -34,19 +27,15 @@ public class AemReplicationEventHandler implements EventHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(AemReplicationEventHandler.class);
 
-  private final ResourceResolverFactory resourceResolverFactory;
-  private final JobManager jobManager;
+  private final StreamxPublicationService streamxPublicationService;
   private final Map<ReplicationActionType, PublicationAction> actionsMap;
 
   @Activate
   public AemReplicationEventHandler(
       @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      ResourceResolverFactory resourceResolverFactory,
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      JobManager jobManager
+      StreamxPublicationService streamxPublicationService
   ) {
-    this.resourceResolverFactory = resourceResolverFactory;
-    this.jobManager = jobManager;
+    this.streamxPublicationService = streamxPublicationService;
     actionsMap = Map.of(
         ReplicationActionType.ACTIVATE, PublicationAction.PUBLISH,
         ReplicationActionType.DEACTIVATE, PublicationAction.UNPUBLISH,
@@ -57,41 +46,41 @@ public class AemReplicationEventHandler implements EventHandler {
   @Override
   public void handleEvent(Event event) {
     LOG.trace("Received {}", event);
-    Optional.ofNullable(ReplicationAction.fromEvent(event))
-        .ifPresentOrElse(
-            this::submitIngestionTriggerJob, () -> LOG.warn("Cannot get action from {}", event)
-        );
+    if (streamxPublicationService.isEnabled()) {
+      Optional.ofNullable(ReplicationAction.fromEvent(event))
+          .ifPresentOrElse(
+              this::handleAction, () -> LOG.warn("Cannot get action from {}", event)
+          );
+    } else {
+      LOG.trace("{} is disabled. Ignoring {}", StreamxPublicationService.class, event);
+    }
   }
 
-  private void submitIngestionTriggerJob(ReplicationAction action) {
+  private void handleAction(ReplicationAction action) {
     ReplicationActionType replicationActionType = action.getType();
-    List<SlingUri> slingUris = Stream.of(action.getPaths())
-        .map(this::toSlingUri)
-        .flatMap(Optional::stream)
-        .collect(Collectors.toUnmodifiableList());
+    List<String> paths = List.of(action.getPaths());
     Optional.ofNullable(actionsMap.get(replicationActionType))
-        .map(ingestionAction -> new IngestionTrigger(ingestionAction, slingUris))
-        .map(IngestionTrigger::asJobProps)
-        .map(jobProps -> jobManager.addJob(IngestionTrigger.JOB_TOPIC, jobProps))
         .ifPresentOrElse(
-            job -> LOG.debug("Added job: {}", job),
+            ingestionAction -> handleIngestion(ingestionAction, paths),
             () -> LOG.warn("Failed to add job for: {}", action)
         );
   }
 
-  @SuppressWarnings({"squid:S1874", "deprecation"})
-  private Optional<SlingUri> toSlingUri(String rawUri) {
-    try (
-        ResourceResolver resourceResolver
-            = resourceResolverFactory.getAdministrativeResourceResolver(null)
-    ) {
-      SlingUri slingUri = SlingUriBuilder.parse(rawUri, resourceResolver).build();
-      LOG.trace("Parsed URI: {}", slingUri);
-      return Optional.of(slingUri);
-    } catch (LoginException exception) {
-      String message = String.format("Unable to parse URI: '%s'", rawUri);
+  private void handleIngestion(PublicationAction ingestionAction, List<String> paths) {
+    LOG.trace("Handling ingestion {} for {}", ingestionAction, paths);
+    try {
+      if (ingestionAction == PublicationAction.PUBLISH) {
+        streamxPublicationService.publish(paths);
+      } else if (ingestionAction == PublicationAction.UNPUBLISH) {
+        streamxPublicationService.unpublish(paths);
+      } else {
+        LOG.warn("Unknown ingestion action: {}. Ignored paths: {}", ingestionAction, paths);
+      }
+    } catch (StreamxPublicationException exception) {
+      String message = String.format(
+          "Failed to handle ingestion %s for %s", ingestionAction, paths
+      );
       LOG.error(message, exception);
-      return Optional.empty();
     }
   }
 }

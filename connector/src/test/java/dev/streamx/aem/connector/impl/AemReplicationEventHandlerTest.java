@@ -2,27 +2,22 @@ package dev.streamx.aem.connector.impl;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.day.cq.replication.ReplicationAction;
-import dev.streamx.sling.connector.IngestionTrigger;
+import dev.streamx.sling.connector.StreamxPublicationException;
+import dev.streamx.sling.connector.StreamxPublicationService;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.sling.event.jobs.Job;
-import org.apache.sling.event.jobs.JobManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.osgi.service.event.Event;
 
@@ -30,36 +25,42 @@ import org.osgi.service.event.Event;
 class AemReplicationEventHandlerTest {
 
   private final AemContext context = new AemContext();
-
-  @Mock
-  private JobManager jobManager;
-
-  private AtomicReference<String> jobTopic;
-  private Map<String, Object> jobProps;
-  private AtomicInteger numberOfRuns;
   private AemReplicationEventHandler handler;
+  private List<String> publishedPaths;
+  private List<String> unpublishedPaths;
 
-
+  @SuppressWarnings("ReturnOfNull")
   @BeforeEach
-  void setup() {
-    jobTopic = new AtomicReference<>(StringUtils.EMPTY);
-    jobProps = Map.of();
-    numberOfRuns = new AtomicInteger();
-    when(jobManager.addJob(anyString(), anyMap())).then(
+  void setup() throws StreamxPublicationException {
+    StreamxPublicationService streamxPublicationService = mock(StreamxPublicationService.class);
+    doAnswer(
         invocation -> {
-          jobTopic.set(invocation.getArgument(NumberUtils.INTEGER_ZERO));
-          jobProps = invocation.getArgument(NumberUtils.INTEGER_ONE);
-          numberOfRuns.incrementAndGet();
-          return mock(Job.class);
+          @SuppressWarnings("unchecked")
+          List<String> paths = (List<String>) invocation.getArgument(
+              NumberUtils.INTEGER_ZERO, List.class
+          );
+          publishedPaths = paths;
+          return null;
         }
-    );
-    context.registerService(JobManager.class, jobManager);
+    ).when(streamxPublicationService).publish(anyList());
+    doAnswer(
+        invocation -> {
+          @SuppressWarnings("unchecked")
+          List<String> paths = (List<String>) invocation.getArgument(
+              NumberUtils.INTEGER_ZERO, List.class
+          );
+          unpublishedPaths = paths;
+          return null;
+        }
+    ).when(streamxPublicationService).unpublish(anyList());
+    when(streamxPublicationService.isEnabled()).thenReturn(true);
+    context.registerService(StreamxPublicationService.class, streamxPublicationService);
     handler = context.registerInjectActivateService(AemReplicationEventHandler.class);
   }
 
   @Test
-  void submitJob() {
-    Event event = new Event(
+  void test() {
+    Event activate = new Event(
         ReplicationAction.EVENT_TOPIC,
         Map.of(
             "type", "Activate",
@@ -70,13 +71,28 @@ class AemReplicationEventHandlerTest {
             "userId", "admin"
         )
     );
-    handler.handleEvent(event);
+    Event deactivate = new Event(
+        ReplicationAction.EVENT_TOPIC,
+        Map.of(
+            "type", "Deactivate",
+            "paths", new String[]{
+                "http://localhost:4502/content/we-retail/us/pl",
+                "/content/wknd/us/pl"
+            },
+            "userId", "admin"
+        )
+    );
+    handler.handleEvent(activate);
+    handler.handleEvent(deactivate);
     assertAll(
-        () -> assertEquals(IngestionTrigger.JOB_TOPIC, jobTopic.get()),
-        () -> assertEquals(NumberUtils.INTEGER_ONE, numberOfRuns.get()),
-        () -> assertEquals(NumberUtils.INTEGER_TWO, jobProps.size()),
-        () -> assertTrue(jobProps.containsKey("streamx.ingestionAction")),
-        () -> assertTrue(jobProps.containsKey("streamx.urisToIngest"))
+        () -> assertEquals(
+            List.of("http://localhost:4502/content/we-retail/us/en", "/content/wknd/us/en"),
+            publishedPaths
+        ),
+        () -> assertEquals(
+            List.of("http://localhost:4502/content/we-retail/us/pl", "/content/wknd/us/pl"),
+            unpublishedPaths
+        )
     );
   }
 }
