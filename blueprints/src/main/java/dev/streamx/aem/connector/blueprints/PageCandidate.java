@@ -13,28 +13,24 @@ class PageCandidate {
   private final NodeTypeCheck nodeTypeCheck;
   private final SlingUri slingUri;
   private final String requiredPathRegex;
-  private final String excludedPathRegex;
 
   PageCandidate(
       ResourceResolverFactory resourceResolverFactory,
       SlingUri slingUri,
-      String requiredPathRegex,
-      String excludedPathRegex
+      String requiredPathRegex
   ) {
     this.slingUri = slingUri;
     this.nodeTypeCheck = new NodeTypeCheck(resourceResolverFactory, slingUri);
     this.requiredPathRegex = requiredPathRegex;
-    this.excludedPathRegex = excludedPathRegex;
   }
 
   boolean isPage() {
     boolean isPageNodeType = nodeTypeCheck.matches(FMConstants.CQ_PAGE_NODETYPE);
     boolean isRequiredPath = slingUri.toString().matches(requiredPathRegex);
-    boolean isntExcludedPath = !slingUri.toString().matches(excludedPathRegex);
-    boolean isPage = isPageNodeType && isRequiredPath && isntExcludedPath;
+    boolean isPage = isPageNodeType && isRequiredPath;
     LOG.trace(
-        "Is {} a page? Answer: {}. Is NodeType: {}. Is required path: {}. Isn't excluded path: {}",
-        slingUri, isPage, isPageNodeType, isRequiredPath, isntExcludedPath
+        "Is {} a page? Answer: {}. Is NodeType: {}. Is required path: {}",
+        slingUri, isPage, isPageNodeType, isRequiredPath
     );
     return isPage;
   }

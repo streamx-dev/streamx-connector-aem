@@ -91,7 +91,7 @@ public class PageDataService {
     ) {
       SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
       boolean isPage = new PageCandidate(
-          resourceResolverFactory, slingUri, pagesPathRegexp, templatesPathRegexp
+          resourceResolverFactory, slingUri, pagesPathRegexp
       ).isPage();
       LOG.trace("Is {} a page? Answer: {}", resourcePath, isPage);
       return isPage;
@@ -102,16 +102,23 @@ public class PageDataService {
     }
   }
 
-  public boolean isPageTemplate(String resourcePath) {
-    return isMatchingPagesPathPattern(resourcePath) && isMatchingPageTemplatePattern(resourcePath);
-  }
-
-  private boolean isMatchingPageTemplatePattern(String resourcePath) {
-    return resourcePath.matches(templatesPathRegexp);
-  }
-
-  private boolean isMatchingPagesPathPattern(String resourcePath) {
-    return resourcePath.matches(pagesPathRegexp);
+  @SuppressWarnings({"squid:1874", "deprecation"})
+  boolean isPageTemplate(String resourcePath) {
+    try (
+        ResourceResolver resourceResolver
+            = resourceResolverFactory.getAdministrativeResourceResolver(null)
+    ) {
+      SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
+      boolean isPageTemplate = new PageCandidate(
+          resourceResolverFactory, slingUri, templatesPathRegexp
+      ).isPage();
+      LOG.trace("Is {} a page template? Answer: {}", resourcePath, isPageTemplate);
+      return isPageTemplate;
+    } catch (LoginException exception) {
+      String message = String.format("Cannot check if %s is a page template", resourcePath);
+      LOG.error(message, exception);
+      return false;
+    }
   }
 
   private String addNoFollowToExternalLinksIfNeeded(String pagePath, String pageMarkup) {

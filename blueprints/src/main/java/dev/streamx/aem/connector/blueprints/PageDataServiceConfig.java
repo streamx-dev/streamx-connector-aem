@@ -19,9 +19,9 @@ public @interface PageDataServiceConfig {
       name = "Templates Path - RexExp",
       description = "RegExp to match paths of templates that should be published to StreamX.",
       type = AttributeType.STRING,
-      defaultValue = "^/conf/[^/]+/templates/.*$"
+      defaultValue = "^/content/experience-fragments/templates/.+"
   )
-  String templates_path_regexp() default "^/conf/[^/]+/templates/.*$";
+  String templates_path_regexp() default "^/content/experience-fragments/templates/.+";
 
   @AttributeDefinition(
       name = "Shorten Content Paths",
