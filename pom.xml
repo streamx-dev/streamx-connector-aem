@@ -48,7 +48,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <streamx-connector-sling.version>0.2.9-SNAPSHOT</streamx-connector-sling.version>
+    <streamx-connector-sling.version>0.2.8</streamx-connector-sling.version>
     <org.apache.sling.servlet-helpers.version>1.4.6</org.apache.sling.servlet-helpers.version>
     <junit-bom.version>5.10.2</junit-bom.version>
     <mockito-junit-jupiter.version>5.12.0</mockito-junit-jupiter.version>
