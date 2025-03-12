@@ -20,16 +20,7 @@ StreamX from Publish instances, not from Author instances.
 
 # Blueprints
 
-This module provides out-of-the-box `PublicationHandler`s to handle Pages, Templates and Assets.
-
-Pages and Templates are published not under `/content` folder but under `/published` folder.
-The rest of the path remains the same.
-
-Each handler contains its configuration. See:
-
-- [AssetPublicationHandler](./blueprints/src/main/java/dev/streamx/aem/connector/blueprints/AssetPublicationHandlerConfig.java)
-- [PagePublicationHandler](./blueprints/src/main/java/dev/streamx/aem/connector/blueprints/PagePublicationHandlerConfig.java)
-  (this handler will handle both Pages and Templates)
+This module provides out-of-the-box `PublicationHandler` implementations. Those services perform publication of usual assets, assets embedded in page components, client libraries, pages and templates. See documentation for those services configurations for more details.
 
 # Usage:
 
