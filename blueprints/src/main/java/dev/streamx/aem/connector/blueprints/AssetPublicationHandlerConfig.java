@@ -24,4 +24,11 @@ public @interface AssetPublicationHandlerConfig {
   )
   String assets_path_regexp() default "^/content/dam/.*$";
 
+  @AttributeDefinition(
+      name = "Publications Channel Name",
+      description = "Name of the channel in StreamX to publish assets to.",
+      type = AttributeType.STRING,
+      defaultValue = "assets"
+  )
+  String publication_channel() default "assets";
 }
