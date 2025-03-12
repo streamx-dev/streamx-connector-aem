@@ -2,6 +2,8 @@ package dev.streamx.aem.connector.blueprints;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -83,6 +85,28 @@ class PageDataServiceTest {
         () -> assertEquals("<html><body><h1>Franklin Page</h1></body></html>", franklinMarkup),
         () -> assertEquals("<html><body><h1>Usual AEM Page</h1></body></html>", usualAEMMarkup),
         () -> assertEquals("<html><body><h1>Not Found</h1></body></html>", randomMarkup)
+    );
+  }
+
+  @Test
+  void mustCheckIfPage() {
+    PageDataService pageDataService = Optional.ofNullable(context.getService(PageDataService.class))
+        .orElseThrow();
+    @SuppressWarnings("resource")
+    ResourceResolver resourceResolver = context.resourceResolver();
+    Resource franklinPageResource = Optional.ofNullable(
+        resourceResolver.getResource("/content/franklin-page")
+    ).orElseThrow();
+    Resource usualAEMPageResource = Optional.ofNullable(
+        resourceResolver.getResource("/content/usual-aem-page")
+    ).orElseThrow();
+    Resource randomPageResource = Optional.ofNullable(
+        resourceResolver.getResource("/content/random-page")
+    ).orElseThrow();
+    assertAll(
+        () -> assertTrue(pageDataService.isPage(franklinPageResource.getPath())),
+        () -> assertTrue(pageDataService.isPage(usualAEMPageResource.getPath())),
+        () -> assertFalse(pageDataService.isPage(randomPageResource.getPath()))
     );
   }
 }

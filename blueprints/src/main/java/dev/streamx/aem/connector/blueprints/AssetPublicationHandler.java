@@ -39,11 +39,11 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   private static final Logger LOG = LoggerFactory.getLogger(AssetPublicationHandler.class);
 
   private static final String ID = "streamx-asset";
-  private static final String CHANNEL = "assets";
 
   private final ResourceResolverFactory resolverFactory;
   private final AtomicBoolean enabled;
   private final AtomicReference<String> assetsPathRegexp;
+  private final AtomicReference<String> channelName;
   private final SlingRequestProcessor slingRequestProcessor;
 
   @Activate
@@ -57,6 +57,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
     this.resolverFactory = resolverFactory;
     this.enabled = new AtomicBoolean(config.enabled());
     this.assetsPathRegexp = new AtomicReference<>(config.assets_path_regexp());
+    this.channelName = new AtomicReference<>(config.publication_channel());
     this.slingRequestProcessor = slingRequestProcessor;
   }
 
@@ -103,7 +104,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   private PublishData<Asset> generatePublishData(SlingUri slingUri) {
     LOG.trace("Generating publish data for '{}'", slingUri);
     Asset asset = generateAssetModel(slingUri);
-    return new PublishData<>(slingUri.toString(), CHANNEL, Asset.class, asset);
+    return new PublishData<>(slingUri.toString(), channelName.get(), Asset.class, asset);
   }
 
   private ResourceResolver createResourceResolver() {
@@ -116,10 +117,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
 
   @Override
   public UnpublishData<Asset> getUnpublishData(String resourcePath) {
-    return new UnpublishData<>(
-        resourcePath,
-        CHANNEL,
-        Asset.class);
+    return new UnpublishData<>(resourcePath, channelName.get(), Asset.class);
   }
 
   private byte[] toByteArray(InputStream inputStream) {
