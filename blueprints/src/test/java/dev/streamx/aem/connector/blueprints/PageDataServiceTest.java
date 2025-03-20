@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.uri.SlingUriBuilder;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,9 +105,15 @@ class PageDataServiceTest {
         resourceResolver.getResource("/content/random-page")
     ).orElseThrow();
     assertAll(
-        () -> assertTrue(pageDataService.isPage(franklinPageResource.getPath())),
-        () -> assertTrue(pageDataService.isPage(usualAEMPageResource.getPath())),
-        () -> assertFalse(pageDataService.isPage(randomPageResource.getPath()))
+        () -> assertTrue(
+            pageDataService.isPage(SlingUriBuilder.createFrom(franklinPageResource).build())
+        ),
+        () -> assertTrue(
+            pageDataService.isPage(SlingUriBuilder.createFrom(usualAEMPageResource).build())
+        ),
+        () -> assertFalse(
+            pageDataService.isPage(SlingUriBuilder.createFrom(randomPageResource).build())
+        )
     );
   }
 }
