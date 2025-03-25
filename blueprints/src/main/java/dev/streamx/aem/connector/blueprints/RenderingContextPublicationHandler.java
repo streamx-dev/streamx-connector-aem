@@ -47,7 +47,7 @@ public class RenderingContextPublicationHandler implements PublicationHandler<Re
 
   @Override
   public String getId() {
-    return "streamx-rendering-context";
+    return this.getClass().getSimpleName();
   }
 
   @Override

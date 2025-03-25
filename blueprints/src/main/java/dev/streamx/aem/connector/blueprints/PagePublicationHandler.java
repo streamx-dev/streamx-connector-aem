@@ -13,6 +13,7 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.uri.SlingUri;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -49,12 +50,15 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
 
   @Override
   public String getId() {
-    return "streamx-page";
+    return this.getClass().getSimpleName();
   }
 
   @Override
   public boolean canHandle(String resourcePath) {
-    return enabled && pageDataService.isPage(resourcePath);
+    SlingUri slingUri = new DefaultSlingUriBuilder(resourcePath, resolverFactory).build();
+    return enabled
+        && pageDataService.isPage(slingUri)
+        && !new XFCandidate(resolverFactory, slingUri).isXF();
   }
 
   @Override
