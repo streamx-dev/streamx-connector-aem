@@ -38,8 +38,6 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssetPublicationHandler.class);
 
-  private static final String ID = "streamx-asset";
-
   private final ResourceResolverFactory resolverFactory;
   private final AtomicBoolean enabled;
   private final AtomicReference<String> assetsPathRegexp;
@@ -69,7 +67,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
 
   @Override
   public String getId() {
-    return ID;
+    return this.getClass().getSimpleName();
   }
 
   @Override

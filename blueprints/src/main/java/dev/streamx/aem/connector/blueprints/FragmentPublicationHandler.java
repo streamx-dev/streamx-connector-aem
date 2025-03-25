@@ -59,7 +59,7 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
 
   @Override
   public String getId() {
-    return "streamx-fragment";
+    return this.getClass().getSimpleName();
   }
 
   @Override

@@ -93,6 +93,6 @@ public class ClientlibsPublicationHandler extends ResourcePathPublicationHandler
 
   @Override
   public String getId() {
-    return ClientlibsPublicationHandler.class.getSimpleName();
+    return this.getClass().getSimpleName();
   }
 }

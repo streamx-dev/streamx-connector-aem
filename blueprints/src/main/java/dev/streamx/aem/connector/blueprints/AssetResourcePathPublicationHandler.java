@@ -93,6 +93,6 @@ public class AssetResourcePathPublicationHandler extends ResourcePathPublication
 
   @Override
   public String getId() {
-    return AssetResourcePathPublicationHandler.class.getSimpleName();
+    return this.getClass().getSimpleName();
   }
 }

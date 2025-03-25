@@ -47,7 +47,7 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
 
   @Override
   public String getId() {
-    return "streamx-renderer";
+    return this.getClass().getSimpleName();
   }
 
   @Override

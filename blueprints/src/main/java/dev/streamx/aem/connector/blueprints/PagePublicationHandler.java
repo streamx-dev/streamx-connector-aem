@@ -50,7 +50,7 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
 
   @Override
   public String getId() {
-    return "streamx-page";
+    return this.getClass().getSimpleName();
   }
 
   @Override
