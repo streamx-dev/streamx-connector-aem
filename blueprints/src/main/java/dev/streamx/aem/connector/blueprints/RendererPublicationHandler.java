@@ -1,6 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.Renderer;
+import dev.streamx.sling.connector.IngestedData;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.UnpublishData;
@@ -13,6 +14,7 @@ import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.uri.SlingUri;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -51,8 +53,8 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    return enabled && pageDataService.isPageTemplate(resourcePath);
+  public boolean canHandle(IngestedData ingestedData) {
+    return enabled && pageDataService.isPageTemplate(ingestedData.uriToIngest());
   }
 
   @Override

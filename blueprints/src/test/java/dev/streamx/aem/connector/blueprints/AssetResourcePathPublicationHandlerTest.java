@@ -8,16 +8,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.StreamxPublicationException;
+import dev.streamx.sling.connector.util.DefaultSlingUriBuilder;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,21 +42,29 @@ class AssetResourcePathPublicationHandlerTest {
         HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver
     ) throws IOException {
       String requestURI = request.getRequestURI();
-      if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1024.jpeg/1740144616999/lava-rock-formation.jpeg")) {
+      if (requestURI.equals(
+          "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1024.jpeg/1740144616999/lava-rock-formation.jpeg")) {
         writeInto(response, 1024);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1200.jpeg/1740144616999/lava-rock-formation.jpeg")) {
+      } else if (requestURI.equals(
+          "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1200.jpeg/1740144616999/lava-rock-formation.jpeg")) {
         writeInto(response, 1200);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1600.jpeg/1740144616999/lava-rock-formation.jpeg")) {
+      } else if (requestURI.equals(
+          "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1600.jpeg/1740144616999/lava-rock-formation.jpeg")) {
         writeInto(response, 1600);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.320.jpeg/1740144616999/lava-rock-formation.jpeg")) {
+      } else if (requestURI.equals(
+          "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.320.jpeg/1740144616999/lava-rock-formation.jpeg")) {
         writeInto(response, 320);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.480.jpeg/1740144616999/lava-rock-formation.jpeg")) {
+      } else if (requestURI.equals(
+          "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.480.jpeg/1740144616999/lava-rock-formation.jpeg")) {
         writeInto(response, 480);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.600.jpeg/1740144616999/lava-rock-formation.jpeg")) {
+      } else if (requestURI.equals(
+          "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.600.jpeg/1740144616999/lava-rock-formation.jpeg")) {
         writeInto(response, 600);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.800.jpeg/1740144616999/lava-rock-formation.jpeg")) {
+      } else if (requestURI.equals(
+          "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.800.jpeg/1740144616999/lava-rock-formation.jpeg")) {
         writeInto(response, 800);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.jpeg/1740144616999/lava-rock-formation.jpeg")) {
+      } else if (requestURI.equals(
+          "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.jpeg/1740144616999/lava-rock-formation.jpeg")) {
         writeInto(response, DATA_SIZE);
       } else {
         response.setContentType("text/html");
@@ -96,14 +107,35 @@ class AssetResourcePathPublicationHandlerTest {
     AssetResourcePathPublicationHandler disabled = context.registerInjectActivateService(
         AssetResourcePathPublicationHandler.class, Map.of("enabled", false)
     );
+    ResourceResolverFactory factory = Objects.requireNonNull(
+        context.getService(ResourceResolverFactory.class)
+    );
     assertAll(
         () -> assertNotNull(resourceResolver.getResource(irrelevantPath)),
         () -> assertNotNull(resourceResolver.getResource(mountainPath)),
         () -> assertNotNull(resourceResolver.getResource(mountainContent)),
-        () -> assertFalse(enabled.canHandle(mountainPath)),
-        () -> assertFalse(disabled.canHandle(mountainPath)),
-        () -> assertFalse(enabled.canHandle(irrelevantPath)),
-        () -> assertFalse(enabled.canHandle(mountainContent))
+        () -> assertFalse(
+            enabled.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(mountainPath, factory).build())
+            )
+        ),
+        () -> assertFalse(
+            disabled.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(mountainPath, factory).build())
+            )
+        ),
+        () -> assertFalse(
+            enabled.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(irrelevantPath, factory).build())
+            )
+        ),
+        () -> assertFalse(
+            enabled.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(
+                    mountainContent, factory
+                ).build())
+            )
+        )
     );
   }
 
