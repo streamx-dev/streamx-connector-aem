@@ -1,18 +1,30 @@
 package dev.streamx.aem.connector.blueprints;
 
 import com.day.cq.dam.api.DamConstants;
+import dev.streamx.sling.connector.IngestedData;
+import java.util.Map;
+import java.util.Optional;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.api.uri.SlingUri;
 
 class AssetCandidate {
 
   private final NodeTypeCheck nodeTypeCheck;
+  private final IngestedData ingestedData;
 
-  AssetCandidate(ResourceResolverFactory resourceResolverFactory, SlingUri slingUri) {
-    this.nodeTypeCheck = new NodeTypeCheck(resourceResolverFactory, slingUri);
+  AssetCandidate(ResourceResolverFactory resourceResolverFactory, IngestedData ingestedData) {
+    this.ingestedData = ingestedData;
+    this.nodeTypeCheck = new NodeTypeCheck(resourceResolverFactory, ingestedData.uriToIngest());
   }
 
   boolean isAsset() {
-    return nodeTypeCheck.matches(DamConstants.NT_DAM_ASSET);
+    boolean primaryNTFromJCRMatches = nodeTypeCheck.matches(DamConstants.NT_DAM_ASSET);
+    Map<String, Object> idProps = ingestedData.properties();
+    boolean primaryNTFromIDMatches = Optional.ofNullable(idProps.get("streamx." + JcrConstants.JCR_PRIMARYTYPE))
+        .filter(String.class::isInstance)
+        .map(String.class::cast)
+        .filter(DamConstants.NT_DAM_ASSET::equals)
+        .isPresent();
+    return primaryNTFromJCRMatches || primaryNTFromIDMatches;
   }
 }
