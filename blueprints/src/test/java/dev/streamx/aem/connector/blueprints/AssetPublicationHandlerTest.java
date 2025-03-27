@@ -8,18 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.util.DefaultSlingUriBuilder;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,14 +85,35 @@ class AssetPublicationHandlerTest {
     AssetPublicationHandler disabled = context.registerInjectActivateService(
         AssetPublicationHandler.class, Map.of("enabled", false)
     );
+    ResourceResolverFactory factory = Objects.requireNonNull(
+        context.getService(ResourceResolverFactory.class)
+    );
     assertAll(
         () -> assertNotNull(resourceResolver.getResource(irrelevantPath)),
         () -> assertNotNull(resourceResolver.getResource(mountainPath)),
         () -> assertNotNull(resourceResolver.getResource(mountainContent)),
-        () -> assertTrue(enabled.canHandle(mountainPath)),
-        () -> assertFalse(disabled.canHandle(mountainPath)),
-        () -> assertFalse(enabled.canHandle(irrelevantPath)),
-        () -> assertFalse(enabled.canHandle(mountainContent))
+        () -> assertTrue(
+            enabled.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(mountainPath, factory).build())
+            )
+        ),
+        () -> assertFalse(
+            disabled.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(mountainPath, factory).build())
+            )
+        ),
+        () -> assertFalse(
+            enabled.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(irrelevantPath, factory).build())
+            )
+        ),
+        () -> assertFalse(
+            enabled.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(
+                    mountainContent, factory
+                ).build())
+            )
+        )
     );
   }
 

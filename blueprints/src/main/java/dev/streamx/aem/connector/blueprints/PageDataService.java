@@ -86,12 +86,11 @@ public class PageDataService {
     return isPage;
   }
 
-  boolean isPageTemplate(String resourcePath) {
-    SlingUri slingUri = new DefaultSlingUriBuilder(resourcePath, resourceResolverFactory).build();
+  boolean isPageTemplate(SlingUri slingUri) {
     boolean isPageTemplate = new PageCandidate(
         resourceResolverFactory, slingUri, templatesPathRegexp
     ).isPage();
-    LOG.trace("Is {} a page template? Answer: {}", resourcePath, isPageTemplate);
+    LOG.trace("Is {} a page template? Answer: {}", slingUri, isPageTemplate);
     return isPageTemplate;
   }
 

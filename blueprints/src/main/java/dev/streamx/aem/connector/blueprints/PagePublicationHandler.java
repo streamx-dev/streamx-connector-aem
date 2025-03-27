@@ -1,6 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.Page;
+import dev.streamx.sling.connector.IngestedData;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.UnpublishData;
@@ -8,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+
+import dev.streamx.sling.connector.util.DefaultSlingUriBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
@@ -54,8 +57,8 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    SlingUri slingUri = new DefaultSlingUriBuilder(resourcePath, resolverFactory).build();
+  public boolean canHandle(IngestedData ingestedData) {
+    SlingUri slingUri = ingestedData.uriToIngest();
     return enabled
         && pageDataService.isPage(slingUri)
         && !new XFCandidate(resolverFactory, slingUri).isXF();
