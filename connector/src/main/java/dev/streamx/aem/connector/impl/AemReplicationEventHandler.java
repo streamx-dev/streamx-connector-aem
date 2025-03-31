@@ -2,12 +2,12 @@ package dev.streamx.aem.connector.impl;
 
 import com.day.cq.replication.ReplicationAction;
 import com.day.cq.replication.ReplicationActionType;
+import dev.streamx.sling.connector.IngestedData;
 import dev.streamx.sling.connector.PublicationAction;
-import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import dev.streamx.sling.connector.util.DefaultSlingUriBuilder;
+import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.uri.SlingUri;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -17,6 +17,13 @@ import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component(
     service = EventHandler.class,
@@ -28,14 +35,18 @@ public class AemReplicationEventHandler implements EventHandler {
   private static final Logger LOG = LoggerFactory.getLogger(AemReplicationEventHandler.class);
 
   private final StreamxPublicationService streamxPublicationService;
+  private final ResourceResolverFactory resourceResolverFactory;
   private final Map<ReplicationActionType, PublicationAction> actionsMap;
 
   @Activate
   public AemReplicationEventHandler(
       @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      StreamxPublicationService streamxPublicationService
+      StreamxPublicationService streamxPublicationService,
+      @Reference(cardinality = ReferenceCardinality.MANDATORY)
+      ResourceResolverFactory resourceResolverFactory
   ) {
     this.streamxPublicationService = streamxPublicationService;
+    this.resourceResolverFactory = resourceResolverFactory;
     actionsMap = Map.of(
         ReplicationActionType.ACTIVATE, PublicationAction.PUBLISH,
         ReplicationActionType.DEACTIVATE, PublicationAction.UNPUBLISH,
@@ -49,38 +60,49 @@ public class AemReplicationEventHandler implements EventHandler {
     if (streamxPublicationService.isEnabled()) {
       Optional.ofNullable(ReplicationAction.fromEvent(event))
           .ifPresentOrElse(
-              this::handleAction, () -> LOG.warn("Cannot get action from {}", event)
+              this::consumeAction, () -> LOG.warn("Cannot get action from {}", event)
           );
     } else {
-      LOG.trace("{} is disabled. Ignoring {}", StreamxPublicationService.class, event);
+      LOG.trace("{} is disabled. Ignoring {}", this.getClass().getSimpleName(), event);
     }
   }
 
-  private void handleAction(ReplicationAction action) {
+  private void consumeAction(ReplicationAction action) {
     ReplicationActionType replicationActionType = action.getType();
-    List<String> paths = List.of(action.getPaths());
+    List<SlingUri> slingUris = Stream.of(action.getPaths())
+        .map(path -> new DefaultSlingUriBuilder(path, resourceResolverFactory).build())
+        .collect(Collectors.toUnmodifiableList());
     Optional.ofNullable(actionsMap.get(replicationActionType))
         .ifPresentOrElse(
-            ingestionAction -> handleIngestion(ingestionAction, paths),
-            () -> LOG.warn("Failed to add job for: {}", action)
+            ingestionAction -> ingest(ingestionAction, slingUris),
+            () -> LOG.warn("Failed consuming {} for {}", action, slingUris)
         );
   }
 
-  private void handleIngestion(PublicationAction ingestionAction, List<String> paths) {
-    LOG.trace("Handling ingestion {} for {}", ingestionAction, paths);
-    try {
-      if (ingestionAction == PublicationAction.PUBLISH) {
-        streamxPublicationService.publish(paths);
-      } else if (ingestionAction == PublicationAction.UNPUBLISH) {
-        streamxPublicationService.unpublish(paths);
-      } else {
-        LOG.warn("Unknown ingestion action: {}. Ignored paths: {}", ingestionAction, paths);
-      }
-    } catch (StreamxPublicationException exception) {
-      String message = String.format(
-          "Failed to handle ingestion %s for %s", ingestionAction, paths
-      );
-      LOG.error(message, exception);
-    }
+  private void ingest(PublicationAction ingestionAction, Collection<SlingUri> slingUris) {
+    LOG.trace("Ingesting {} for {}", ingestionAction, slingUris);
+    slingUris.stream().map(
+        slingUri -> new IngestedData() {
+          @Override
+          public PublicationAction ingestionAction() {
+            return ingestionAction;
+          }
+
+          @Override
+          public SlingUri uriToIngest() {
+            return slingUri;
+          }
+
+          @Override
+          public Map<String, Object> properties() {
+            return Map.of();
+          }
+        }
+    ).forEach(this::ingest);
+  }
+
+  private void ingest(IngestedData ingestedData) {
+    LOG.trace("Ingesting '{}'", ingestedData.uriToIngest());
+    streamxPublicationService.ingest(ingestedData);
   }
 }

@@ -56,7 +56,7 @@ public class AssetResourcePathPublicationHandler extends ResourcePathPublication
   public ResourcePathPublicationHandlerConfig configuration() {
     return new ResourcePathPublicationHandlerConfig() {
       @Override
-      public String resourcePathRegex() {
+      public String slingUriRegex() {
         return config.get().assets_path_regexp();
       }
 

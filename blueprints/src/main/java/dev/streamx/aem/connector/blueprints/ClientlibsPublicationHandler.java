@@ -56,7 +56,7 @@ public class ClientlibsPublicationHandler extends ResourcePathPublicationHandler
   public ResourcePathPublicationHandlerConfig configuration() {
     return new ResourcePathPublicationHandlerConfig() {
       @Override
-      public String resourcePathRegex() {
+      public String slingUriRegex() {
         return config.get().clientlibs_path_regexp();
       }
 

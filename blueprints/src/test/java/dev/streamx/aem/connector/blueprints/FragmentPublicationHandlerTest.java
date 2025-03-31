@@ -10,14 +10,17 @@ import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.UnpublishData;
+import dev.streamx.sling.connector.util.DefaultSlingUriBuilder;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,10 +91,21 @@ class FragmentPublicationHandlerTest {
     PublishData<Fragment> publishData = handler.getPublishData(fragmentPath);
     int actualLength = publishData.getModel().getContent().array().length;
     UnpublishData<Fragment> unpublishData = handler.getUnpublishData(fragmentPath);
+    ResourceResolverFactory factory = Objects.requireNonNull(
+        context.getService(ResourceResolverFactory.class)
+    );
     assertAll(
         () -> assertNotNull(context.resourceResolver().getResource(pagePath)),
-        () -> assertFalse(handler.canHandle(pagePath)),
-        () -> assertTrue(handler.canHandle(fragmentPath)),
+        () -> assertFalse(
+            handler.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(pagePath, factory).build())
+            )
+        ),
+        () -> assertTrue(
+            handler.canHandle(
+                new DefaultIngestedData(new DefaultSlingUriBuilder(fragmentPath, factory).build())
+            )
+        ),
         () -> assertEquals(expectedLength, actualLength),
         () -> assertEquals(expectedKey, publishData.getKey()),
         () -> assertEquals(expectedKey, unpublishData.getKey())

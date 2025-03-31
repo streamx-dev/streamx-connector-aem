@@ -1,6 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.Fragment;
+import dev.streamx.sling.connector.IngestedData;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.StreamxPublicationException;
@@ -63,17 +64,12 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    boolean canHandle = config.get().enabled() && isXF(resourcePath);
-    LOG.trace("Can handle {}? Answer: {}", resourcePath, canHandle);
+  public boolean canHandle(IngestedData ingestedData) {
+    SlingUri slingUri = ingestedData.uriToIngest();
+    boolean canHandle = config.get().enabled()
+        && new XFCandidate(resourceResolverFactory, slingUri).isXF();
+    LOG.trace("Can handle {}? Answer: {}", slingUri, canHandle);
     return canHandle;
-  }
-
-  private boolean isXF(String resourcePath) {
-    SlingUri slingUri = new DefaultSlingUriBuilder(resourcePath, resourceResolverFactory).build();
-    boolean isXF = new XFCandidate(resourceResolverFactory, slingUri).isXF();
-    LOG.trace("Is {} an XF? Answer: {}", slingUri, isXF);
-    return isXF;
   }
 
   @Override

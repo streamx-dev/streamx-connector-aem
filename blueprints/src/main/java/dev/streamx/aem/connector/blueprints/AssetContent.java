@@ -2,8 +2,11 @@ package dev.streamx.aem.connector.blueprints;
 
 import com.day.cq.dam.api.Asset;
 import com.day.cq.dam.api.Rendition;
+import dev.streamx.sling.connector.IngestedData;
+import dev.streamx.sling.connector.PublicationAction;
 import dev.streamx.sling.connector.util.SimpleInternalRequest;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Optional;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -37,7 +40,27 @@ class AssetContent {
         ResourceResolver resourceResolver
             = resourceResolverFactory.getAdministrativeResourceResolver(null)
     ) {
-      if (!new AssetCandidate(resourceResolverFactory, slingUri).isAsset()) {
+      if (
+          !new AssetCandidate(
+              resourceResolverFactory,
+              new IngestedData() {
+                @Override
+                public PublicationAction ingestionAction() {
+                  return PublicationAction.PUBLISH;
+                }
+
+                @Override
+                public SlingUri uriToIngest() {
+                  return slingUri;
+                }
+
+                @Override
+                public Map<String, Object> properties() {
+                  return Map.of();
+                }
+              }
+          ).isAsset()
+      ) {
         return Optional.empty();
       }
       return Optional.of(resourceResolver.resolve(slingUri.toString()))
