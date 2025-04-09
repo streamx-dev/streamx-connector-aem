@@ -1,0 +1,3 @@
+{
+  "push-from": "$[env:STREAMX_PUSH_FROM;type=String;default=author]"
+}
