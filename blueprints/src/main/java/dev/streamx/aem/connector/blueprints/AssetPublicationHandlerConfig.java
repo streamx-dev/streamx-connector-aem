@@ -31,4 +31,5 @@ public @interface AssetPublicationHandlerConfig {
       defaultValue = "assets"
   )
   String publication_channel() default "assets";
+
 }
