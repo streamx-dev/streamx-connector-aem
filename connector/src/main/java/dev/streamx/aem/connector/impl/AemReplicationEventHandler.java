@@ -31,7 +31,9 @@ import org.slf4j.LoggerFactory;
     service = EventHandler.class,
     immediate = true,
     property = {
+        // Event fired on AEM 6.5 and AEMaaCS Author when replication is pushed to the external system:
         EventConstants.EVENT_TOPIC + "=" + ReplicationAction.EVENT_TOPIC,
+        // Event fired on AEM 6.5 and AEMaaCS Publish when replication from AEM Author is received:
         EventConstants.EVENT_TOPIC + "=" + "com/adobe/granite/replication"
     },
     configurationPolicy = ConfigurationPolicy.REQUIRE
