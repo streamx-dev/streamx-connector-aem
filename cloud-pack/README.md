@@ -4,7 +4,7 @@
 
 This directory provides an uber [Apache Jackrabbit FileVault](https://jackrabbit.apache.org/filevault/index.html) package with the Adobe Experience Manager (AEM) Connector for [StreamX](https://www.streamx.dev/StreamX) (*"Cloud Package with AEM Connector"*). The term _uber_ signifies that the package includes all necessary dependencies and OSGi configurations required for the AEM Connector to function within AEM.
 
-The Cloud Package with AEM Connector is compatible exclusively with AEM as a Cloud Service.
+The Cloud Package with AEM Connector is compatible with both AEM as a Cloud Service and AEM 6.5.22+.
 
 ## Purpose of the Cloud Package with AEM Connector
 
@@ -52,7 +52,7 @@ The Maven coordinates for the installation artifact are:
 <dependency>
     <groupId>dev.streamx</groupId>
     <artifactId>streamx-connector-aem-cloud-pack-all</artifactId>
-    <version>0.0.14</version>
+    <version>0.0.17</version>
     <type>zip</type>
 </dependency>
 ```
@@ -89,7 +89,7 @@ One method for installing the Cloud Package with AEM Connector is embedding it i
         <dependency>
             <groupId>dev.streamx</groupId>
             <artifactId>streamx-connector-aem-cloud-pack-all</artifactId>
-            <version>0.0.14</version>
+            <version>0.0.17</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -154,10 +154,10 @@ mvn clean install -PautoInstallSinglePackage
     mvn clean package
     ```
 
-   This will create an artifact at `cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.14`.
+   This will create an artifact at `cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.17`.
 
 2. Deploy the artifact to an AEM Author instance in RDE using [AIO CLI](https://experienceleague.adobe.com/en/docs/experience-manager-learn/cloud-service/local-development-environment-set-up/development-tools#aio-cli). Replace `<your-programId>` and `<your-environmentId>` with the relevant values:
 
     ```bash
-    aio aem:rde:install cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.14.zip --programId <your-programId> --environmentId <your-environmentId>
+    aio aem:rde:install cloud-pack.all/target/streamx-connector-aem-cloud-pack-all-0.0.17.zip --programId <your-programId> --environmentId <your-environmentId>
     ```
