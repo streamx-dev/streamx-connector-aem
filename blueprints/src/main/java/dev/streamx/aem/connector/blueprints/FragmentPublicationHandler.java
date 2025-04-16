@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
@@ -17,6 +18,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.uri.SlingUri;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -86,15 +88,8 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
     ) {
       return Optional.of(resourceResolver.resolve(resourcePath))
           .filter(resolvedResource -> !ResourceUtil.isNonExistingResource(resolvedResource))
-          .map(this::toFragment)
-          .map(
-              fragment -> new PublishData<>(
-                  toStreamXKey(resourcePath),
-                  config.get().publication_channel(),
-                  Fragment.class,
-                  fragment
-              )
-          ).orElseThrow(() -> new IllegalArgumentException("Resource not found: " + resourcePath));
+          .map(this::toPublishData)
+          .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + resourcePath));
     } catch (LoginException exception) {
       String message = String.format("Cannot generate PublishData for %s", resourcePath);
       throw new StreamxPublicationException(message, exception);
@@ -112,6 +107,23 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
 
   private static String toStreamXKey(String resourcePath) {
     return String.format("%s.html", resourcePath);
+  }
+
+  private PublishData<Fragment> toPublishData(Resource resource) {
+    Map<String, String> messageProps = Optional.ofNullable(resource.adaptTo(ValueMap.class))
+        .map(
+            valueMap -> valueMap.get(
+                config.get().jcr$_$prop$_$name_for$_$sx$_$type(), String.class
+            )
+        ).map(propertyValue -> Map.of("sx:type", propertyValue))
+        .orElse(Map.of());
+    return new PublishData<>(
+        toStreamXKey(resource.getPath()),
+        config.get().publication_channel(),
+        Fragment.class,
+        toFragment(resource),
+        messageProps
+    );
   }
 
   private Fragment toFragment(Resource resource) {
