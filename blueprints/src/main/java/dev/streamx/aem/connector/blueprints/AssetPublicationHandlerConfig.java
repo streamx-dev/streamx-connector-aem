@@ -1,6 +1,6 @@
 package dev.streamx.aem.connector.blueprints;
 
-import com.day.cq.commons.jcr.JcrConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -39,7 +39,7 @@ public @interface AssetPublicationHandlerConfig {
           + "name, the value of that property will be set as a value of the `sx:type` "
           + "property of the message ingested into StreamX.",
       type = AttributeType.STRING,
-      defaultValue = JcrConstants.JCR_PRIMARYTYPE
+      defaultValue = StringUtils.EMPTY
   )
-  String jcr$_$prop$_$name_for$_$sx$_$type() default JcrConstants.JCR_PRIMARYTYPE;
+  String jcr$_$prop$_$name_for$_$sx$_$type() default StringUtils.EMPTY;
 }

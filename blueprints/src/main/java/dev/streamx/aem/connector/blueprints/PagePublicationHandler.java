@@ -79,7 +79,12 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
         LOG.error("Resource not found when trying to publish it: {}", resourcePath);
         return null;
       }
-      Map<String, String> messageProps = Optional.ofNullable(resource.adaptTo(ValueMap.class))
+
+      Map<String, String> messageProps = Optional.ofNullable(
+              resource.getChild(
+                  config.get().rel$_$path$_$to$_$node$_$with$_$jcr$_$prop$_$for$_$sx$_$type()
+              )
+          ).map(child -> child.adaptTo(ValueMap.class))
           .map(
               valueMap -> valueMap.get(
                   config.get().jcr$_$prop$_$name_for$_$sx$_$type(), String.class
