@@ -6,6 +6,10 @@ This directory provides an uber [Apache Jackrabbit FileVault](https://jackrabbit
 
 The Cloud Package with AEM Connector is compatible with both AEM as a Cloud Service and AEM 6.5.22+.
 
+For AEM 6.5 versions lower than 6.5.22, installation of AEM Connector can be achieved in two ways:
+1. Ensure the `org.apache.felix:org.apache.felix.configadmin:1.9.12+` bundle is installed in AEM and then install there the Cloud Package with AEM Connector.
+1. Create and install in AEM a custom uber package that includes all necessary dependencies and OSGi configurations required for the AEM Connector to function within AEM, in a way similar how this is made in this Cloud Package with AEM Connector.
+
 ## Purpose of the Cloud Package with AEM Connector
 
 For the AEM Connector to function correctly, it requires multiple dependencies and OSGi configurations to be deployed in AEM. The Cloud Package with AEM Connector bundles all these dependencies and configurations, making it the only artifact required for a complete installation.
