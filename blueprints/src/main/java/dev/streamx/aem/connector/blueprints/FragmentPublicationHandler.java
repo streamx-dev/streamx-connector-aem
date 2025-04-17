@@ -119,7 +119,7 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
             valueMap -> valueMap.get(
                 config.get().jcr$_$prop$_$name_for$_$sx$_$type(), String.class
             )
-        ).map(propertyValue -> Map.of("sx:type", propertyValue))
+        ).map(propertyValue -> Map.of(SXType.VALUE, propertyValue))
         .orElse(Map.of());
     return new PublishData<>(
         toStreamXKey(resource.getPath()),

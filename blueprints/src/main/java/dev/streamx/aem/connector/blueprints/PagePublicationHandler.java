@@ -89,7 +89,7 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
               valueMap -> valueMap.get(
                   config.get().jcr$_$prop$_$name_for$_$sx$_$type(), String.class
               )
-          ).map(propertyValue -> Map.of("sx:type", propertyValue))
+          ).map(propertyValue -> Map.of(SXType.VALUE, propertyValue))
           .orElse(Map.of());
       return new PublishData<>(
           getPagePath(resourcePath),

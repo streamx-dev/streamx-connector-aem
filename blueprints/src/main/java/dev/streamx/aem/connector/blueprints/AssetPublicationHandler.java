@@ -92,7 +92,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
               valueMap -> valueMap.get(
                   config.get().jcr$_$prop$_$name_for$_$sx$_$type(), String.class
               )
-          ).map(propertyValue -> Map.of("sx:type", propertyValue))
+          ).map(propertyValue -> Map.of(SXType.VALUE, propertyValue))
           .orElse(Map.of());
       if (ResourceUtil.isNonExistingResource(resource)) {
         LOG.error("Resource not found for publish data generation: {}", slingUri);
