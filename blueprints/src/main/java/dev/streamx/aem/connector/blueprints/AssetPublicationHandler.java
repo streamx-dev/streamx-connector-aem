@@ -7,8 +7,8 @@ import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +18,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.uri.SlingUri;
 import org.apache.sling.api.uri.SlingUriBuilder;
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -39,10 +40,8 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   private static final Logger LOG = LoggerFactory.getLogger(AssetPublicationHandler.class);
 
   private final ResourceResolverFactory resolverFactory;
-  private final AtomicBoolean enabled;
-  private final AtomicReference<String> assetsPathRegexp;
-  private final AtomicReference<String> channelName;
   private final SlingRequestProcessor slingRequestProcessor;
+  private final AtomicReference<AssetPublicationHandlerConfig> config;
 
   @Activate
   public AssetPublicationHandler(
@@ -53,16 +52,13 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
       AssetPublicationHandlerConfig config
   ) {
     this.resolverFactory = resolverFactory;
-    this.enabled = new AtomicBoolean(config.enabled());
-    this.assetsPathRegexp = new AtomicReference<>(config.assets_path_regexp());
-    this.channelName = new AtomicReference<>(config.publication_channel());
     this.slingRequestProcessor = slingRequestProcessor;
+    this.config = new AtomicReference<>(config);
   }
 
   @Modified
   void configure(AssetPublicationHandlerConfig config) {
-    this.enabled.set(config.enabled());
-    this.assetsPathRegexp.set(config.assets_path_regexp());
+    this.config.set(config);
   }
 
   @Override
@@ -75,8 +71,8 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
       AssetCandidate assetCandidate = new AssetCandidate(resolverFactory, slingUri);
-      boolean canHandle = enabled.get()
-          && resourcePath.matches(assetsPathRegexp.get())
+      boolean canHandle = config.get().enabled()
+          && resourcePath.matches(config.get().assets_path_regexp())
           && assetCandidate.isAsset();
       LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
       return canHandle;
@@ -91,18 +87,31 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
       Resource resource = resourceResolver.resolve(
           Optional.ofNullable(slingUri.getPath()).orElse(StringUtils.EMPTY)
       );
+      Map<String, String> messageProps = Optional.ofNullable(resource.adaptTo(ValueMap.class))
+          .map(
+              valueMap -> valueMap.get(
+                  config.get().jcr$_$prop$_$name_for$_$sx$_$type(), String.class
+              )
+          ).map(propertyValue -> Map.of(SXType.VALUE, propertyValue))
+          .orElse(Map.of());
       if (ResourceUtil.isNonExistingResource(resource)) {
         LOG.error("Resource not found for publish data generation: {}", slingUri);
         return null;
       }
-      return generatePublishData(slingUri);
+      return generatePublishData(slingUri, messageProps);
     }
   }
 
-  private PublishData<Asset> generatePublishData(SlingUri slingUri) {
+  private PublishData<Asset> generatePublishData(
+      SlingUri slingUri,
+      Map<String, String> messageProps
+  ) {
     LOG.trace("Generating publish data for '{}'", slingUri);
     Asset asset = generateAssetModel(slingUri);
-    return new PublishData<>(slingUri.toString(), channelName.get(), Asset.class, asset);
+    return new PublishData<>(
+        slingUri.toString(), config.get().publication_channel(), Asset.class,
+        asset, messageProps
+    );
   }
 
   private ResourceResolver createResourceResolver() {
@@ -115,7 +124,9 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
 
   @Override
   public UnpublishData<Asset> getUnpublishData(String resourcePath) {
-    return new UnpublishData<>(resourcePath, channelName.get(), Asset.class);
+    return new UnpublishData<>(
+        resourcePath, config.get().publication_channel(), Asset.class
+    );
   }
 
   private byte[] toByteArray(InputStream inputStream) {

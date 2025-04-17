@@ -1,5 +1,6 @@
 package dev.streamx.aem.connector.blueprints;
 
+import org.apache.commons.lang3.StringUtils;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -32,4 +33,13 @@ public @interface AssetPublicationHandlerConfig {
   )
   String publication_channel() default "assets";
 
+  @AttributeDefinition(
+      name = "Name of JCR property for `sx:type`",
+      description = "If the resource that is being published has a JCR property with the specified "
+          + "name, the value of that property will be set as a value of the `sx:type` "
+          + "property of the message ingested into StreamX.",
+      type = AttributeType.STRING,
+      defaultValue = StringUtils.EMPTY
+  )
+  String jcr$_$prop$_$name_for$_$sx$_$type() default StringUtils.EMPTY;
 }
