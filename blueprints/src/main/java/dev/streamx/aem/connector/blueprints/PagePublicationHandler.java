@@ -67,7 +67,7 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
     SlingUri slingUri = new DefaultSlingUriBuilder(resourcePath, resolverFactory).build();
     return config.get().enabled()
         && pageDataService.isPage(slingUri)
-        && !new XFCandidate(resolverFactory, slingUri).isXF();
+        && !ResourceTypeChecker.isXF(slingUri, resolverFactory);
   }
 
   @Override
