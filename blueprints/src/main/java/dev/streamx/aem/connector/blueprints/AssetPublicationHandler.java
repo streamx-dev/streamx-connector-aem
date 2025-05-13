@@ -70,10 +70,9 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   public boolean canHandle(String resourcePath) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
-      AssetCandidate assetCandidate = new AssetCandidate(resolverFactory, slingUri);
       boolean canHandle = config.get().enabled()
           && resourcePath.matches(config.get().assets_path_regexp())
-          && assetCandidate.isAsset();
+          && ResourceTypeChecker.isAsset(slingUri, resolverFactory);
       LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
       return canHandle;
     }

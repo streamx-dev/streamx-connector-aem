@@ -16,23 +16,20 @@ import org.slf4j.LoggerFactory;
 class NodeTypeCheck {
 
   private static final Logger LOG = LoggerFactory.getLogger(NodeTypeCheck.class);
-  private final SlingUri slingUri;
-  private final ResourceResolverFactory resourceResolverFactory;
 
-  NodeTypeCheck(ResourceResolverFactory resourceResolverFactory, SlingUri slingUri) {
-    this.resourceResolverFactory = resourceResolverFactory;
-    this.slingUri = slingUri;
+  private NodeTypeCheck() {
+    // no instances
   }
 
   @SuppressWarnings({"squid:S1874", "deprecation"})
-  boolean matches(String expectedPrimaryNodeType) {
+  static boolean matches(SlingUri slingUri, String expectedPrimaryNodeType, ResourceResolverFactory resourceResolverFactory) {
     try (
         ResourceResolver resourceResolver
             = resourceResolverFactory.getAdministrativeResourceResolver(null)
     ) {
       Resource resource = resourceResolver.resolve(slingUri.toString());
       boolean matches = Optional.ofNullable(resource.adaptTo(Node.class))
-          .map(this::extractPrimaryNt)
+          .map(NodeTypeCheck::extractPrimaryNt)
           .stream()
           .anyMatch(primaryNT -> primaryNT.equals(expectedPrimaryNodeType));
       LOG.trace(
@@ -48,7 +45,7 @@ class NodeTypeCheck {
     }
   }
 
-  private String extractPrimaryNt(Node node) {
+  private static String extractPrimaryNt(Node node) {
     try {
       NodeType primaryNT = node.getPrimaryNodeType();
       return primaryNT.getName();

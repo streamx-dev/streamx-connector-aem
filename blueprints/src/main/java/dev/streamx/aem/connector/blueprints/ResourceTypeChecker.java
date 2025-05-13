@@ -1,0 +1,46 @@
+package dev.streamx.aem.connector.blueprints;
+
+import com.adobe.aem.formsndocuments.util.FMConstants;
+import com.day.cq.dam.api.DamConstants;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.uri.SlingUri;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+final class ResourceTypeChecker {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ResourceTypeChecker.class);
+
+  private ResourceTypeChecker() {
+    // no instances
+  }
+
+  static boolean isAsset(SlingUri slingUri, ResourceResolverFactory resourceResolverFactory) {
+    return NodeTypeCheck.matches(slingUri, DamConstants.NT_DAM_ASSET, resourceResolverFactory);
+  }
+
+  static boolean isPage(SlingUri slingUri, String requiredPathRegex, ResourceResolverFactory resourceResolverFactory) {
+    boolean isPageNodeType = NodeTypeCheck.matches(slingUri, FMConstants.CQ_PAGE_NODETYPE, resourceResolverFactory);
+    boolean isRequiredPath = slingUri.toString().matches(requiredPathRegex);
+    boolean isPage = isPageNodeType && isRequiredPath;
+    LOG.trace(
+        "Is {} a page? Answer: {}. Is NodeType: {}. Is required path: {}",
+        slingUri, isPage, isPageNodeType, isRequiredPath
+    );
+    return isPage;
+  }
+
+  static boolean isXF(SlingUri slingUri, ResourceResolverFactory resourceResolverFactory) {
+    boolean isPage = isPage(slingUri, ".*", resourceResolverFactory);
+    String resourcePath = Optional.ofNullable(slingUri.getResourcePath()).orElse(StringUtils.EMPTY);
+    boolean isXFPath = resourcePath.startsWith("/content/experience-fragments");
+    boolean isXF = isPage && isXFPath;
+    LOG.trace(
+        "Is {} an XF? Answer: {}. Is Page: {}. Is XF path: {}",
+        slingUri, isXF, isPage, isXFPath
+    );
+    return isXF;
+  }
+}
