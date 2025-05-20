@@ -25,32 +25,16 @@ public class RenderingContext {
     return rendererKey;
   }
 
-  public void setRendererKey(String rendererKey) {
-    this.rendererKey = rendererKey;
-  }
-
   public String getDataKeyMatchPattern() {
     return dataKeyMatchPattern;
-  }
-
-  public void setDataKeyMatchPattern(String dataKeyMatchPattern) {
-    this.dataKeyMatchPattern = dataKeyMatchPattern;
   }
 
   public String getOutputKeyTemplate() {
     return outputKeyTemplate;
   }
 
-  public void setOutputKeyTemplate(String outputKeyTemplate) {
-    this.outputKeyTemplate = outputKeyTemplate;
-  }
-
   public OutputType getOutputType() {
     return outputType;
-  }
-
-  public void setOutputType(OutputType outputType) {
-    this.outputType = outputType;
   }
 
   public enum OutputType {

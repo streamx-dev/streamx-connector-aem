@@ -4,12 +4,7 @@ import dev.streamx.blueprints.data.Renderer;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -52,11 +47,6 @@ public class RendererPublicationHandler extends BasePublicationHandler<Renderer>
   }
 
   @Override
-  public String getId() {
-    return this.getClass().getSimpleName();
-  }
-
-  @Override
   public boolean canHandle(ResourceInfo resource) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       return config.get().enabled()
@@ -91,20 +81,11 @@ public class RendererPublicationHandler extends BasePublicationHandler<Renderer>
   }
 
   private Renderer resolveData(Resource resource, ResourceResolver resourceResolver) {
-    try (InputStream inputStream = getStorageData(resource, resourceResolver)) {
-      return new Renderer(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
-    } catch (IOException e) {
-      throw new UncheckedIOException("Cannot create renderer model", e);
-    }
+    String content = pageDataService.getStorageData(resource, resourceResolver);
+    return new Renderer(content);
   }
 
   private String getStoragePath(String resourcePath) {
     return resourcePath + ".html";
-  }
-
-
-  public InputStream getStorageData(Resource resource,
-      ResourceResolver resourceResolver) throws IOException {
-    return pageDataService.getStorageData(resource, resourceResolver);
   }
 }

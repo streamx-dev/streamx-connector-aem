@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
+import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.ByteArrayInputStream;
@@ -90,5 +91,9 @@ class AssetPublicationHandlerTest {
     assertThat(publishData.getKey()).isEqualTo(assetPath);
     assertThat(publishData.getChannel()).isEqualTo("assets");
     assertThat(publishData.getModel()).isInstanceOf(Asset.class);
+
+    UnpublishData<Asset> unpublishData = handler.getUnpublishData(assetPath);
+    assertThat(unpublishData.getKey()).isEqualTo(assetPath);
+    assertThat(unpublishData.getChannel()).isEqualTo("assets");
   }
 }

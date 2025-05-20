@@ -30,8 +30,4 @@ public class Renderer {
     return template;
   }
 
-  public void setTemplate(ByteBuffer template) {
-    this.template = template;
-  }
-
 }
