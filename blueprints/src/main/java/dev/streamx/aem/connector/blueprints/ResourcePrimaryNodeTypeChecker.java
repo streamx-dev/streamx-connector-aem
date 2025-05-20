@@ -2,8 +2,7 @@ package dev.streamx.aem.connector.blueprints;
 
 import com.adobe.aem.formsndocuments.util.FMConstants;
 import com.day.cq.dam.api.DamConstants;
-import com.drew.lang.annotations.Nullable;
-import java.util.Objects;
+import com.drew.lang.annotations.NotNull;
 import java.util.Optional;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -16,11 +15,11 @@ import org.apache.sling.api.uri.SlingUri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class ResourceTypeChecker {
+final class ResourcePrimaryNodeTypeChecker {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ResourceTypeChecker.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ResourcePrimaryNodeTypeChecker.class);
 
-  private ResourceTypeChecker() {
+  private ResourcePrimaryNodeTypeChecker() {
     // no instances
   }
 
@@ -51,25 +50,19 @@ final class ResourceTypeChecker {
     return isXF;
   }
 
-  private static boolean hasPrimaryNodeType(SlingUri slingUri, String expectedPrimaryNodeType, ResourceResolverFactory resourceResolverFactory) {
-    String primaryNodeType = extractPrimaryNodeType(slingUri, resourceResolverFactory);
-    return Objects.equals(primaryNodeType, expectedPrimaryNodeType);
-  }
-
-  @Nullable
-  @SuppressWarnings("deprecation")
-  public static String extractPrimaryNodeType(SlingUri slingUri, ResourceResolverFactory resourceResolverFactory) {
+  private static boolean hasPrimaryNodeType(SlingUri slingUri, @NotNull String expectedPrimaryNodeType, ResourceResolverFactory resourceResolverFactory) {
     try (
+        @SuppressWarnings("deprecation")
         ResourceResolver resourceResolver = resourceResolverFactory.getAdministrativeResourceResolver(null)
     ) {
       Resource resource = resourceResolver.resolve(slingUri.toString());
       Node node = resource.adaptTo(Node.class);
       if (node != null) {
-        return node.getPrimaryNodeType().getName();
+        return node.isNodeType(expectedPrimaryNodeType);
       }
     } catch (RepositoryException | LoginException exception) {
       LOG.error("Failed to extract primary node type from {}", slingUri, exception);
     }
-    return null;
+    return false;
   }
 }

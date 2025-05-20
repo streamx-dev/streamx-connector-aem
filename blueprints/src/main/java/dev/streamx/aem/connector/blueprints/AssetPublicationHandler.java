@@ -72,7 +72,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
       SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
       boolean canHandle = config.get().enabled()
           && resourcePath.matches(config.get().assets_path_regexp())
-          && ResourceTypeChecker.isAsset(slingUri, resolverFactory);
+          && ResourcePrimaryNodeTypeChecker.isAsset(slingUri, resolverFactory);
       LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
       return canHandle;
     }
