@@ -75,7 +75,7 @@ public class RenderingContextPublicationHandler extends BasePublicationHandler<R
       RenderingContext renderingContext = resolveData(resource);
       if (renderingContext != null) {
         return new PublishData<>(
-            getKeyForTemplateResource(resource),
+            resourcePath,
             config.get().publication_channel(),
             RenderingContext.class,
             renderingContext);
@@ -99,8 +99,7 @@ public class RenderingContextPublicationHandler extends BasePublicationHandler<R
     String dataKeyMatchPattern = properties.get("dataKeyMatchPattern", String.class);
     String outputKeyTemplate = properties.get("outputKeyTemplate", String.class);
     if (StringUtils.isNoneBlank(dataKeyMatchPattern, outputKeyTemplate)) {
-      // Use same key as is used for the Renderer published for the template page.
-      String rendererKey = getKeyForTemplateResource(resource);
+      String rendererKey = resource.getPath();
       return new RenderingContext(rendererKey, dataKeyMatchPattern, outputKeyTemplate,
           OutputType.PAGE);
     }
@@ -108,9 +107,4 @@ public class RenderingContextPublicationHandler extends BasePublicationHandler<R
         resource.getPath());
     return null;
   }
-
-  private String getKeyForTemplateResource(Resource resource) {
-    return resource.getPath() + ".html";
-  }
-
 }

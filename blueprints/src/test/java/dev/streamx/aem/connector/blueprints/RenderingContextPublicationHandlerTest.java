@@ -3,7 +3,8 @@ package dev.streamx.aem.connector.blueprints;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.RandomBytesWriter;
-import dev.streamx.blueprints.data.Fragment;
+import dev.streamx.blueprints.data.RenderingContext;
+import dev.streamx.blueprints.data.RenderingContext.OutputType;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class FragmentPublicationHandlerTest {
+class RenderingContextPublicationHandlerTest {
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
@@ -34,7 +35,7 @@ class FragmentPublicationHandlerTest {
         HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver
     ) throws IOException {
       String requestURI = request.getRequestURI();
-      if (requestURI.equals("/content/experience-fragments/fragment.html")) {
+      if (requestURI.equals("/content/experience-fragments/templates/sample-rendering-context.html")) {
         RandomBytesWriter.writeRandomBytes(response, DATA_SIZE);
       } else {
         response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
@@ -46,42 +47,30 @@ class FragmentPublicationHandlerTest {
   void setup() {
     context.registerService(SlingRequestProcessor.class, new BasicRequestProcessor());
     context.registerInjectActivateService(PageDataService.class);
-
     context.load().json(
-        "/dev/streamx/aem/connector/blueprints/franklin-page.json",
-        "/content/franklin-page"
+        "/dev/streamx/aem/connector/blueprints/sample-rendering-context.json",
+        "/content/experience-fragments/templates/sample-rendering-context"
     );
-    context.load().json(
-        "/dev/streamx/aem/connector/blueprints/usual-aem-page.json",
-        "/content/usual-aem-page"
-    );
-    context.load().json(
-        "/dev/streamx/aem/connector/blueprints/usual-aem-page.json",
-        "/content/experience-fragments/fragment"
-    );
-    context.build().resource("/content/random-page").commit();
   }
 
   @SuppressWarnings("resource")
   @Test
   void mustHandle() {
-    String pagePath = "/content/usual-aem-page";
-    ResourceInfo pageResource = new ResourceInfo(pagePath, "cq:Page");
-    String fragmentPath = "/content/experience-fragments/fragment";
-    ResourceInfo fragmentResource = new ResourceInfo(fragmentPath, "cq:Page");
-    String expectedKey = "/content/experience-fragments/fragment.html";
-    FragmentPublicationHandler handler = context.registerInjectActivateService(
-        FragmentPublicationHandler.class
+    String resourcePath = "/content/experience-fragments/templates/sample-rendering-context";
+    ResourceInfo resource = new ResourceInfo(resourcePath, "cq:Page");
+    String expectedKey = "/content/experience-fragments/templates/sample-rendering-context";
+    RenderingContextPublicationHandler handler = context.registerInjectActivateService(
+        RenderingContextPublicationHandler.class
     );
-    @SuppressWarnings("MagicNumber")
-    int expectedLength = 1625;
-    PublishData<Fragment> publishData = handler.getPublishData(fragmentPath);
-    int actualLength = publishData.getModel().getContent().array().length;
-    UnpublishData<Fragment> unpublishData = handler.getUnpublishData(fragmentPath);
-    assertThat(context.resourceResolver().getResource(pagePath)).isNotNull();
-    assertThat(handler.canHandle(pageResource)).isFalse();
-    assertThat(handler.canHandle(fragmentResource)).isTrue();
-    assertThat(actualLength).isEqualTo(expectedLength);
+    PublishData<RenderingContext> publishData = handler.getPublishData(resourcePath);
+    assertThat(handler.canHandle(resource)).isTrue();
+    RenderingContext model = publishData.getModel();
+    assertThat(model.getDataKeyMatchPattern()).isEqualTo("data.*");
+    assertThat(model.getRendererKey()).isEqualTo(expectedKey);
+    assertThat(model.getOutputKeyTemplate()).isEqualTo("key-1");
+    assertThat(model.getOutputType()).isSameAs(OutputType.PAGE);
+    UnpublishData<RenderingContext> unpublishData = handler.getUnpublishData(resourcePath);
+    assertThat(context.resourceResolver().getResource(resourcePath)).isNotNull();
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
   }
