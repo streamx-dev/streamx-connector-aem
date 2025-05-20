@@ -6,19 +6,15 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.uri.SlingUri;
 import org.apache.sling.api.uri.SlingUriBuilder;
 
-class DefaultSlingUriBuilder {
+final class DefaultSlingUriBuilder {
 
-  private final String rawSlingUri;
-  private final ResourceResolverFactory resourceResolverFactory;
-
-  DefaultSlingUriBuilder(String rawSlingUri, ResourceResolverFactory resourceResolverFactory) {
-    this.rawSlingUri = rawSlingUri;
-    this.resourceResolverFactory = resourceResolverFactory;
+  private DefaultSlingUriBuilder() {
+    // no instances
   }
 
-  @SuppressWarnings({"squid:1874", "deprecation"})
-  SlingUri build() {
+  static SlingUri build(String rawSlingUri, ResourceResolverFactory resourceResolverFactory) {
     try (
+        @SuppressWarnings({"squid:1874", "deprecation"})
         ResourceResolver resourceResolver
             = resourceResolverFactory.getAdministrativeResourceResolver(null)
     ) {

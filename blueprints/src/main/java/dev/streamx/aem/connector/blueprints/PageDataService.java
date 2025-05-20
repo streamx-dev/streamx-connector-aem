@@ -87,7 +87,7 @@ public class PageDataService {
   }
 
   boolean isPageTemplate(String resourcePath) {
-    SlingUri slingUri = new DefaultSlingUriBuilder(resourcePath, resourceResolverFactory).build();
+    SlingUri slingUri = DefaultSlingUriBuilder.build(resourcePath, resourceResolverFactory);
     boolean isPageTemplate = ResourcePrimaryNodeTypeChecker.isPage(
         slingUri, templatesPathRegexp, resourceResolverFactory
     );

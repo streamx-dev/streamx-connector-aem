@@ -72,7 +72,7 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
   }
 
   private boolean isXF(String resourcePath) {
-    SlingUri slingUri = new DefaultSlingUriBuilder(resourcePath, resourceResolverFactory).build();
+    SlingUri slingUri = DefaultSlingUriBuilder.build(resourcePath, resourceResolverFactory);
     boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(slingUri, resourceResolverFactory);
     LOG.trace("Is {} an XF? Answer: {}", slingUri, isXF);
     return isXF;
