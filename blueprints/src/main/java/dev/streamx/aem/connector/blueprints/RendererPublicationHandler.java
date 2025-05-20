@@ -3,6 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Renderer;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceToIngest;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,8 +52,8 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    return enabled && pageDataService.isPageTemplate(resourcePath);
+  public boolean canHandle(ResourceToIngest resource) {
+    return enabled && pageDataService.isPageTemplate(resource);
   }
 
   @Override

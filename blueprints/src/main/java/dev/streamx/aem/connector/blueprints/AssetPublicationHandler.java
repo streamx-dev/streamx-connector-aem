@@ -3,6 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceToIngest;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,15 +68,13 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    try (ResourceResolver resourceResolver = createResourceResolver()) {
-      SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
-      boolean canHandle = config.get().enabled()
-          && resourcePath.matches(config.get().assets_path_regexp())
-          && ResourcePrimaryNodeTypeChecker.isAsset(slingUri, resolverFactory);
-      LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
-      return canHandle;
-    }
+  public boolean canHandle(ResourceToIngest resource) {
+    String resourcePath = resource.getPath();
+    boolean canHandle = config.get().enabled()
+        && resourcePath.matches(config.get().assets_path_regexp())
+        && ResourcePrimaryNodeTypeChecker.isAsset(resource);
+    LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
+    return canHandle;
   }
 
   @Override

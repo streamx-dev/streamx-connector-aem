@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceToIngest;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
@@ -78,7 +79,9 @@ class FragmentPublicationHandlerTest {
   @Test
   void mustHandle() throws StreamxPublicationException {
     String pagePath = "/content/usual-aem-page";
+    ResourceToIngest pageResource = new ResourceToIngest(pagePath, "cq:Page");
     String fragmentPath = "/content/experience-fragments/fragment";
+    ResourceToIngest fragmentResource = new ResourceToIngest(fragmentPath, "cq:Page");
     String expectedKey = "/content/experience-fragments/fragment.html";
     FragmentPublicationHandler handler = context.registerInjectActivateService(
         FragmentPublicationHandler.class
@@ -90,8 +93,8 @@ class FragmentPublicationHandlerTest {
     UnpublishData<Fragment> unpublishData = handler.getUnpublishData(fragmentPath);
     assertAll(
         () -> assertNotNull(context.resourceResolver().getResource(pagePath)),
-        () -> assertFalse(handler.canHandle(pagePath)),
-        () -> assertTrue(handler.canHandle(fragmentPath)),
+        () -> assertFalse(handler.canHandle(pageResource)),
+        () -> assertTrue(handler.canHandle(fragmentResource)),
         () -> assertEquals(expectedLength, actualLength),
         () -> assertEquals(expectedKey, publishData.getKey()),
         () -> assertEquals(expectedKey, unpublishData.getKey())

@@ -37,7 +37,7 @@ class AssetContent {
         ResourceResolver resourceResolver
             = resourceResolverFactory.getAdministrativeResourceResolver(null)
     ) {
-      if (!ResourcePrimaryNodeTypeChecker.isAsset(slingUri, resourceResolverFactory)) {
+      if (!ResourcePrimaryNodeTypeChecker.isAsset(slingUri, resourceResolver)) {
         return Optional.empty();
       }
       return Optional.of(resourceResolver.resolve(slingUri.toString()))

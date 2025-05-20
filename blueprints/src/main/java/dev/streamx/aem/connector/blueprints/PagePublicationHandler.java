@@ -3,6 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Page;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceToIngest;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +18,6 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.api.uri.SlingUri;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -63,11 +63,10 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    SlingUri slingUri = DefaultSlingUriBuilder.build(resourcePath, resolverFactory);
+  public boolean canHandle(ResourceToIngest resource) {
     return config.get().enabled()
-        && pageDataService.isPage(slingUri)
-        && !ResourcePrimaryNodeTypeChecker.isXF(slingUri, resolverFactory);
+        && pageDataService.isPage(resource)
+        && !ResourcePrimaryNodeTypeChecker.isXF(resource);
   }
 
   @Override

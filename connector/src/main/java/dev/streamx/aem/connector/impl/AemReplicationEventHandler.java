@@ -3,11 +3,14 @@ package dev.streamx.aem.connector.impl;
 import com.day.cq.replication.ReplicationAction;
 import com.day.cq.replication.ReplicationActionType;
 import dev.streamx.sling.connector.PublicationAction;
+import dev.streamx.sling.connector.ResourceToIngest;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -28,18 +31,21 @@ public class AemReplicationEventHandler implements EventHandler {
   private static final Logger LOG = LoggerFactory.getLogger(AemReplicationEventHandler.class);
 
   private final StreamxPublicationService streamxPublicationService;
+  private final ResourceResolverFactory resourceResolverFactory;
   private final Map<ReplicationActionType, PublicationAction> actionsMap;
 
   @Activate
   public AemReplicationEventHandler(
       @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      StreamxPublicationService streamxPublicationService
+      StreamxPublicationService streamxPublicationService,
+      @Reference(cardinality = ReferenceCardinality.MANDATORY)
+      ResourceResolverFactory resourceResolverFactory
   ) {
     this.streamxPublicationService = streamxPublicationService;
+    this.resourceResolverFactory = resourceResolverFactory;
     actionsMap = Map.of(
         ReplicationActionType.ACTIVATE, PublicationAction.PUBLISH,
-        ReplicationActionType.DEACTIVATE, PublicationAction.UNPUBLISH,
-        ReplicationActionType.DELETE, PublicationAction.UNPUBLISH
+        ReplicationActionType.DEACTIVATE, PublicationAction.UNPUBLISH
     );
   }
 
@@ -68,11 +74,17 @@ public class AemReplicationEventHandler implements EventHandler {
 
   private void handleIngestion(PublicationAction ingestionAction, List<String> paths) {
     LOG.trace("Handling ingestion {} for {}", ingestionAction, paths);
+    List<ResourceToIngest> resourcesToIngest = paths.stream()
+        .map(path -> new ResourceToIngest(
+            path,
+            PrimaryNodeTypeExtractor.extract(path, resourceResolverFactory)
+        ))
+        .collect(Collectors.toList());
     try {
       if (ingestionAction == PublicationAction.PUBLISH) {
-        streamxPublicationService.publish(paths);
+        streamxPublicationService.publish(resourcesToIngest);
       } else if (ingestionAction == PublicationAction.UNPUBLISH) {
-        streamxPublicationService.unpublish(paths);
+        streamxPublicationService.unpublish(resourcesToIngest);
       } else {
         LOG.warn("Unknown ingestion action: {}. Ignored paths: {}", ingestionAction, paths);
       }

@@ -3,6 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceToIngest;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
@@ -19,7 +20,6 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.api.uri.SlingUri;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -65,16 +65,15 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    boolean canHandle = config.get().enabled() && isXF(resourcePath);
-    LOG.trace("Can handle {}? Answer: {}", resourcePath, canHandle);
+  public boolean canHandle(ResourceToIngest resource) {
+    boolean canHandle = config.get().enabled() && isXF(resource);
+    LOG.trace("Can handle {}? Answer: {}", resource.getPath(), canHandle);
     return canHandle;
   }
 
-  private boolean isXF(String resourcePath) {
-    SlingUri slingUri = DefaultSlingUriBuilder.build(resourcePath, resourceResolverFactory);
-    boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(slingUri, resourceResolverFactory);
-    LOG.trace("Is {} an XF? Answer: {}", slingUri, isXF);
+  private boolean isXF(ResourceToIngest resource) {
+    boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(resource);
+    LOG.trace("Is {} an XF? Answer: {}", resource.getPath(), isXF);
     return isXF;
   }
 
