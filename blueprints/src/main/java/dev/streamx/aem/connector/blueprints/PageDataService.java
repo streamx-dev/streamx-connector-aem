@@ -81,16 +81,16 @@ public class PageDataService {
   }
 
   boolean isPage(SlingUri slingUri) {
-    boolean isPage = new PageCandidate(resourceResolverFactory, slingUri, pagesPathRegexp).isPage();
+    boolean isPage = ResourcePrimaryNodeTypeChecker.isPage(slingUri, pagesPathRegexp, resourceResolverFactory);
     LOG.trace("Is {} a page? Answer: {}", slingUri, isPage);
     return isPage;
   }
 
   boolean isPageTemplate(String resourcePath) {
-    SlingUri slingUri = new DefaultSlingUriBuilder(resourcePath, resourceResolverFactory).build();
-    boolean isPageTemplate = new PageCandidate(
-        resourceResolverFactory, slingUri, templatesPathRegexp
-    ).isPage();
+    SlingUri slingUri = DefaultSlingUriBuilder.build(resourcePath, resourceResolverFactory);
+    boolean isPageTemplate = ResourcePrimaryNodeTypeChecker.isPage(
+        slingUri, templatesPathRegexp, resourceResolverFactory
+    );
     LOG.trace("Is {} a page template? Answer: {}", resourcePath, isPageTemplate);
     return isPageTemplate;
   }
