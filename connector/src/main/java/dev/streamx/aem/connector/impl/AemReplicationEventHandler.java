@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.impl;
 import com.day.cq.replication.ReplicationAction;
 import com.day.cq.replication.ReplicationActionType;
 import dev.streamx.sling.connector.PublicationAction;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.List;
@@ -74,8 +74,8 @@ public class AemReplicationEventHandler implements EventHandler {
 
   private void handleIngestion(PublicationAction ingestionAction, List<String> paths) {
     LOG.trace("Handling ingestion {} for {}", ingestionAction, paths);
-    List<ResourceToIngest> resourcesToIngest = paths.stream()
-        .map(path -> new ResourceToIngest(
+    List<ResourceInfo> resourcesToIngest = paths.stream()
+        .map(path -> new ResourceInfo(
             path,
             PrimaryNodeTypeExtractor.extract(path, resourceResolverFactory)
         ))

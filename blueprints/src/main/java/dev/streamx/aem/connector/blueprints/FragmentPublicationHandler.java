@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
@@ -65,13 +65,13 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
   }
 
   @Override
-  public boolean canHandle(ResourceToIngest resource) {
+  public boolean canHandle(ResourceInfo resource) {
     boolean canHandle = config.get().enabled() && isXF(resource);
     LOG.trace("Can handle {}? Answer: {}", resource.getPath(), canHandle);
     return canHandle;
   }
 
-  private boolean isXF(ResourceToIngest resource) {
+  private boolean isXF(ResourceInfo resource) {
     boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(resource);
     LOG.trace("Is {} an XF? Answer: {}", resource.getPath(), isXF);
     return isXF;
@@ -87,7 +87,7 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
     ) {
       return Optional.of(resourceResolver.resolve(resourcePath))
           .filter(resolvedResource -> !ResourceUtil.isNonExistingResource(resolvedResource))
-          .map(this::toPublishData)
+          .map(resource -> toPublishData(resource, resourceResolver))
           .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + resourcePath));
     } catch (LoginException exception) {
       String message = String.format("Cannot generate PublishData for %s", resourcePath);
@@ -108,7 +108,7 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
     return String.format("%s.html", resourcePath);
   }
 
-  private PublishData<Fragment> toPublishData(Resource resource) {
+  private PublishData<Fragment> toPublishData(Resource resource, ResourceResolver resourceResolver) {
     Map<String, String> messageProps = Optional.ofNullable(
             resource.getChild(
                 config.get().rel$_$path$_$to$_$node$_$with$_$jcr$_$prop$_$for$_$sx$_$type()
@@ -124,14 +124,14 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
         toStreamXKey(resource.getPath()),
         config.get().publication_channel(),
         Fragment.class,
-        toFragment(resource),
+        toFragment(resource, resourceResolver),
         messageProps
     );
   }
 
-  private Fragment toFragment(Resource resource) {
+  private Fragment toFragment(Resource resource, ResourceResolver resourceResolver) {
     try {
-      InputStream inputStream = pageDataService.getStorageData(resource);
+      InputStream inputStream = pageDataService.getStorageData(resource, resourceResolver);
       return new Fragment(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
     } catch (IOException exception) {
       String message = String.format("Cannot create fragment for %s", resource);

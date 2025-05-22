@@ -4,7 +4,7 @@ import dev.streamx.blueprints.data.RenderingContext;
 import dev.streamx.blueprints.data.RenderingContext.OutputType;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -52,7 +52,7 @@ public class RenderingContextPublicationHandler implements PublicationHandler<Re
   }
 
   @Override
-  public boolean canHandle(ResourceToIngest resource) {
+  public boolean canHandle(ResourceInfo resource) {
     return enabled && pageDataService.isPageTemplate(resource);
   }
 

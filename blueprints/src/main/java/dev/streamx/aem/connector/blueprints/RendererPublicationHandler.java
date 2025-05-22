@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Renderer;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +52,7 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
   }
 
   @Override
-  public boolean canHandle(ResourceToIngest resource) {
+  public boolean canHandle(ResourceInfo resource) {
     return enabled && pageDataService.isPageTemplate(resource);
   }
 
@@ -70,7 +70,7 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
           getStoragePath(resourcePath),
           publicationChannel,
           Renderer.class,
-          resolveData(resource));
+          resolveData(resource, resourceResolver));
     }
   }
 
@@ -82,8 +82,8 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
         Renderer.class);
   }
 
-  private Renderer resolveData(Resource resource) {
-    try (InputStream inputStream = getStorageData(resource)) {
+  private Renderer resolveData(Resource resource, ResourceResolver resourceResolver) {
+    try (InputStream inputStream = getStorageData(resource, resourceResolver)) {
       return new Renderer(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
     } catch (IOException e) {
       throw new UncheckedIOException("Cannot create renderer model", e);
@@ -95,8 +95,9 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
   }
 
 
-  public InputStream getStorageData(Resource resource) throws IOException {
-    return pageDataService.getStorageData(resource);
+  public InputStream getStorageData(Resource resource,
+      ResourceResolver resourceResolver) throws IOException {
+    return pageDataService.getStorageData(resource, resourceResolver);
   }
 
   private ResourceResolver createResourceResolver() {

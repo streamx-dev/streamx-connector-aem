@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Page;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +63,7 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
   }
 
   @Override
-  public boolean canHandle(ResourceToIngest resource) {
+  public boolean canHandle(ResourceInfo resource) {
     return config.get().enabled()
         && pageDataService.isPage(resource)
         && !ResourcePrimaryNodeTypeChecker.isXF(resource);
@@ -94,7 +94,7 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
           getPagePath(resourcePath),
           config.get().publication_channel(),
           Page.class,
-          getPageModel(resource),
+          getPageModel(resource, resourceResolver),
           messageProps
       );
     }
@@ -112,9 +112,9 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
     return resourcePath + ".html";
   }
 
-  private Page getPageModel(Resource resource) {
+  private Page getPageModel(Resource resource, ResourceResolver resourceResolver) {
     try {
-      InputStream inputStream = pageDataService.getStorageData(resource);
+      InputStream inputStream = pageDataService.getStorageData(resource, resourceResolver);
       return new Page(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
     } catch (IOException e) {
       throw new UncheckedIOException("Cannot create page model", e);

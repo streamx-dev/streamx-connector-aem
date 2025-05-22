@@ -1,6 +1,6 @@
 package dev.streamx.aem.connector.impl;
 
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.Collections;
@@ -60,11 +60,11 @@ public class AemDeletionEventHandler implements EventHandler {
 
     String path = (String) event.getProperty("path");
     String primaryNodeType = PrimaryNodeTypeExtractor.extract(path, resourceResolverFactory);
-    ResourceToIngest resource = new ResourceToIngest(path, primaryNodeType);
+    ResourceInfo resource = new ResourceInfo(path, primaryNodeType);
     handleIngestion(resource);
   }
 
-  private void handleIngestion(ResourceToIngest resource) {
+  private void handleIngestion(ResourceInfo resource) {
     LOG.trace("Unpublishing {}", resource.getPath());
     try {
       streamxPublicationService.unpublish(Collections.singletonList(resource));

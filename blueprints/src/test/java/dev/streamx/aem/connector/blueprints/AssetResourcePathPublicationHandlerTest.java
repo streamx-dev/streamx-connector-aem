@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -101,10 +101,10 @@ class AssetResourcePathPublicationHandlerTest {
         () -> assertNotNull(resourceResolver.getResource(irrelevantPath)),
         () -> assertNotNull(resourceResolver.getResource(mountainPath)),
         () -> assertNotNull(resourceResolver.getResource(mountainContent)),
-        () -> assertFalse(enabled.canHandle(new ResourceToIngest(mountainPath, "dam:Asset"))),
-        () -> assertFalse(disabled.canHandle(new ResourceToIngest(mountainPath, "dam:Asset"))),
-        () -> assertFalse(enabled.canHandle(new ResourceToIngest(irrelevantPath, "cq:Page"))),
-        () -> assertFalse(enabled.canHandle(new ResourceToIngest(mountainContent, "nt:file")))
+        () -> assertFalse(enabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))),
+        () -> assertFalse(disabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))),
+        () -> assertFalse(enabled.canHandle(new ResourceInfo(irrelevantPath, "cq:Page"))),
+        () -> assertFalse(enabled.canHandle(new ResourceInfo(mountainContent, "nt:file")))
     );
   }
 

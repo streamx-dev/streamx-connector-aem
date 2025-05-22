@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.day.cq.replication.ReplicationAction;
 import com.day.cq.replication.ReplicationActionType;
 import dev.streamx.aem.connector.test.util.ResourceResolverFactoryMocks;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import io.wcm.testing.mock.aem.junit5.AemContext;
@@ -27,8 +27,8 @@ class AemReplicationEventHandlerTest {
 
   private final AemContext context = new AemContext();
   private AemReplicationEventHandler handler;
-  private List<ResourceToIngest> publishedResources;
-  private List<ResourceToIngest> unpublishedResources;
+  private List<ResourceInfo> publishedResources;
+  private List<ResourceInfo> unpublishedResources;
 
   @SuppressWarnings("ReturnOfNull")
   @BeforeEach
@@ -44,7 +44,7 @@ class AemReplicationEventHandlerTest {
     doAnswer(
         invocation -> {
           @SuppressWarnings("unchecked")
-          List<ResourceToIngest> resources = (List<ResourceToIngest>) invocation.getArgument(0, List.class);
+          List<ResourceInfo> resources = (List<ResourceInfo>) invocation.getArgument(0, List.class);
           publishedResources = resources;
           return null;
         }
@@ -52,7 +52,7 @@ class AemReplicationEventHandlerTest {
     doAnswer(
         invocation -> {
           @SuppressWarnings("unchecked")
-          List<ResourceToIngest> resources = (List<ResourceToIngest>) invocation.getArgument(0, List.class);
+          List<ResourceInfo> resources = (List<ResourceInfo>) invocation.getArgument(0, List.class);
           unpublishedResources = resources;
           return null;
         }
@@ -109,7 +109,7 @@ class AemReplicationEventHandlerTest {
     assertResource(unpublishedResources.get(1), "/content/wknd/us/pl", "dam:Asset");
   }
 
-  private static void assertResource(ResourceToIngest resource, String expectedPath, String expectedPrimaryNodeType) {
+  private static void assertResource(ResourceInfo resource, String expectedPath, String expectedPrimaryNodeType) {
     assertThat(resource.getPath()).isEqualTo(expectedPath);
     assertThat(resource.getPrimaryNodeType()).isEqualTo(expectedPrimaryNodeType);
   }

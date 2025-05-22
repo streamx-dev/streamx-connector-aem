@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.IOException;
@@ -76,9 +76,9 @@ class PageDataServiceTest {
     Resource randomPageResource = Optional.ofNullable(
         resourceResolver.getResource("/content/random-page")
     ).orElseThrow();
-    InputStream franklinIS = pageDataService.getStorageData(franklinPageResource);
-    InputStream usualAEMIS = pageDataService.getStorageData(usualAEMPageResource);
-    InputStream randomIS = pageDataService.getStorageData(randomPageResource);
+    InputStream franklinIS = pageDataService.getStorageData(franklinPageResource, resourceResolver);
+    InputStream usualAEMIS = pageDataService.getStorageData(usualAEMPageResource, resourceResolver);
+    InputStream randomIS = pageDataService.getStorageData(randomPageResource, resourceResolver);
     String franklinMarkup = IOUtils.toString(franklinIS, StandardCharsets.UTF_8);
     String usualAEMMarkup = IOUtils.toString(usualAEMIS, StandardCharsets.UTF_8);
     String randomMarkup = IOUtils.toString(randomIS, StandardCharsets.UTF_8);
@@ -93,9 +93,9 @@ class PageDataServiceTest {
   void mustCheckIfPage() {
     PageDataService pageDataService = Optional.ofNullable(context.getService(PageDataService.class))
         .orElseThrow();
-    ResourceToIngest franklinPageResource = new ResourceToIngest("/content/franklin-page", "cq:Page");
-    ResourceToIngest usualAEMPageResource = new ResourceToIngest("/content/usual-aem-page", "cq:Page");
-    ResourceToIngest randomPageResource = new ResourceToIngest("/blogs/random-page", "cq:Page");
+    ResourceInfo franklinPageResource = new ResourceInfo("/content/franklin-page", "cq:Page");
+    ResourceInfo usualAEMPageResource = new ResourceInfo("/content/usual-aem-page", "cq:Page");
+    ResourceInfo randomPageResource = new ResourceInfo("/blogs/random-page", "cq:Page");
     assertTrue(pageDataService.isPage(franklinPageResource));
     assertTrue(pageDataService.isPage(usualAEMPageResource));
     assertFalse(pageDataService.isPage(randomPageResource));

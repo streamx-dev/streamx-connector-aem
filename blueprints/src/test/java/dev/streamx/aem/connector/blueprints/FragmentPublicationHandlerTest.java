@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublishData;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
@@ -79,9 +79,9 @@ class FragmentPublicationHandlerTest {
   @Test
   void mustHandle() throws StreamxPublicationException {
     String pagePath = "/content/usual-aem-page";
-    ResourceToIngest pageResource = new ResourceToIngest(pagePath, "cq:Page");
+    ResourceInfo pageResource = new ResourceInfo(pagePath, "cq:Page");
     String fragmentPath = "/content/experience-fragments/fragment";
-    ResourceToIngest fragmentResource = new ResourceToIngest(fragmentPath, "cq:Page");
+    ResourceInfo fragmentResource = new ResourceInfo(fragmentPath, "cq:Page");
     String expectedKey = "/content/experience-fragments/fragment.html";
     FragmentPublicationHandler handler = context.registerInjectActivateService(
         FragmentPublicationHandler.class

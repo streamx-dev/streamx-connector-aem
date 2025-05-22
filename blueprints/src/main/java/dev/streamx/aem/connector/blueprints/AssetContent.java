@@ -48,7 +48,7 @@ class AssetContent {
               () -> {
                 SimpleInternalRequest simpleInternalRequest
                     = new SimpleInternalRequest(
-                    slingUri, slingRequestProcessor, resourceResolverFactory
+                    slingUri, slingRequestProcessor, resourceResolver
                 );
                 return simpleInternalRequest.getResponseAsInputStream();
               }

@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import com.adobe.aem.formsndocuments.util.FMConstants;
 import com.day.cq.dam.api.DamConstants;
 import com.drew.lang.annotations.NotNull;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import org.apache.sling.api.resource.Resource;
@@ -20,7 +20,7 @@ final class ResourcePrimaryNodeTypeChecker {
     // no instances
   }
 
-  static boolean isAsset(ResourceToIngest resource) {
+  static boolean isAsset(ResourceInfo resource) {
     return DamConstants.NT_DAM_ASSET.equals(resource.getPrimaryNodeType());
   }
 
@@ -28,7 +28,7 @@ final class ResourcePrimaryNodeTypeChecker {
     return hasPrimaryNodeType(slingUri, DamConstants.NT_DAM_ASSET, resourceResolver);
   }
 
-  static boolean isPage(ResourceToIngest resource, String requiredPathRegex) {
+  static boolean isPage(ResourceInfo resource, String requiredPathRegex) {
     boolean isPageNodeType = FMConstants.CQ_PAGE_NODETYPE.equals(resource.getPrimaryNodeType());
     boolean isRequiredPath = resource.getPath().matches(requiredPathRegex);
     boolean isPage = isPageNodeType && isRequiredPath;
@@ -39,7 +39,7 @@ final class ResourcePrimaryNodeTypeChecker {
     return isPage;
   }
 
-  static boolean isXF(ResourceToIngest resource) {
+  static boolean isXF(ResourceInfo resource) {
     boolean isPage = isPage(resource, ".*");
     boolean isXFPath = resource.getPath().startsWith("/content/experience-fragments");
     boolean isXF = isPage && isXFPath;

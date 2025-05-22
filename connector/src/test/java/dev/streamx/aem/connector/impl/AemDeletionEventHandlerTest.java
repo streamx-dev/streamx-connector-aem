@@ -9,7 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import dev.streamx.aem.connector.test.util.ResourceResolverFactoryMocks;
-import dev.streamx.sling.connector.ResourceToIngest;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -29,7 +29,7 @@ class AemDeletionEventHandlerTest {
 
   private final AemContext context = new AemContext();
   private final StreamxPublicationService streamxPublicationServiceMock = mock(StreamxPublicationService.class);
-  private final ArgumentCaptor<List<ResourceToIngest>> unpublishedResourcesCaptor = ArgumentCaptor.forClass(List.class);
+  private final ArgumentCaptor<List<ResourceInfo>> unpublishedResourcesCaptor = ArgumentCaptor.forClass(List.class);
   private AemDeletionEventHandler handler;
 
   @BeforeEach
@@ -79,7 +79,7 @@ class AemDeletionEventHandlerTest {
 
     // then
     verify(streamxPublicationServiceMock, times(2)).unpublish(unpublishedResourcesCaptor.capture());
-    List<ResourceToIngest> allUnpublishedResources = unpublishedResourcesCaptor.getAllValues().stream()
+    List<ResourceInfo> allUnpublishedResources = unpublishedResourcesCaptor.getAllValues().stream()
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
 
@@ -91,7 +91,7 @@ class AemDeletionEventHandlerTest {
     verify(streamxPublicationServiceMock, never()).publish(anyList());
   }
 
-  private static void assertResource(ResourceToIngest resource, String expectedPath, String expectedPrimaryNodeType) {
+  private static void assertResource(ResourceInfo resource, String expectedPath, String expectedPrimaryNodeType) {
     assertThat(resource.getPath()).isEqualTo(expectedPath);
     assertThat(resource.getPrimaryNodeType()).isEqualTo(expectedPrimaryNodeType);
   }
