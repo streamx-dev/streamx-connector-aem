@@ -96,16 +96,17 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
         LOG.error("Resource not found for publish data generation: {}", slingUri);
         return null;
       }
-      return generatePublishData(slingUri, messageProps);
+      return generatePublishData(slingUri, messageProps, resourceResolver);
     }
   }
 
   private PublishData<Asset> generatePublishData(
       SlingUri slingUri,
-      Map<String, String> messageProps
+      Map<String, String> messageProps,
+      ResourceResolver resourceResolver
   ) {
     LOG.trace("Generating publish data for '{}'", slingUri);
-    Asset asset = generateAssetModel(slingUri);
+    Asset asset = generateAssetModel(slingUri, resourceResolver);
     return new PublishData<>(
         slingUri.toString(), config.get().publication_channel(), Asset.class,
         asset, messageProps
@@ -128,10 +129,9 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
     }
   }
 
-  private Asset generateAssetModel(SlingUri slingUri) {
+  private Asset generateAssetModel(SlingUri slingUri, ResourceResolver resourceResolver) {
     LOG.trace("Generating {} out of {}", Asset.class, slingUri);
-    AssetContent assetContent = new AssetContent(slingUri, slingRequestProcessor, resolverFactory);
-    return assetContent.get()
+    return AssetContent.get(slingUri, slingRequestProcessor, resourceResolver)
         .map(inputStream -> new Asset(ByteBuffer.wrap(toByteArray(inputStream))))
         .orElseThrow();
   }
