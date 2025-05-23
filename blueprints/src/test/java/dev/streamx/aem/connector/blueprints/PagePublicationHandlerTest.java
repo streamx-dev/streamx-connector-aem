@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.RandomBytesWriter;
-import dev.streamx.blueprints.data.Fragment;
+import dev.streamx.blueprints.data.Page;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class FragmentPublicationHandlerTest {
+class PagePublicationHandlerTest {
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
@@ -34,7 +34,7 @@ class FragmentPublicationHandlerTest {
         HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver
     ) throws IOException {
       String requestURI = request.getRequestURI();
-      if (requestURI.equals("/content/experience-fragments/fragment.html")) {
+      if (requestURI.equals("/content/pages/usual-aem-page.html")) {
         RandomBytesWriter.writeRandomBytes(response, DATA_SIZE);
       } else {
         response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
@@ -46,41 +46,28 @@ class FragmentPublicationHandlerTest {
   void setup() {
     context.registerService(SlingRequestProcessor.class, new BasicRequestProcessor());
     context.registerInjectActivateService(PageDataService.class);
-
-    context.load().json(
-        "/dev/streamx/aem/connector/blueprints/franklin-page.json",
-        "/content/franklin-page"
-    );
     context.load().json(
         "/dev/streamx/aem/connector/blueprints/usual-aem-page.json",
-        "/content/usual-aem-page"
+        "/content/pages/usual-aem-page"
     );
-    context.load().json(
-        "/dev/streamx/aem/connector/blueprints/usual-aem-page.json",
-        "/content/experience-fragments/fragment"
-    );
-    context.build().resource("/content/random-page").commit();
   }
 
   @SuppressWarnings("resource")
   @Test
   void mustHandle() {
-    String pagePath = "/content/usual-aem-page";
+    String pagePath = "/content/pages/usual-aem-page";
     ResourceInfo pageResource = new ResourceInfo(pagePath, "cq:Page");
-    String fragmentPath = "/content/experience-fragments/fragment";
-    ResourceInfo fragmentResource = new ResourceInfo(fragmentPath, "cq:Page");
-    String expectedKey = "/content/experience-fragments/fragment.html";
-    FragmentPublicationHandler handler = context.registerInjectActivateService(
-        FragmentPublicationHandler.class
+    String expectedKey = "/content/pages/usual-aem-page.html";
+    PagePublicationHandler handler = context.registerInjectActivateService(
+        PagePublicationHandler.class
     );
     @SuppressWarnings("MagicNumber")
     int expectedLength = 1625;
-    PublishData<Fragment> publishData = handler.getPublishData(fragmentPath);
+    PublishData<Page> publishData = handler.getPublishData(pagePath);
     int actualLength = publishData.getModel().getContent().array().length;
-    UnpublishData<Fragment> unpublishData = handler.getUnpublishData(fragmentPath);
+    UnpublishData<Page> unpublishData = handler.getUnpublishData(pagePath);
     assertThat(context.resourceResolver().getResource(pagePath)).isNotNull();
-    assertThat(handler.canHandle(pageResource)).isFalse();
-    assertThat(handler.canHandle(fragmentResource)).isTrue();
+    assertThat(handler.canHandle(pageResource)).isTrue();
     assertThat(actualLength).isEqualTo(expectedLength);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);

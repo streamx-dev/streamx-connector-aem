@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.RandomBytesWriter;
-import dev.streamx.blueprints.data.Fragment;
+import dev.streamx.blueprints.data.Renderer;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class FragmentPublicationHandlerTest {
+class RendererPublicationHandlerTest {
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
@@ -34,7 +34,7 @@ class FragmentPublicationHandlerTest {
         HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver
     ) throws IOException {
       String requestURI = request.getRequestURI();
-      if (requestURI.equals("/content/experience-fragments/fragment.html")) {
+      if (requestURI.equals("/content/experience-fragments/templates/template.html")) {
         RandomBytesWriter.writeRandomBytes(response, DATA_SIZE);
       } else {
         response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
@@ -46,41 +46,28 @@ class FragmentPublicationHandlerTest {
   void setup() {
     context.registerService(SlingRequestProcessor.class, new BasicRequestProcessor());
     context.registerInjectActivateService(PageDataService.class);
-
     context.load().json(
-        "/dev/streamx/aem/connector/blueprints/franklin-page.json",
-        "/content/franklin-page"
+        "/dev/streamx/aem/connector/blueprints/sample-page-template.json",
+        "/content/experience-fragments/templates/template"
     );
-    context.load().json(
-        "/dev/streamx/aem/connector/blueprints/usual-aem-page.json",
-        "/content/usual-aem-page"
-    );
-    context.load().json(
-        "/dev/streamx/aem/connector/blueprints/usual-aem-page.json",
-        "/content/experience-fragments/fragment"
-    );
-    context.build().resource("/content/random-page").commit();
   }
 
   @SuppressWarnings("resource")
   @Test
   void mustHandle() {
-    String pagePath = "/content/usual-aem-page";
-    ResourceInfo pageResource = new ResourceInfo(pagePath, "cq:Page");
-    String fragmentPath = "/content/experience-fragments/fragment";
-    ResourceInfo fragmentResource = new ResourceInfo(fragmentPath, "cq:Page");
-    String expectedKey = "/content/experience-fragments/fragment.html";
-    FragmentPublicationHandler handler = context.registerInjectActivateService(
-        FragmentPublicationHandler.class
+    String pageTemplatePath = "/content/experience-fragments/templates/template";
+    ResourceInfo pageTemplateResource = new ResourceInfo(pageTemplatePath, "cq:Page");
+    String expectedKey = "/content/experience-fragments/templates/template.html";
+    RendererPublicationHandler handler = context.registerInjectActivateService(
+        RendererPublicationHandler.class
     );
     @SuppressWarnings("MagicNumber")
     int expectedLength = 1625;
-    PublishData<Fragment> publishData = handler.getPublishData(fragmentPath);
-    int actualLength = publishData.getModel().getContent().array().length;
-    UnpublishData<Fragment> unpublishData = handler.getUnpublishData(fragmentPath);
-    assertThat(context.resourceResolver().getResource(pagePath)).isNotNull();
-    assertThat(handler.canHandle(pageResource)).isFalse();
-    assertThat(handler.canHandle(fragmentResource)).isTrue();
+    PublishData<Renderer> publishData = handler.getPublishData(pageTemplatePath);
+    int actualLength = publishData.getModel().getTemplate().array().length;
+    UnpublishData<Renderer> unpublishData = handler.getUnpublishData(pageTemplatePath);
+    assertThat(context.resourceResolver().getResource(pageTemplatePath)).isNotNull();
+    assertThat(handler.canHandle(pageTemplateResource)).isTrue();
     assertThat(actualLength).isEqualTo(expectedLength);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
