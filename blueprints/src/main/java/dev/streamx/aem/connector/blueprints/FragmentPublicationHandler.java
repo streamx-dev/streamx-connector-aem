@@ -4,7 +4,6 @@ import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -33,12 +31,11 @@ import org.slf4j.LoggerFactory;
 @Component(service = PublicationHandler.class)
 @Designate(ocd = FragmentPublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for Experience Fragments")
-public class FragmentPublicationHandler implements PublicationHandler<Fragment> {
+public class FragmentPublicationHandler extends BasePublicationHandler<Fragment> {
 
   private static final Logger LOG = LoggerFactory.getLogger(FragmentPublicationHandler.class);
 
   private final PageDataService pageDataService;
-  private final ResourceResolverFactory resourceResolverFactory;
   private final AtomicReference<FragmentPublicationHandlerConfig> config;
 
   @Activate
@@ -49,8 +46,8 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
       ResourceResolverFactory resourceResolverFactory,
       FragmentPublicationHandlerConfig config
   ) {
+    super(resourceResolverFactory);
     this.pageDataService = pageDataService;
-    this.resourceResolverFactory = resourceResolverFactory;
     this.config = new AtomicReference<>(config);
   }
 
@@ -72,26 +69,20 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
   }
 
   private boolean isXF(ResourceInfo resource) {
-    boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(resource);
-    LOG.trace("Is {} an XF? Answer: {}", resource.getPath(), isXF);
-    return isXF;
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
+      boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(resource, resourceResolver);
+      LOG.trace("Is {} an XF? Answer: {}", resource.getPath(), isXF);
+      return isXF;
+    }
   }
 
   @Override
-  @SuppressWarnings({"squid:S1874", "deprecation"})
-  public PublishData<Fragment> getPublishData(String resourcePath)
-      throws StreamxPublicationException {
-    try (
-        ResourceResolver resourceResolver
-            = resourceResolverFactory.getAdministrativeResourceResolver(null)
-    ) {
+  public PublishData<Fragment> getPublishData(String resourcePath) {
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
       return Optional.of(resourceResolver.resolve(resourcePath))
           .filter(resolvedResource -> !ResourceUtil.isNonExistingResource(resolvedResource))
           .map(resource -> toPublishData(resource, resourceResolver))
           .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + resourcePath));
-    } catch (LoginException exception) {
-      String message = String.format("Cannot generate PublishData for %s", resourcePath);
-      throw new StreamxPublicationException(message, exception);
     }
   }
 

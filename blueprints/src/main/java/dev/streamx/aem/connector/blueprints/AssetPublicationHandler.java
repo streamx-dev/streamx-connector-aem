@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -36,11 +35,10 @@ import org.slf4j.LoggerFactory;
 @Component(service = PublicationHandler.class)
 @Designate(ocd = AssetPublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for AEM Assets")
-public class AssetPublicationHandler implements PublicationHandler<Asset> {
+public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssetPublicationHandler.class);
 
-  private final ResourceResolverFactory resolverFactory;
   private final SlingRequestProcessor slingRequestProcessor;
   private final AtomicReference<AssetPublicationHandlerConfig> config;
 
@@ -52,7 +50,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
       SlingRequestProcessor slingRequestProcessor,
       AssetPublicationHandlerConfig config
   ) {
-    this.resolverFactory = resolverFactory;
+    super(resolverFactory);
     this.slingRequestProcessor = slingRequestProcessor;
     this.config = new AtomicReference<>(config);
   }
@@ -70,11 +68,13 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   @Override
   public boolean canHandle(ResourceInfo resource) {
     String resourcePath = resource.getPath();
-    boolean canHandle = config.get().enabled()
-        && resourcePath.matches(config.get().assets_path_regexp())
-        && ResourcePrimaryNodeTypeChecker.isAsset(resource);
-    LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
-    return canHandle;
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
+      boolean canHandle = config.get().enabled()
+          && resourcePath.matches(config.get().assets_path_regexp())
+          && ResourcePrimaryNodeTypeChecker.isAsset(resource, resourceResolver);
+      LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
+      return canHandle;
+    }
   }
 
   @Override
@@ -110,14 +110,6 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
         slingUri.toString(), config.get().publication_channel(), Asset.class,
         asset, messageProps
     );
-  }
-
-  private ResourceResolver createResourceResolver() {
-    try {
-      return resolverFactory.getAdministrativeResourceResolver(null);
-    } catch (LoginException e) {
-      throw new IllegalStateException("Cannot create ResourceResolver", e);
-    }
   }
 
   @Override

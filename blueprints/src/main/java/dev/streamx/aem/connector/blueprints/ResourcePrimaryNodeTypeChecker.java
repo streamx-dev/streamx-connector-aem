@@ -1,11 +1,13 @@
 package dev.streamx.aem.connector.blueprints;
 
-import com.adobe.aem.formsndocuments.util.FMConstants;
 import com.day.cq.dam.api.DamConstants;
+import com.day.cq.wcm.api.NameConstants;
 import com.drew.lang.annotations.NotNull;
 import dev.streamx.sling.connector.ResourceInfo;
 import javax.jcr.Node;
-import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeManager;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.uri.SlingUri;
@@ -20,16 +22,16 @@ final class ResourcePrimaryNodeTypeChecker {
     // no instances
   }
 
-  static boolean isAsset(ResourceInfo resource) {
-    return DamConstants.NT_DAM_ASSET.equals(resource.getPrimaryNodeType());
+  static boolean isAsset(ResourceInfo resource, ResourceResolver resourceResolver) {
+    return hasPrimaryNodeType(resource, DamConstants.NT_DAM_ASSET, resourceResolver);
   }
 
   static boolean isAsset(SlingUri slingUri, ResourceResolver resourceResolver) {
     return hasPrimaryNodeType(slingUri, DamConstants.NT_DAM_ASSET, resourceResolver);
   }
 
-  static boolean isPage(ResourceInfo resource, String requiredPathRegex) {
-    boolean isPageNodeType = FMConstants.CQ_PAGE_NODETYPE.equals(resource.getPrimaryNodeType());
+  static boolean isPage(ResourceInfo resource, String requiredPathRegex, ResourceResolver resourceResolver) {
+    boolean isPageNodeType = hasPrimaryNodeType(resource, NameConstants.NT_PAGE, resourceResolver);
     boolean isRequiredPath = resource.getPath().matches(requiredPathRegex);
     boolean isPage = isPageNodeType && isRequiredPath;
     LOG.trace(
@@ -39,8 +41,8 @@ final class ResourcePrimaryNodeTypeChecker {
     return isPage;
   }
 
-  static boolean isXF(ResourceInfo resource) {
-    boolean isPage = isPage(resource, ".*");
+  static boolean isXF(ResourceInfo resource, ResourceResolver resourceResolver) {
+    boolean isPage = isPage(resource, ".*", resourceResolver);
     boolean isXFPath = resource.getPath().startsWith("/content/experience-fragments");
     boolean isXF = isPage && isXFPath;
     LOG.trace(
@@ -50,16 +52,34 @@ final class ResourcePrimaryNodeTypeChecker {
     return isXF;
   }
 
+  private static boolean hasPrimaryNodeType(ResourceInfo resourceInfo, @NotNull String expectedPrimaryNodeType, ResourceResolver resourceResolver) {
+    try {
+      Session session = resourceResolver.adaptTo(Session.class);
+      if (session == null) {
+        LOG.error("Failed to get session to verify if {} is a {}", resourceInfo, expectedPrimaryNodeType);
+        return false;
+      }
+      NodeTypeManager nodeTypeManager = session.getWorkspace().getNodeTypeManager();
+      NodeType nodeType = nodeTypeManager.getNodeType(expectedPrimaryNodeType);
+      return nodeType.isNodeType(resourceInfo.getPrimaryNodeType());
+    } catch (Exception exception) {
+      LOG.error("Failed to verify if {} is a {}", resourceInfo, expectedPrimaryNodeType);
+      return false;
+    }
+  }
+
   private static boolean hasPrimaryNodeType(SlingUri slingUri, @NotNull String expectedPrimaryNodeType, ResourceResolver resourceResolver) {
     try {
       Resource resource = resourceResolver.resolve(slingUri.toString());
       Node node = resource.adaptTo(Node.class);
-      if (node != null) {
-        return node.isNodeType(expectedPrimaryNodeType);
+      if (node == null) {
+        LOG.error("Failed to adapt to Node to verify if {} is a {}", slingUri, expectedPrimaryNodeType);
+        return false;
       }
-    } catch (RepositoryException exception) {
-      LOG.error("Failed to extract primary node type from {}", slingUri, exception);
+      return node.isNodeType(expectedPrimaryNodeType);
+    } catch (Exception exception) {
+      LOG.error("Failed to verify if {} is a {}", slingUri, expectedPrimaryNodeType);
+      return false;
     }
-    return false;
   }
 }

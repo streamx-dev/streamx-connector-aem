@@ -1,9 +1,6 @@
 package dev.streamx.aem.connector.blueprints;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.sling.connector.ResourceInfo;
 import io.wcm.testing.mock.aem.junit5.AemContext;
@@ -82,22 +79,20 @@ class PageDataServiceTest {
     String franklinMarkup = IOUtils.toString(franklinIS, StandardCharsets.UTF_8);
     String usualAEMMarkup = IOUtils.toString(usualAEMIS, StandardCharsets.UTF_8);
     String randomMarkup = IOUtils.toString(randomIS, StandardCharsets.UTF_8);
-    assertAll(
-        () -> assertEquals("<html><body><h1>Franklin Page</h1></body></html>", franklinMarkup),
-        () -> assertEquals("<html><body><h1>Usual AEM Page</h1></body></html>", usualAEMMarkup),
-        () -> assertEquals("<html><body><h1>Not Found</h1></body></html>", randomMarkup)
-    );
+    assertThat(franklinMarkup).isEqualTo("<html><body><h1>Franklin Page</h1></body></html>");
+    assertThat(usualAEMMarkup).isEqualTo("<html><body><h1>Usual AEM Page</h1></body></html>");
+    assertThat(randomMarkup).isEqualTo("<html><body><h1>Not Found</h1></body></html>");
   }
 
   @Test
   void mustCheckIfPage() {
-    PageDataService pageDataService = Optional.ofNullable(context.getService(PageDataService.class))
-        .orElseThrow();
+    PageDataService pageDataService = context.getService(PageDataService.class);
+    ResourceResolver resourceResolver = context.resourceResolver();
     ResourceInfo franklinPageResource = new ResourceInfo("/content/franklin-page", "cq:Page");
     ResourceInfo usualAEMPageResource = new ResourceInfo("/content/usual-aem-page", "cq:Page");
     ResourceInfo randomPageResource = new ResourceInfo("/blogs/random-page", "cq:Page");
-    assertTrue(pageDataService.isPage(franklinPageResource));
-    assertTrue(pageDataService.isPage(usualAEMPageResource));
-    assertFalse(pageDataService.isPage(randomPageResource));
+    assertThat(pageDataService.isPage(franklinPageResource, resourceResolver)).isTrue();
+    assertThat(pageDataService.isPage(usualAEMPageResource, resourceResolver)).isTrue();
+    assertThat(pageDataService.isPage(randomPageResource, resourceResolver)).isFalse();
   }
 }

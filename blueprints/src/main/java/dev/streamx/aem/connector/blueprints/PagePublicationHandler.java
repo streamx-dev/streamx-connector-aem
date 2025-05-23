@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -31,12 +30,11 @@ import org.slf4j.LoggerFactory;
 @Component(service = PublicationHandler.class)
 @Designate(ocd = PagePublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for AEM Pages")
-public class PagePublicationHandler implements PublicationHandler<Page> {
+public class PagePublicationHandler extends BasePublicationHandler<Page> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PagePublicationHandler.class);
 
   private final PageDataService pageDataService;
-  private final ResourceResolverFactory resolverFactory;
   private final AtomicReference<PagePublicationHandlerConfig> config;
 
   @Activate
@@ -47,8 +45,8 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
       ResourceResolverFactory resolverFactory,
       PagePublicationHandlerConfig config
   ) {
+    super(resolverFactory);
     this.pageDataService = pageDataService;
-    this.resolverFactory = resolverFactory;
     this.config = new AtomicReference<>(config);
   }
 
@@ -64,9 +62,11 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
 
   @Override
   public boolean canHandle(ResourceInfo resource) {
-    return config.get().enabled()
-        && pageDataService.isPage(resource)
-        && !ResourcePrimaryNodeTypeChecker.isXF(resource);
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
+      return config.get().enabled()
+          && pageDataService.isPage(resource, resourceResolver)
+          && !ResourcePrimaryNodeTypeChecker.isXF(resource, resourceResolver);
+    }
   }
 
   @Override
@@ -118,14 +118,6 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
       return new Page(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
     } catch (IOException e) {
       throw new UncheckedIOException("Cannot create page model", e);
-    }
-  }
-
-  private ResourceResolver createResourceResolver() {
-    try {
-      return resolverFactory.getAdministrativeResourceResolver(null);
-    } catch (LoginException e) {
-      throw new IllegalStateException("Cannot create ResourceResolver", e);
     }
   }
 
