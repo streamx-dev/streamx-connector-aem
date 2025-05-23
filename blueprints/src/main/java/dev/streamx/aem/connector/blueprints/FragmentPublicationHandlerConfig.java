@@ -1,7 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
-import com.adobe.aem.formsndocuments.util.FMConstants;
 import com.day.cq.commons.jcr.JcrConstants;
+import com.day.cq.wcm.api.NameConstants;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -43,7 +43,7 @@ public @interface FragmentPublicationHandlerConfig {
           + "property with the specified name, the value of that property will be set as a "
           + "value of the `sx:type` property of the message ingested into StreamX.",
       type = AttributeType.STRING,
-      defaultValue = FMConstants.CQ_TEMPLATE_NODETYPE
+      defaultValue = NameConstants.NT_TEMPLATE
   )
-  String jcr$_$prop$_$name_for$_$sx$_$type() default FMConstants.PROPERTYNAME_CQ_TEMPLATE;
+  String jcr$_$prop$_$name_for$_$sx$_$type() default NameConstants.PN_TEMPLATE;
 }

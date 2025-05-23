@@ -2,12 +2,12 @@ package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.RenderingContext;
 import dev.streamx.blueprints.data.RenderingContext.OutputType;
-import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -16,6 +16,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
@@ -24,25 +25,30 @@ import org.slf4j.LoggerFactory;
 @Component
 @Designate(ocd = RenderingContextPublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for rendering contexts")
-public class RenderingContextPublicationHandler implements PublicationHandler<RenderingContext> {
+public class RenderingContextPublicationHandler extends BasePublicationHandler<RenderingContext> {
 
   private static final Logger LOG =
       LoggerFactory.getLogger(RenderingContextPublicationHandler.class);
 
-  @Reference
-  private ResourceResolverFactory resolverFactory;
-
-  @Reference
-  private PageDataService pageDataService;
-
-  private String publicationChannel;
-  private boolean enabled;
+  private final PageDataService pageDataService;
+  private final AtomicReference<RenderingContextPublicationHandlerConfig> config;
 
   @Activate
+  public RenderingContextPublicationHandler(
+      @Reference(cardinality = ReferenceCardinality.MANDATORY)
+      PageDataService pageDataService,
+      @Reference(cardinality = ReferenceCardinality.MANDATORY)
+      ResourceResolverFactory resolverFactory,
+      RenderingContextPublicationHandlerConfig config
+  ) {
+    super(resolverFactory);
+    this.pageDataService = pageDataService;
+    this.config = new AtomicReference<>(config);
+  }
+
   @Modified
-  private void activate(RenderingContextPublicationHandlerConfig config) {
-    publicationChannel = config.publication_channel();
-    enabled = config.enabled();
+  void configure(RenderingContextPublicationHandlerConfig config) {
+    this.config.set(config);
   }
 
   @Override
@@ -51,8 +57,11 @@ public class RenderingContextPublicationHandler implements PublicationHandler<Re
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    return enabled && pageDataService.isPageTemplate(resourcePath);
+  public boolean canHandle(ResourceInfo resource) {
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
+      return config.get().enabled()
+          && pageDataService.isPageTemplate(resource, resourceResolver);
+    }
   }
 
   @Override
@@ -67,7 +76,7 @@ public class RenderingContextPublicationHandler implements PublicationHandler<Re
       if (renderingContext != null) {
         return new PublishData<>(
             getKeyForTemplateResource(resource),
-            publicationChannel,
+            config.get().publication_channel(),
             RenderingContext.class,
             renderingContext);
       }
@@ -79,7 +88,7 @@ public class RenderingContextPublicationHandler implements PublicationHandler<Re
   public UnpublishData<RenderingContext> getUnpublishData(String resourcePath) {
     return new UnpublishData<>(
         resourcePath,
-        publicationChannel,
+        config.get().publication_channel(),
         RenderingContext.class);
   }
 
@@ -102,14 +111,6 @@ public class RenderingContextPublicationHandler implements PublicationHandler<Re
 
   private String getKeyForTemplateResource(Resource resource) {
     return resource.getPath() + ".html";
-  }
-
-  private ResourceResolver createResourceResolver() {
-    try {
-      return resolverFactory.getAdministrativeResourceResolver(null);
-    } catch (LoginException e) {
-      throw new IllegalStateException("Cannot create ResourceResolver", e);
-    }
   }
 
 }

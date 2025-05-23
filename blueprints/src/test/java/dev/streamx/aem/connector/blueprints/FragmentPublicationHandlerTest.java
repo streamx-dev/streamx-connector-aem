@@ -1,14 +1,10 @@
 package dev.streamx.aem.connector.blueprints;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublishData;
-import dev.streamx.sling.connector.StreamxPublicationException;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -76,9 +72,11 @@ class FragmentPublicationHandlerTest {
 
   @SuppressWarnings("resource")
   @Test
-  void mustHandle() throws StreamxPublicationException {
+  void mustHandle() {
     String pagePath = "/content/usual-aem-page";
+    ResourceInfo pageResource = new ResourceInfo(pagePath, "cq:Page");
     String fragmentPath = "/content/experience-fragments/fragment";
+    ResourceInfo fragmentResource = new ResourceInfo(fragmentPath, "cq:Page");
     String expectedKey = "/content/experience-fragments/fragment.html";
     FragmentPublicationHandler handler = context.registerInjectActivateService(
         FragmentPublicationHandler.class
@@ -88,13 +86,11 @@ class FragmentPublicationHandlerTest {
     PublishData<Fragment> publishData = handler.getPublishData(fragmentPath);
     int actualLength = publishData.getModel().getContent().array().length;
     UnpublishData<Fragment> unpublishData = handler.getUnpublishData(fragmentPath);
-    assertAll(
-        () -> assertNotNull(context.resourceResolver().getResource(pagePath)),
-        () -> assertFalse(handler.canHandle(pagePath)),
-        () -> assertTrue(handler.canHandle(fragmentPath)),
-        () -> assertEquals(expectedLength, actualLength),
-        () -> assertEquals(expectedKey, publishData.getKey()),
-        () -> assertEquals(expectedKey, unpublishData.getKey())
-    );
+    assertThat(context.resourceResolver().getResource(pagePath)).isNotNull();
+    assertThat(handler.canHandle(pageResource)).isFalse();
+    assertThat(handler.canHandle(fragmentResource)).isTrue();
+    assertThat(actualLength).isEqualTo(expectedLength);
+    assertThat(publishData.getKey()).isEqualTo(expectedKey);
+    assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
   }
 }

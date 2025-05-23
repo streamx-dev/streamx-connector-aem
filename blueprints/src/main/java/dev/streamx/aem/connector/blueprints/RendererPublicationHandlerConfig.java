@@ -5,7 +5,7 @@ import org.osgi.service.metatype.annotations.AttributeType;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @ObjectClassDefinition(name = "StreamX Blueprints - Renderer Publication Handler Config")
-@interface RendererPublicationHandlerConfig {
+public @interface RendererPublicationHandlerConfig {
 
   @AttributeDefinition(
       name = "Publications Channel Name",

@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
-import dev.streamx.sling.connector.StreamxPublicationException;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,13 +13,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.api.uri.SlingUri;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -33,12 +31,11 @@ import org.slf4j.LoggerFactory;
 @Component(service = PublicationHandler.class)
 @Designate(ocd = FragmentPublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for Experience Fragments")
-public class FragmentPublicationHandler implements PublicationHandler<Fragment> {
+public class FragmentPublicationHandler extends BasePublicationHandler<Fragment> {
 
   private static final Logger LOG = LoggerFactory.getLogger(FragmentPublicationHandler.class);
 
   private final PageDataService pageDataService;
-  private final ResourceResolverFactory resourceResolverFactory;
   private final AtomicReference<FragmentPublicationHandlerConfig> config;
 
   @Activate
@@ -49,8 +46,8 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
       ResourceResolverFactory resourceResolverFactory,
       FragmentPublicationHandlerConfig config
   ) {
+    super(resourceResolverFactory);
     this.pageDataService = pageDataService;
-    this.resourceResolverFactory = resourceResolverFactory;
     this.config = new AtomicReference<>(config);
   }
 
@@ -65,34 +62,27 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    boolean canHandle = config.get().enabled() && isXF(resourcePath);
-    LOG.trace("Can handle {}? Answer: {}", resourcePath, canHandle);
+  public boolean canHandle(ResourceInfo resource) {
+    boolean canHandle = config.get().enabled() && isXF(resource);
+    LOG.trace("Can handle {}? Answer: {}", resource.getPath(), canHandle);
     return canHandle;
   }
 
-  private boolean isXF(String resourcePath) {
-    SlingUri slingUri = DefaultSlingUriBuilder.build(resourcePath, resourceResolverFactory);
-    boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(slingUri, resourceResolverFactory);
-    LOG.trace("Is {} an XF? Answer: {}", slingUri, isXF);
-    return isXF;
+  private boolean isXF(ResourceInfo resource) {
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
+      boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(resource, resourceResolver);
+      LOG.trace("Is {} an XF? Answer: {}", resource.getPath(), isXF);
+      return isXF;
+    }
   }
 
   @Override
-  @SuppressWarnings({"squid:S1874", "deprecation"})
-  public PublishData<Fragment> getPublishData(String resourcePath)
-      throws StreamxPublicationException {
-    try (
-        ResourceResolver resourceResolver
-            = resourceResolverFactory.getAdministrativeResourceResolver(null)
-    ) {
+  public PublishData<Fragment> getPublishData(String resourcePath) {
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
       return Optional.of(resourceResolver.resolve(resourcePath))
           .filter(resolvedResource -> !ResourceUtil.isNonExistingResource(resolvedResource))
-          .map(this::toPublishData)
+          .map(resource -> toPublishData(resource, resourceResolver))
           .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + resourcePath));
-    } catch (LoginException exception) {
-      String message = String.format("Cannot generate PublishData for %s", resourcePath);
-      throw new StreamxPublicationException(message, exception);
     }
   }
 
@@ -109,7 +99,7 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
     return String.format("%s.html", resourcePath);
   }
 
-  private PublishData<Fragment> toPublishData(Resource resource) {
+  private PublishData<Fragment> toPublishData(Resource resource, ResourceResolver resourceResolver) {
     Map<String, String> messageProps = Optional.ofNullable(
             resource.getChild(
                 config.get().rel$_$path$_$to$_$node$_$with$_$jcr$_$prop$_$for$_$sx$_$type()
@@ -125,14 +115,14 @@ public class FragmentPublicationHandler implements PublicationHandler<Fragment> 
         toStreamXKey(resource.getPath()),
         config.get().publication_channel(),
         Fragment.class,
-        toFragment(resource),
+        toFragment(resource, resourceResolver),
         messageProps
     );
   }
 
-  private Fragment toFragment(Resource resource) {
+  private Fragment toFragment(Resource resource, ResourceResolver resourceResolver) {
     try {
-      InputStream inputStream = pageDataService.getStorageData(resource);
+      InputStream inputStream = pageDataService.getStorageData(resource, resourceResolver);
       return new Fragment(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
     } catch (IOException exception) {
       String message = String.format("Cannot create fragment for %s", resource);

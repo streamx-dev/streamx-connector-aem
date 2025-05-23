@@ -12,9 +12,11 @@ Clients need to provide proper configuration for the `streamx-connector-sling` m
 its `dev.streamx.sling.connector.PublicationHandler` interface to handle resources such as Pages and
 Assets (or use the ones from `Blueprints` module).
 
-In current early implementation event handler listens for the `com/day/cq/replication` event, which
-is fired only on Author instances.
-This means that content is published to StreamX from Author only.
+In current early implementation event handler listens for the following events which are fired only on Author instances:
+ - `com/day/cq/replication`
+ - `com/adobe/cq/resource/delete`
+
+This means that content is published or unpublished to/from StreamX from Author only.
 It should change in the future versions of the connector as ideally content should be published to
 StreamX from Publish instances, not from Author instances.
 

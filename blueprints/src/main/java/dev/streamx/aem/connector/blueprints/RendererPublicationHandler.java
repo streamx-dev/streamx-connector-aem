@@ -1,15 +1,15 @@
 package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.Renderer;
-import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -17,6 +17,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
@@ -25,24 +26,29 @@ import org.slf4j.LoggerFactory;
 @Component
 @Designate(ocd = RendererPublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for renderers")
-public class RendererPublicationHandler implements PublicationHandler<Renderer> {
+public class RendererPublicationHandler extends BasePublicationHandler<Renderer> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RendererPublicationHandler.class);
 
-  @Reference
-  private PageDataService pageDataService;
-
-  @Reference
-  private ResourceResolverFactory resolverFactory;
-
-  private String publicationChannel;
-  private boolean enabled;
+  private final PageDataService pageDataService;
+  private final AtomicReference<RendererPublicationHandlerConfig> config;
 
   @Activate
+  public RendererPublicationHandler(
+      @Reference(cardinality = ReferenceCardinality.MANDATORY)
+      PageDataService pageDataService,
+      @Reference(cardinality = ReferenceCardinality.MANDATORY)
+      ResourceResolverFactory resolverFactory,
+      RendererPublicationHandlerConfig config
+  ) {
+    super(resolverFactory);
+    this.pageDataService = pageDataService;
+    this.config = new AtomicReference<>(config);
+  }
+
   @Modified
-  private void activate(RendererPublicationHandlerConfig config) {
-    publicationChannel = config.publication_channel();
-    enabled = config.enabled();
+  void configure(RendererPublicationHandlerConfig config) {
+    this.config.set(config);
   }
 
   @Override
@@ -51,8 +57,11 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    return enabled && pageDataService.isPageTemplate(resourcePath);
+  public boolean canHandle(ResourceInfo resource) {
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
+      return config.get().enabled()
+          && pageDataService.isPageTemplate(resource, resourceResolver);
+    }
   }
 
   @Override
@@ -67,9 +76,9 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
 
       return new PublishData<>(
           getStoragePath(resourcePath),
-          publicationChannel,
+          config.get().publication_channel(),
           Renderer.class,
-          resolveData(resource));
+          resolveData(resource, resourceResolver));
     }
   }
 
@@ -77,12 +86,12 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
   public UnpublishData<Renderer> getUnpublishData(String resourcePath) {
     return new UnpublishData<>(
         getStoragePath(resourcePath),
-        publicationChannel,
+        config.get().publication_channel(),
         Renderer.class);
   }
 
-  private Renderer resolveData(Resource resource) {
-    try (InputStream inputStream = getStorageData(resource)) {
+  private Renderer resolveData(Resource resource, ResourceResolver resourceResolver) {
+    try (InputStream inputStream = getStorageData(resource, resourceResolver)) {
       return new Renderer(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
     } catch (IOException e) {
       throw new UncheckedIOException("Cannot create renderer model", e);
@@ -94,15 +103,8 @@ public class RendererPublicationHandler implements PublicationHandler<Renderer> 
   }
 
 
-  public InputStream getStorageData(Resource resource) throws IOException {
-    return pageDataService.getStorageData(resource);
-  }
-
-  private ResourceResolver createResourceResolver() {
-    try {
-      return resolverFactory.getAdministrativeResourceResolver(null);
-    } catch (LoginException e) {
-      throw new IllegalStateException("Cannot create ResourceResolver", e);
-    }
+  public InputStream getStorageData(Resource resource,
+      ResourceResolver resourceResolver) throws IOException {
+    return pageDataService.getStorageData(resource, resourceResolver);
   }
 }

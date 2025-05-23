@@ -1,5 +1,5 @@
 {
   "name": "streamx-basic-instance",
-  "streamxUrl": "$[env:STREAMX_CLIENT_URL;type=String;default=localhost:8080]",
+  "streamxUrl": "$[env:STREAMX_CLIENT_URL;type=String;default=http://localhost:8080]",
   "authToken": "$[secret:STREAMX_CLIENT_AUTH_TOKEN]"
 }
