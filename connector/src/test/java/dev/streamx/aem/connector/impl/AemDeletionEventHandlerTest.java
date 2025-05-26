@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -17,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,52 +31,21 @@ class AemDeletionEventHandlerTest {
   private final AemContext context = new AemContext();
   private final StreamxPublicationService streamxPublicationServiceMock = mock(StreamxPublicationService.class);
   private final ArgumentCaptor<List<ResourceInfo>> unpublishedResourcesCaptor = ArgumentCaptor.forClass(List.class);
-  private AemDeletionEventHandler handler;
 
-  @BeforeEach
-  void setup() throws Exception {
+  @Test
+  void shouldHandleEvents() throws Exception {
+    // given
     doReturn(true).when(streamxPublicationServiceMock).isEnabled();
 
-    handler = new AemDeletionEventHandler(
+    AemDeletionEventHandler handler = new AemDeletionEventHandler(
         streamxPublicationServiceMock,
         ResourceResolverFactoryMocks.withFixedResourcePrimaryNodeType("cq:Page", context)
     );
-  }
-
-  @Test
-  void test() throws Exception {
-    // given
-    Event preDeleteResource1Event = new Event(
-        "com/adobe/cq/resource/delete",
-        Map.of(
-            "type", "preDelete",
-            "path", "http://localhost:4502/content/we-retail/us/en",
-            "userId", "admin"
-        )
-    );
-
-    Event preDeleteResource2Event = new Event(
-        "com/adobe/cq/resource/delete",
-        Map.of(
-            "type", "preDelete",
-            "path", "http://localhost:4502/content/we-purchase/us/en",
-            "userId", "admin"
-        )
-    );
-
-    Event postDeleteResource3Event = new Event(
-        "com/adobe/cq/resource/delete",
-        Map.of(
-            "type", "postDelete",
-            "path", "http://localhost:4502/content/we-sell/us/en",
-            "userId", "admin"
-        )
-    );
 
     // when
-    handler.handleEvent(preDeleteResource1Event);
-    handler.handleEvent(preDeleteResource2Event);
-    handler.handleEvent(postDeleteResource3Event);
+    handler.handleEvent(createDeleteEvent("preDelete", "http://localhost:4502/content/we-retail/us/en"));
+    handler.handleEvent(createDeleteEvent("preDelete", "http://localhost:4502/content/we-purchase/us/en"));
+    handler.handleEvent(createDeleteEvent("postDelete", "http://localhost:4502/content/we-sell/us/en"));
 
     // then
     verify(streamxPublicationServiceMock, times(2)).unpublish(unpublishedResourcesCaptor.capture());
@@ -89,6 +59,36 @@ class AemDeletionEventHandlerTest {
 
     // and
     verify(streamxPublicationServiceMock, never()).publish(anyList());
+  }
+
+  @Test
+  void shouldSkipHandlingEventIfPublicationServiceIsDisabled() throws Exception {
+    // given
+    doReturn(false).when(streamxPublicationServiceMock).isEnabled();
+
+    AemDeletionEventHandler handler = spy(new AemDeletionEventHandler(
+        streamxPublicationServiceMock,
+        mock(ResourceResolverFactory.class)
+    ));
+
+    // when
+    handler.handleEvent(createDeleteEvent("preDelete", "http://localhost:4502/content/we-retail/us/en"));
+
+    // then
+    verify(handler, never()).createResourceResolver();
+    verify(streamxPublicationServiceMock, never()).unpublish(anyList());
+    verify(streamxPublicationServiceMock, never()).publish(anyList());
+  }
+
+  private static Event createDeleteEvent(String type, String resourcePath) {
+    return new Event(
+        "com/adobe/cq/resource/delete",
+        Map.of(
+            "type", type,
+            "path", resourcePath,
+            "userId", "admin"
+        )
+    );
   }
 
   private static void assertResource(ResourceInfo resource, String expectedPath, String expectedPrimaryNodeType) {

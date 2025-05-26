@@ -30,19 +30,17 @@ final class ResourcePrimaryNodeTypeChecker {
     return hasPrimaryNodeType(slingUri, DamConstants.NT_DAM_ASSET, resourceResolver);
   }
 
-  static boolean isPage(ResourceInfo resource, String requiredPathRegex, ResourceResolver resourceResolver) {
-    boolean isPageNodeType = hasPrimaryNodeType(resource, NameConstants.NT_PAGE, resourceResolver);
-    boolean isRequiredPath = resource.getPath().matches(requiredPathRegex);
-    boolean isPage = isPageNodeType && isRequiredPath;
+  static boolean isPage(ResourceInfo resource, ResourceResolver resourceResolver) {
+    boolean isPage = hasPrimaryNodeType(resource, NameConstants.NT_PAGE, resourceResolver);
     LOG.trace(
-        "Is {} a page? Answer: {}. Is NodeType: {}. Is required path: {}",
-        resource.getPath(), isPage, isPageNodeType, isRequiredPath
+        "Is {} a page? Answer: {}",
+        resource.getPath(), isPage
     );
     return isPage;
   }
 
   static boolean isXF(ResourceInfo resource, ResourceResolver resourceResolver) {
-    boolean isPage = isPage(resource, ".*", resourceResolver);
+    boolean isPage = isPage(resource, resourceResolver);
     boolean isXFPath = resource.getPath().startsWith("/content/experience-fragments");
     boolean isXF = isPage && isXFPath;
     LOG.trace(
@@ -53,6 +51,9 @@ final class ResourcePrimaryNodeTypeChecker {
   }
 
   private static boolean hasPrimaryNodeType(ResourceInfo resourceInfo, @NotNull String expectedPrimaryNodeType, ResourceResolver resourceResolver) {
+    if (expectedPrimaryNodeType.equals(resourceInfo.getPrimaryNodeType())) {
+      return true;
+    }
     try {
       Session session = resourceResolver.adaptTo(Session.class);
       if (session == null) {

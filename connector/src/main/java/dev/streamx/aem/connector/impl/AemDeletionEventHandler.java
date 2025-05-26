@@ -4,6 +4,7 @@ import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.Collections;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -24,12 +25,9 @@ import org.slf4j.LoggerFactory;
     configurationPolicy = ConfigurationPolicy.OPTIONAL
 )
 @ServiceRanking(Integer.MAX_VALUE)
-public class AemDeletionEventHandler implements EventHandler {
+public class AemDeletionEventHandler extends BaseAemEventHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(AemDeletionEventHandler.class);
-
-  private final StreamxPublicationService streamxPublicationService;
-  private final ResourceResolverFactory resourceResolverFactory;
 
   @Activate
   public AemDeletionEventHandler(
@@ -38,19 +36,11 @@ public class AemDeletionEventHandler implements EventHandler {
       @Reference(cardinality = ReferenceCardinality.MANDATORY)
       ResourceResolverFactory resourceResolverFactory
   ) {
-    this.streamxPublicationService = streamxPublicationService;
-    this.resourceResolverFactory = resourceResolverFactory;
+    super(streamxPublicationService, resourceResolverFactory);
   }
 
   @Override
-  public void handleEvent(Event event) {
-    LOG.trace("Received {}", event);
-
-    if (!streamxPublicationService.isEnabled()) {
-      LOG.trace("{} is disabled. Ignoring {}", StreamxPublicationService.class, event);
-      return;
-    }
-
+  protected void doHandleEvent(Event event) {
     String eventType = (String) event.getProperty("type");
     boolean isPreDelete = "preDelete".equals(eventType);
     if (!isPreDelete) {
@@ -59,9 +49,15 @@ public class AemDeletionEventHandler implements EventHandler {
     }
 
     String path = (String) event.getProperty("path");
-    String primaryNodeType = PrimaryNodeTypeExtractor.extract(path, resourceResolverFactory);
+    String primaryNodeType = readPrimaryNodeType(path);
     ResourceInfo resource = new ResourceInfo(path, primaryNodeType);
     handleIngestion(resource);
+  }
+
+  private String readPrimaryNodeType(String path) {
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
+      return PrimaryNodeTypeExtractor.extract(path, resourceResolver);
+    }
   }
 
   private void handleIngestion(ResourceInfo resource) {

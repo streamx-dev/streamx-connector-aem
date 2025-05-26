@@ -77,13 +77,15 @@ public class PageDataService {
   }
 
   boolean isPage(ResourceInfo resource, ResourceResolver resourceResolver) {
-    boolean isPage = ResourcePrimaryNodeTypeChecker.isPage(resource, pagesPathRegexp, resourceResolver);
+    boolean isPage = ResourcePrimaryNodeTypeChecker.isPage(resource, resourceResolver)
+                     && resource.getPath().matches(pagesPathRegexp);
     LOG.trace("Is {} a page? Answer: {}", resource.getPath(), isPage);
     return isPage;
   }
 
   boolean isPageTemplate(ResourceInfo resource, ResourceResolver resourceResolver) {
-    boolean isPageTemplate = ResourcePrimaryNodeTypeChecker.isPage(resource, templatesPathRegexp, resourceResolver);
+    boolean isPageTemplate = ResourcePrimaryNodeTypeChecker.isPage(resource, resourceResolver)
+                             && resource.getPath().matches(templatesPathRegexp);
     LOG.trace("Is {} a page template? Answer: {}", resource.getPath(), isPageTemplate);
     return isPageTemplate;
   }
