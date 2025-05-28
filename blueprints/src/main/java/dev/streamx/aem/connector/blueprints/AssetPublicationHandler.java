@@ -5,15 +5,10 @@ import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -58,11 +53,6 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
   @Modified
   void configure(AssetPublicationHandlerConfig config) {
     this.config.set(config);
-  }
-
-  @Override
-  public String getId() {
-    return this.getClass().getSimpleName();
   }
 
   @Override
@@ -120,19 +110,10 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
     );
   }
 
-  private byte[] toByteArray(InputStream inputStream) {
-    try {
-      return IOUtils.toByteArray(inputStream);
-    } catch (IOException exception) {
-      LOG.error("Cannot convert input stream to byte array", exception);
-      return new byte[NumberUtils.INTEGER_ZERO];
-    }
-  }
-
   private Asset generateAssetModel(SlingUri slingUri, ResourceResolver resourceResolver) {
     LOG.trace("Generating {} out of {}", Asset.class, slingUri);
     return AssetContent.get(slingUri, slingRequestProcessor, resourceResolver)
-        .map(inputStream -> new Asset(ByteBuffer.wrap(toByteArray(inputStream))))
+        .map(inputStream -> new Asset(InputStreamConverter.toByteBuffer(inputStream)))
         .orElseThrow();
   }
 

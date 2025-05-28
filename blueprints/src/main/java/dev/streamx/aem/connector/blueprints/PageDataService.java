@@ -1,15 +1,18 @@
 package dev.streamx.aem.connector.blueprints;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import dev.streamx.sling.connector.ResourceInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -61,7 +64,7 @@ public class PageDataService {
     nofollowHostsToSkip = new HashSet<>(Arrays.asList(config.nofollow_hosts_to_skip()));
   }
 
-  public InputStream getStorageData(Resource resource, ResourceResolver resourceResolver) throws IOException {
+  public String getStorageData(Resource resource, ResourceResolver resourceResolver) {
     String resourcePath = resource.getPath();
     String pageMarkup = InternalRequestForPage.generateMarkup(
         resource, resourceResolver, slingRequestProcessor
@@ -71,9 +74,11 @@ public class PageDataService {
         resourcePath, pageMarkup
     );
 
-    return wrapStreamIfNeeded(
-        resourcePath, new ByteArrayInputStream(pageMarkupWithAdjustedLinks.getBytes())
-    );
+    if (shouldShortenContentPaths && resourcePath.startsWith("/content")) {
+      return shortenContentPaths(resourcePath, pageMarkupWithAdjustedLinks);
+    } else {
+      return pageMarkupWithAdjustedLinks;
+    }
   }
 
   boolean isPage(ResourceInfo resource, ResourceResolver resourceResolver) {
@@ -103,7 +108,7 @@ public class PageDataService {
   }
 
   private String addNofollowToExternalLinks(String html) {
-    Document document = Jsoup.parse(html, StandardCharsets.UTF_8.name());
+    Document document = Jsoup.parse(html, UTF_8.name());
     Elements links = document.select("a[href]");
     for (Element link : links) {
       String href = link.attr("href");
@@ -124,27 +129,33 @@ public class PageDataService {
     }
   }
 
-  private InputStream wrapStreamIfNeeded(String path, InputStream input) {
-    if (shouldShortenContentPaths && path.startsWith("/content")) {
-      final String[] elements = path.split("/");
-      final String spaceName = elements.length >= 2 ? elements[2] : null;
-      if (spaceName != null) {
-        final byte[] pagesPath = ("/content/" + spaceName + "/pages").getBytes();
-        final byte[] contentPath = ("/content/" + spaceName).getBytes();
-        // TODO this is a quick workaround to be able to use Pebble in AEM
-        final InputStream replacingOpeningStream =
-            new ReplacingInputStream(input, "((".getBytes(), "{{".getBytes());
-        final InputStream replacingClosingStream =
-            new ReplacingInputStream(replacingOpeningStream, "))".getBytes(), "}}".getBytes());
+  private String shortenContentPaths(String path, String content) {
+    final String[] elements = path.split("/");
+    final String spaceName = elements.length >= 2 ? elements[2] : null;
+    if (spaceName != null) {
+      final String pagesPath = "/content/" + spaceName + "/pages";
+      final String contentPath = "/content/" + spaceName;
+      // TODO this is a quick workaround to be able to use Pebble in AEM
+      InputStream input = new ByteArrayInputStream(content.getBytes(UTF_8));
+      final InputStream replacingOpeningStream =
+          new ReplacingInputStream(input, "((", "{{");
+      final InputStream replacingClosingStream =
+          new ReplacingInputStream(replacingOpeningStream, "))", "}}");
 
-        // Replace pages paths
-        final InputStream replacePages =
-            new ReplacingInputStream(replacingClosingStream, pagesPath, null);
-        // Replace generic paths
-        return new ReplacingInputStream(replacePages, contentPath, null);
+      // Replace pages paths
+      final InputStream replacePages =
+          new ReplacingInputStream(replacingClosingStream, pagesPath, null);
+      // Replace generic paths
+      ReplacingInputStream replaceGenericPaths = new ReplacingInputStream(replacePages,
+          contentPath, null);
+      try {
+        return IOUtils.toString(replaceGenericPaths, UTF_8);
+      } catch (IOException exception) {
+        String message = String.format("Error modifying content for %s", path);
+        throw new UncheckedIOException(message, exception);
       }
     }
-    return input;
+    return content;
   }
 
 }

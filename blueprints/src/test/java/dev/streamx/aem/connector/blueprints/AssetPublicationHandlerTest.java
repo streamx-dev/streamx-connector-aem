@@ -2,9 +2,11 @@ package dev.streamx.aem.connector.blueprints;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
+import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.ByteArrayInputStream;
@@ -85,10 +87,19 @@ class AssetPublicationHandlerTest {
     AssetPublicationHandler handler = context.registerInjectActivateService(
         AssetPublicationHandler.class, Map.of("enabled", true)
     );
+    ResourceInfo resourceInfo = new ResourceInfo(assetPath, "dam:Asset");
+    assertThat(handler.canHandle(resourceInfo)).isTrue();
     PublishData<Asset> publishData = handler.getPublishData(assetPath);
     assertThat(publishData.getModel().getContent().array()).hasSize(DATA_SIZE);
     assertThat(publishData.getKey()).isEqualTo(assetPath);
     assertThat(publishData.getChannel()).isEqualTo("assets");
     assertThat(publishData.getModel()).isInstanceOf(Asset.class);
+
+    UnpublishData<Asset> unpublishData = handler.getUnpublishData(assetPath);
+    assertThat(unpublishData.getKey()).isEqualTo(assetPath);
+    assertThat(unpublishData.getChannel()).isEqualTo("assets");
+
+    OsgiConfigUtils.disableHandler(handler, context);
+    assertThat(handler.canHandle(resourceInfo)).isFalse();
   }
 }

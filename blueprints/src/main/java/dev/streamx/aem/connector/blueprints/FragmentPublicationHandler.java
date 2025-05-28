@@ -5,14 +5,9 @@ import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -54,11 +49,6 @@ public class FragmentPublicationHandler extends BasePublicationHandler<Fragment>
   @Modified
   void configure(FragmentPublicationHandlerConfig config) {
     this.config.set(config);
-  }
-
-  @Override
-  public String getId() {
-    return this.getClass().getSimpleName();
   }
 
   @Override
@@ -121,12 +111,7 @@ public class FragmentPublicationHandler extends BasePublicationHandler<Fragment>
   }
 
   private Fragment toFragment(Resource resource, ResourceResolver resourceResolver) {
-    try {
-      InputStream inputStream = pageDataService.getStorageData(resource, resourceResolver);
-      return new Fragment(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
-    } catch (IOException exception) {
-      String message = String.format("Cannot create fragment for %s", resource);
-      throw new UncheckedIOException(message, exception);
-    }
+    String content = pageDataService.getStorageData(resource, resourceResolver);
+    return new Fragment(content);
   }
 }

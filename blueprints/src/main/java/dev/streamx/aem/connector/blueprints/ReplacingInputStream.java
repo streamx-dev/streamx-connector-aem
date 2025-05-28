@@ -1,9 +1,12 @@
 package dev.streamx.aem.connector.blueprints;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Simple FilterInputStream that can replace occurrences of bytes with something else.
@@ -34,15 +37,15 @@ class ReplacingInputStream extends FilterInputStream {
    * @param pattern     pattern to replace
    * @param replacement the replacement or null
    */
-  ReplacingInputStream(InputStream in, byte[] pattern, byte[] replacement) {
+  ReplacingInputStream(InputStream in, String pattern, String replacement) {
     super(in);
-    if (pattern == null || pattern.length == 0) {
+    if (StringUtils.isEmpty(pattern)) {
       throw new IllegalArgumentException("pattern length should be > 0");
     }
-    this.pattern = pattern;
-    this.replacement = replacement;
+    this.pattern = pattern.getBytes(UTF_8);
+    this.replacement = replacement == null ? new byte[0] : replacement.getBytes(UTF_8);
     // we will never match more than the pattern length
-    buf = new int[pattern.length];
+    buf = new int[this.pattern.length];
   }
 
   @Override
@@ -72,12 +75,6 @@ class ReplacingInputStream extends FilterInputStream {
     }
     return i;
 
-  }
-
-  @Override
-  public int read(byte[] b) throws IOException {
-    // call our own read
-    return read(b, 0, b.length);
   }
 
   @Override
@@ -155,11 +152,6 @@ class ReplacingInputStream extends FilterInputStream {
         }
         return next;
     }
-  }
-
-  @Override
-  public String toString() {
-    return state.name() + " " + matchedIndex + " " + replacedIndex + " " + unbufferIndex;
   }
 
   // simple state machine for keeping track of what we are doing

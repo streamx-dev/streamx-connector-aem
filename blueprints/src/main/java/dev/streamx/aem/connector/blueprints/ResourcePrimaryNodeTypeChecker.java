@@ -4,6 +4,7 @@ import com.day.cq.dam.api.DamConstants;
 import com.day.cq.wcm.api.NameConstants;
 import com.drew.lang.annotations.NotNull;
 import dev.streamx.sling.connector.ResourceInfo;
+import java.util.Objects;
 import javax.jcr.Node;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
@@ -55,16 +56,12 @@ final class ResourcePrimaryNodeTypeChecker {
       return true;
     }
     try {
-      Session session = resourceResolver.adaptTo(Session.class);
-      if (session == null) {
-        LOG.error("Failed to get session to verify if {} is a {}", resourceInfo, expectedPrimaryNodeType);
-        return false;
-      }
+      Session session = Objects.requireNonNull(resourceResolver.adaptTo(Session.class));
       NodeTypeManager nodeTypeManager = session.getWorkspace().getNodeTypeManager();
       NodeType nodeType = nodeTypeManager.getNodeType(expectedPrimaryNodeType);
       return nodeType.isNodeType(resourceInfo.getPrimaryNodeType());
     } catch (Exception exception) {
-      LOG.error("Failed to verify if {} is a {}", resourceInfo, expectedPrimaryNodeType);
+      LOG.error("Failed to verify if {} is a {}", resourceInfo, expectedPrimaryNodeType, exception);
       return false;
     }
   }
@@ -72,14 +69,10 @@ final class ResourcePrimaryNodeTypeChecker {
   private static boolean hasPrimaryNodeType(SlingUri slingUri, @NotNull String expectedPrimaryNodeType, ResourceResolver resourceResolver) {
     try {
       Resource resource = resourceResolver.resolve(slingUri.toString());
-      Node node = resource.adaptTo(Node.class);
-      if (node == null) {
-        LOG.error("Failed to adapt to Node to verify if {} is a {}", slingUri, expectedPrimaryNodeType);
-        return false;
-      }
+      Node node = Objects.requireNonNull(resource.adaptTo(Node.class));
       return node.isNodeType(expectedPrimaryNodeType);
     } catch (Exception exception) {
-      LOG.error("Failed to verify if {} is a {}", slingUri, expectedPrimaryNodeType);
+      LOG.error("Failed to verify if {} is a {}", slingUri, expectedPrimaryNodeType, exception);
       return false;
     }
   }

@@ -52,11 +52,6 @@ public class RenderingContextPublicationHandler extends BasePublicationHandler<R
   }
 
   @Override
-  public String getId() {
-    return this.getClass().getSimpleName();
-  }
-
-  @Override
   public boolean canHandle(ResourceInfo resource) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       return config.get().enabled()

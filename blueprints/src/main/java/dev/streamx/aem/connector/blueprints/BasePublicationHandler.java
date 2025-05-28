@@ -13,6 +13,11 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
     this.resolverFactory = resolverFactory;
   }
 
+  @Override
+  public final String getId() {
+    return this.getClass().getSimpleName();
+  }
+
   protected ResourceResolver createResourceResolver() {
     try {
       return resolverFactory.getAdministrativeResourceResolver(null);

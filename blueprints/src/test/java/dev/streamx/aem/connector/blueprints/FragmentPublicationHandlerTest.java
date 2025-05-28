@@ -2,6 +2,7 @@ package dev.streamx.aem.connector.blueprints;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesWriter;
 import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublishData;
@@ -74,5 +75,8 @@ class FragmentPublicationHandlerTest {
     assertThat(publishData.getModel().getContent().array()).hasSize(BINARY_DATA_LENGTH);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
+
+    OsgiConfigUtils.disableHandler(handler, context);
+    assertThat(handler.canHandle(fragmentResource)).isFalse();
   }
 }

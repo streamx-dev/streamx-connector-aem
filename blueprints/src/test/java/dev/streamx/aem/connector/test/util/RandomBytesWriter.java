@@ -5,7 +5,11 @@ import java.io.OutputStream;
 import java.util.Random;
 import javax.servlet.ServletResponse;
 
-public class RandomBytesWriter {
+public final class RandomBytesWriter {
+
+  private RandomBytesWriter() {
+    // no instances
+  }
 
   public static void writeRandomBytes(ServletResponse response, int count) throws IOException {
     response.setContentType("application/octet-stream");

@@ -5,14 +5,9 @@ import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -53,11 +48,6 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
   @Modified
   void configure(PagePublicationHandlerConfig config) {
     this.config.set(config);
-  }
-
-  @Override
-  public String getId() {
-    return this.getClass().getSimpleName();
   }
 
   @Override
@@ -113,12 +103,8 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
   }
 
   private Page getPageModel(Resource resource, ResourceResolver resourceResolver) {
-    try {
-      InputStream inputStream = pageDataService.getStorageData(resource, resourceResolver);
-      return new Page(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
-    } catch (IOException e) {
-      throw new UncheckedIOException("Cannot create page model", e);
-    }
+    String content = pageDataService.getStorageData(resource, resourceResolver);
+    return new Page(content);
   }
 
 }
