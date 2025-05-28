@@ -4,32 +4,23 @@ import com.day.cq.wcm.api.Page;
 import dev.streamx.sling.connector.util.SimpleInternalRequest;
 import java.util.Optional;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.uri.SlingUri;
 import org.apache.sling.api.uri.SlingUriBuilder;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class InternalRequestForPage {
+final class InternalRequestForPage {
 
   private static final Logger LOG = LoggerFactory.getLogger(InternalRequestForPage.class);
 
-  private final ResourceResolverFactory resourceResolverFactory;
-  private final SlingRequestProcessor slingRequestProcessor;
-  private final Resource resourceWithPage;
-
-  InternalRequestForPage(
-      ResourceResolverFactory resourceResolverFactory,
-      Resource resourceWithPage,
-      SlingRequestProcessor slingRequestProcessor
-  ) {
-    this.resourceResolverFactory = resourceResolverFactory;
-    this.slingRequestProcessor = slingRequestProcessor;
-    this.resourceWithPage = resourceWithPage;
+  private InternalRequestForPage() {
+    // no instances
   }
 
-  String generateMarkup() {
+  static String generateMarkup(Resource resourceWithPage, ResourceResolver resourceResolver,
+      SlingRequestProcessor slingRequestProcessor) {
     String[] selectors = Optional.ofNullable(resourceWithPage.adaptTo(Page.class))
         .filter(FranklinCheck::isFranklinPage)
         .map(isFranklinPage -> new String[]{"plain"})
@@ -39,7 +30,7 @@ class InternalRequestForPage {
         .setExtension("html")
         .build();
     String pageMarkup = new SimpleInternalRequest(
-        slingUri, slingRequestProcessor, resourceResolverFactory
+        slingUri, slingRequestProcessor, resourceResolver
     ).getResponseAsString();
     LOG.debug("Generated markup for {} at {}", resourceWithPage, slingUri);
     return pageMarkup;

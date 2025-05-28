@@ -3,6 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +14,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -35,11 +35,10 @@ import org.slf4j.LoggerFactory;
 @Component(service = PublicationHandler.class)
 @Designate(ocd = AssetPublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for AEM Assets")
-public class AssetPublicationHandler implements PublicationHandler<Asset> {
+public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssetPublicationHandler.class);
 
-  private final ResourceResolverFactory resolverFactory;
   private final SlingRequestProcessor slingRequestProcessor;
   private final AtomicReference<AssetPublicationHandlerConfig> config;
 
@@ -51,7 +50,7 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
       SlingRequestProcessor slingRequestProcessor,
       AssetPublicationHandlerConfig config
   ) {
-    this.resolverFactory = resolverFactory;
+    super(resolverFactory);
     this.slingRequestProcessor = slingRequestProcessor;
     this.config = new AtomicReference<>(config);
   }
@@ -67,12 +66,12 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
+  public boolean canHandle(ResourceInfo resource) {
+    String resourcePath = resource.getPath();
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
       boolean canHandle = config.get().enabled()
           && resourcePath.matches(config.get().assets_path_regexp())
-          && ResourcePrimaryNodeTypeChecker.isAsset(slingUri, resolverFactory);
+          && ResourcePrimaryNodeTypeChecker.isAsset(resource, resourceResolver);
       LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
       return canHandle;
     }
@@ -97,28 +96,21 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
         LOG.error("Resource not found for publish data generation: {}", slingUri);
         return null;
       }
-      return generatePublishData(slingUri, messageProps);
+      return generatePublishData(slingUri, messageProps, resourceResolver);
     }
   }
 
   private PublishData<Asset> generatePublishData(
       SlingUri slingUri,
-      Map<String, String> messageProps
+      Map<String, String> messageProps,
+      ResourceResolver resourceResolver
   ) {
     LOG.trace("Generating publish data for '{}'", slingUri);
-    Asset asset = generateAssetModel(slingUri);
+    Asset asset = generateAssetModel(slingUri, resourceResolver);
     return new PublishData<>(
         slingUri.toString(), config.get().publication_channel(), Asset.class,
         asset, messageProps
     );
-  }
-
-  private ResourceResolver createResourceResolver() {
-    try {
-      return resolverFactory.getAdministrativeResourceResolver(null);
-    } catch (LoginException e) {
-      throw new IllegalStateException("Cannot create ResourceResolver", e);
-    }
   }
 
   @Override
@@ -137,10 +129,9 @@ public class AssetPublicationHandler implements PublicationHandler<Asset> {
     }
   }
 
-  private Asset generateAssetModel(SlingUri slingUri) {
+  private Asset generateAssetModel(SlingUri slingUri, ResourceResolver resourceResolver) {
     LOG.trace("Generating {} out of {}", Asset.class, slingUri);
-    AssetContent assetContent = new AssetContent(slingUri, slingRequestProcessor, resolverFactory);
-    return assetContent.get()
+    return AssetContent.get(slingUri, slingRequestProcessor, resourceResolver)
         .map(inputStream -> new Asset(ByteBuffer.wrap(toByteArray(inputStream))))
         .orElseThrow();
   }

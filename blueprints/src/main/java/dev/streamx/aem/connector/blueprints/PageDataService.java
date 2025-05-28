@@ -1,5 +1,6 @@
 package dev.streamx.aem.connector.blueprints;
 
+import dev.streamx.sling.connector.ResourceInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.api.uri.SlingUri;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -36,7 +36,6 @@ public class PageDataService {
   private static final Logger LOG = LoggerFactory.getLogger(PageDataService.class);
 
   private final SlingRequestProcessor slingRequestProcessor;
-  private final ResourceResolverFactory resourceResolverFactory;
   private String pagesPathRegexp;
   private String templatesPathRegexp;
   private boolean shouldShortenContentPaths;
@@ -47,12 +46,9 @@ public class PageDataService {
   public PageDataService(
       @Reference(cardinality = ReferenceCardinality.MANDATORY)
       SlingRequestProcessor slingRequestProcessor,
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      ResourceResolverFactory resourceResolverFactory,
       PageDataServiceConfig config
   ) {
     this.slingRequestProcessor = slingRequestProcessor;
-    this.resourceResolverFactory = resourceResolverFactory;
     configure(config);
   }
 
@@ -65,11 +61,11 @@ public class PageDataService {
     nofollowHostsToSkip = new HashSet<>(Arrays.asList(config.nofollow_hosts_to_skip()));
   }
 
-  public InputStream getStorageData(Resource resource) throws IOException {
+  public InputStream getStorageData(Resource resource, ResourceResolver resourceResolver) throws IOException {
     String resourcePath = resource.getPath();
-    String pageMarkup = new InternalRequestForPage(
-        resourceResolverFactory, resource, slingRequestProcessor
-    ).generateMarkup();
+    String pageMarkup = InternalRequestForPage.generateMarkup(
+        resource, resourceResolver, slingRequestProcessor
+    );
 
     String pageMarkupWithAdjustedLinks = addNoFollowToExternalLinksIfNeeded(
         resourcePath, pageMarkup
@@ -80,18 +76,17 @@ public class PageDataService {
     );
   }
 
-  boolean isPage(SlingUri slingUri) {
-    boolean isPage = ResourcePrimaryNodeTypeChecker.isPage(slingUri, pagesPathRegexp, resourceResolverFactory);
-    LOG.trace("Is {} a page? Answer: {}", slingUri, isPage);
+  boolean isPage(ResourceInfo resource, ResourceResolver resourceResolver) {
+    boolean isPage = ResourcePrimaryNodeTypeChecker.isPage(resource, resourceResolver)
+                     && resource.getPath().matches(pagesPathRegexp);
+    LOG.trace("Is {} a page? Answer: {}", resource.getPath(), isPage);
     return isPage;
   }
 
-  boolean isPageTemplate(String resourcePath) {
-    SlingUri slingUri = DefaultSlingUriBuilder.build(resourcePath, resourceResolverFactory);
-    boolean isPageTemplate = ResourcePrimaryNodeTypeChecker.isPage(
-        slingUri, templatesPathRegexp, resourceResolverFactory
-    );
-    LOG.trace("Is {} a page template? Answer: {}", resourcePath, isPageTemplate);
+  boolean isPageTemplate(ResourceInfo resource, ResourceResolver resourceResolver) {
+    boolean isPageTemplate = ResourcePrimaryNodeTypeChecker.isPage(resource, resourceResolver)
+                             && resource.getPath().matches(templatesPathRegexp);
+    LOG.trace("Is {} a page template? Answer: {}", resource.getPath(), isPageTemplate);
     return isPageTemplate;
   }
 

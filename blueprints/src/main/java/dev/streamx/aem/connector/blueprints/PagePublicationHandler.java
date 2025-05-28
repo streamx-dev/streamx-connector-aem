@@ -3,6 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import dev.streamx.blueprints.data.Page;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,12 +13,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.IOUtils;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.api.uri.SlingUri;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -31,12 +30,11 @@ import org.slf4j.LoggerFactory;
 @Component(service = PublicationHandler.class)
 @Designate(ocd = PagePublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for AEM Pages")
-public class PagePublicationHandler implements PublicationHandler<Page> {
+public class PagePublicationHandler extends BasePublicationHandler<Page> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PagePublicationHandler.class);
 
   private final PageDataService pageDataService;
-  private final ResourceResolverFactory resolverFactory;
   private final AtomicReference<PagePublicationHandlerConfig> config;
 
   @Activate
@@ -47,8 +45,8 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
       ResourceResolverFactory resolverFactory,
       PagePublicationHandlerConfig config
   ) {
+    super(resolverFactory);
     this.pageDataService = pageDataService;
-    this.resolverFactory = resolverFactory;
     this.config = new AtomicReference<>(config);
   }
 
@@ -63,11 +61,12 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
   }
 
   @Override
-  public boolean canHandle(String resourcePath) {
-    SlingUri slingUri = DefaultSlingUriBuilder.build(resourcePath, resolverFactory);
-    return config.get().enabled()
-        && pageDataService.isPage(slingUri)
-        && !ResourcePrimaryNodeTypeChecker.isXF(slingUri, resolverFactory);
+  public boolean canHandle(ResourceInfo resource) {
+    try (ResourceResolver resourceResolver = createResourceResolver()) {
+      return config.get().enabled()
+          && pageDataService.isPage(resource, resourceResolver)
+          && !ResourcePrimaryNodeTypeChecker.isXF(resource, resourceResolver);
+    }
   }
 
   @Override
@@ -95,7 +94,7 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
           getPagePath(resourcePath),
           config.get().publication_channel(),
           Page.class,
-          getPageModel(resource),
+          getPageModel(resource, resourceResolver),
           messageProps
       );
     }
@@ -113,20 +112,12 @@ public class PagePublicationHandler implements PublicationHandler<Page> {
     return resourcePath + ".html";
   }
 
-  private Page getPageModel(Resource resource) {
+  private Page getPageModel(Resource resource, ResourceResolver resourceResolver) {
     try {
-      InputStream inputStream = pageDataService.getStorageData(resource);
+      InputStream inputStream = pageDataService.getStorageData(resource, resourceResolver);
       return new Page(ByteBuffer.wrap(IOUtils.toByteArray(inputStream)));
     } catch (IOException e) {
       throw new UncheckedIOException("Cannot create page model", e);
-    }
-  }
-
-  private ResourceResolver createResourceResolver() {
-    try {
-      return resolverFactory.getAdministrativeResourceResolver(null);
-    } catch (LoginException e) {
-      throw new IllegalStateException("Cannot create ResourceResolver", e);
     }
   }
 
