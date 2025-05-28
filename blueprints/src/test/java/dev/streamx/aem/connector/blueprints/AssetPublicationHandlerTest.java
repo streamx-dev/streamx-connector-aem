@@ -85,7 +85,10 @@ class AssetPublicationHandlerTest {
   void canGetPublishData() {
     String assetPath = "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg";
     AssetPublicationHandler handler = context.registerInjectActivateService(
-        AssetPublicationHandler.class, Map.of("enabled", true)
+        AssetPublicationHandler.class, Map.of(
+            "enabled", true,
+            "jcr.prop.name.for.sx.type", "jcr:primaryType"
+        )
     );
     ResourceInfo resourceInfo = new ResourceInfo(assetPath, "dam:Asset");
     assertThat(handler.canHandle(resourceInfo)).isTrue();
@@ -94,6 +97,7 @@ class AssetPublicationHandlerTest {
     assertThat(publishData.getKey()).isEqualTo(assetPath);
     assertThat(publishData.getChannel()).isEqualTo("assets");
     assertThat(publishData.getModel()).isInstanceOf(Asset.class);
+    assertThat(publishData.getProperties()).containsEntry("sx:type", "dam:Asset");
 
     UnpublishData<Asset> unpublishData = handler.getUnpublishData(assetPath);
     assertThat(unpublishData.getKey()).isEqualTo(assetPath);
