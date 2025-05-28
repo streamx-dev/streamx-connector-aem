@@ -1,5 +1,6 @@
 package dev.streamx.aem.connector.blueprints;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.sling.connector.ResourceInfo;
@@ -8,7 +9,6 @@ import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
@@ -19,33 +19,26 @@ import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith({AemContextExtension.class, MockitoExtension.class})
+@ExtendWith(AemContextExtension.class)
 class PageDataServiceTest {
 
-  @SuppressWarnings({"ProtectedField", "VisibilityModifier"})
-  protected final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
+  private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
-  private static class BasicRequestProcessor implements SlingRequestProcessor {
-    @Override
-    public void processRequest(
-        HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver
-    ) throws IOException {
-      String requestURI = request.getRequestURI();
-      if (requestURI.equals("/content/franklin-page.plain.html")) {
-        response.getWriter().write("<html><body><h1>Franklin Page</h1></body></html>");
-      } else if (requestURI.equals("/content/usual-aem-page.html")) {
-        response.getWriter().write("<html><body><h1>Usual AEM Page</h1></body></html>");
-      } else {
-        response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
-      }
+  private final SlingRequestProcessor basicRequestProcessor = (HttpServletRequest request, HttpServletResponse response, ResourceResolver resolver) -> {
+    String requestURI = request.getRequestURI();
+    if (requestURI.equals("/content/franklin-page.plain.html")) {
+      response.getWriter().write("<html><body><h1>Franklin Page</h1></body></html>");
+    } else if (requestURI.equals("/content/usual-aem-page.html")) {
+      response.getWriter().write("<html><body><h1>Usual AEM Page</h1></body></html>");
+    } else {
+      response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
     }
-  }
+  };
 
   @BeforeEach
   void setup() {
-    context.registerService(SlingRequestProcessor.class, new BasicRequestProcessor());
+    context.registerService(SlingRequestProcessor.class, basicRequestProcessor);
     context.registerInjectActivateService(PageDataService.class);
     context.load().json(
         "/dev/streamx/aem/connector/blueprints/franklin-page.json",
@@ -60,19 +53,11 @@ class PageDataServiceTest {
 
   @Test
   void mustReturnValidMarkup() throws IOException {
-    PageDataService pageDataService = Optional.ofNullable(context.getService(PageDataService.class))
-        .orElseThrow();
-    @SuppressWarnings("resource")
+    PageDataService pageDataService = requireNonNull(context.getService(PageDataService.class));
     ResourceResolver resourceResolver = context.resourceResolver();
-    Resource franklinPageResource = Optional.ofNullable(
-        resourceResolver.getResource("/content/franklin-page")
-    ).orElseThrow();
-    Resource usualAEMPageResource = Optional.ofNullable(
-        resourceResolver.getResource("/content/usual-aem-page")
-    ).orElseThrow();
-    Resource randomPageResource = Optional.ofNullable(
-        resourceResolver.getResource("/content/random-page")
-    ).orElseThrow();
+    Resource franklinPageResource = requireNonNull(resourceResolver.getResource("/content/franklin-page"));
+    Resource usualAEMPageResource = requireNonNull(resourceResolver.getResource("/content/usual-aem-page"));
+    Resource randomPageResource = requireNonNull(resourceResolver.getResource("/content/random-page"));
     InputStream franklinIS = pageDataService.getStorageData(franklinPageResource, resourceResolver);
     InputStream usualAEMIS = pageDataService.getStorageData(usualAEMPageResource, resourceResolver);
     InputStream randomIS = pageDataService.getStorageData(randomPageResource, resourceResolver);
@@ -86,7 +71,7 @@ class PageDataServiceTest {
 
   @Test
   void mustCheckIfPage() {
-    PageDataService pageDataService = context.getService(PageDataService.class);
+    PageDataService pageDataService = requireNonNull(context.getService(PageDataService.class));
     ResourceResolver resourceResolver = context.resourceResolver();
     ResourceInfo franklinPageResource = new ResourceInfo("/content/franklin-page", "cq:Page");
     ResourceInfo usualAEMPageResource = new ResourceInfo("/content/usual-aem-page", "cq:Page");

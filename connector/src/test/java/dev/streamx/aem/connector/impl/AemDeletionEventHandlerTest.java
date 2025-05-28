@@ -22,10 +22,9 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.osgi.service.event.Event;
 
-@ExtendWith({MockitoExtension.class, AemContextExtension.class})
+@ExtendWith(AemContextExtension.class)
 class AemDeletionEventHandlerTest {
 
   private final AemContext context = new AemContext();

@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.RandomBytesWriter;
-import dev.streamx.blueprints.data.Fragment;
+import dev.streamx.blueprints.data.Renderer;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(AemContextExtension.class)
-class FragmentPublicationHandlerTest {
+class RendererPublicationHandlerTest {
 
   private static final int TEXT_DATA_LENGTH = 888;
   private static final int BINARY_DATA_LENGTH = 1625;
@@ -28,7 +28,7 @@ class FragmentPublicationHandlerTest {
 
   private final SlingRequestProcessor basicRequestProcessor = (HttpServletRequest request, HttpServletResponse response, ResourceResolver resolver) -> {
     String requestURI = request.getRequestURI();
-    if (requestURI.equals("/content/experience-fragments/fragment.html")) {
+    if (requestURI.equals("/content/experience-fragments/templates/template.html")) {
       RandomBytesWriter.writeRandomBytes(response, TEXT_DATA_LENGTH);
     } else {
       response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
@@ -39,39 +39,26 @@ class FragmentPublicationHandlerTest {
   void setup() {
     context.registerService(SlingRequestProcessor.class, basicRequestProcessor);
     context.registerInjectActivateService(PageDataService.class);
-
     context.load().json(
-        "/dev/streamx/aem/connector/blueprints/franklin-page.json",
-        "/content/franklin-page"
+        "/dev/streamx/aem/connector/blueprints/sample-page-template.json",
+        "/content/experience-fragments/templates/template"
     );
-    context.load().json(
-        "/dev/streamx/aem/connector/blueprints/usual-aem-page.json",
-        "/content/usual-aem-page"
-    );
-    context.load().json(
-        "/dev/streamx/aem/connector/blueprints/usual-aem-page.json",
-        "/content/experience-fragments/fragment"
-    );
-    context.build().resource("/content/random-page").commit();
   }
 
   @SuppressWarnings("resource")
   @Test
   void mustHandle() {
-    String pagePath = "/content/usual-aem-page";
-    ResourceInfo pageResource = new ResourceInfo(pagePath, "cq:Page");
-    String fragmentPath = "/content/experience-fragments/fragment";
-    ResourceInfo fragmentResource = new ResourceInfo(fragmentPath, "cq:Page");
-    String expectedKey = "/content/experience-fragments/fragment.html";
-    FragmentPublicationHandler handler = context.registerInjectActivateService(
-        FragmentPublicationHandler.class
+    String pageTemplatePath = "/content/experience-fragments/templates/template";
+    ResourceInfo pageTemplateResource = new ResourceInfo(pageTemplatePath, "cq:Page");
+    String expectedKey = "/content/experience-fragments/templates/template.html";
+    RendererPublicationHandler handler = context.registerInjectActivateService(
+        RendererPublicationHandler.class
     );
-    PublishData<Fragment> publishData = handler.getPublishData(fragmentPath);
-    UnpublishData<Fragment> unpublishData = handler.getUnpublishData(fragmentPath);
-    assertThat(context.resourceResolver().getResource(pagePath)).isNotNull();
-    assertThat(handler.canHandle(pageResource)).isFalse();
-    assertThat(handler.canHandle(fragmentResource)).isTrue();
-    assertThat(publishData.getModel().getContent().array()).hasSize(BINARY_DATA_LENGTH);
+    PublishData<Renderer> publishData = handler.getPublishData(pageTemplatePath);
+    UnpublishData<Renderer> unpublishData = handler.getUnpublishData(pageTemplatePath);
+    assertThat(context.resourceResolver().getResource(pageTemplatePath)).isNotNull();
+    assertThat(handler.canHandle(pageTemplateResource)).isTrue();
+    assertThat(publishData.getModel().getTemplate().array()).hasSize(BINARY_DATA_LENGTH);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
   }

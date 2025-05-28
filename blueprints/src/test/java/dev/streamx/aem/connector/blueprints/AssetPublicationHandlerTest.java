@@ -1,10 +1,6 @@
 package dev.streamx.aem.connector.blueprints;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
@@ -12,10 +8,9 @@ import dev.streamx.sling.connector.ResourceInfo;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -34,36 +29,28 @@ class AssetPublicationHandlerTest {
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
-  private static class BasicRequestProcessor implements SlingRequestProcessor {
-
-    @Override
-    public void processRequest(
-        HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver
-    ) throws IOException {
-      response.setContentType("text/html");
-      response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
-    }
-  }
+  private final SlingRequestProcessor basicRequestProcessor = (HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver) -> {
+    response.setContentType("text/html");
+    response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
+  };
 
   @SuppressWarnings("resource")
   @BeforeEach
   void setup() throws PersistenceException {
-    context.registerService(SlingRequestProcessor.class, new BasicRequestProcessor());
+    context.registerService(SlingRequestProcessor.class, basicRequestProcessor);
     context.load().json(
         "/dev/streamx/aem/connector/blueprints/sample-assets.json",
         "/content/dam/core-components-examples/library/sample-assets"
     );
-    byte[] bufferBig = new byte[DATA_SIZE];
-    Arrays.fill(bufferBig, NumberUtils.BYTE_ONE);
     context.resourceResolver().delete(
-        Optional.ofNullable(
-            context.resourceResolver().getResource(
-                "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg/jcr:content/renditions/original"
-            )
-        ).orElseThrow()
+        Objects.requireNonNull(context.resourceResolver().getResource(
+            "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg/jcr:content/renditions/original"
+        ))
     );
+    byte[] bytes = new byte[DATA_SIZE];
+    Arrays.fill(bytes, NumberUtils.BYTE_ONE);
     context.load().binaryFile(
-        new ByteArrayInputStream(bufferBig),
+        new ByteArrayInputStream(bytes),
         "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg/jcr:content/renditions/original"
     );
     context.build().resource("/conf/irrelevant-resource").commit();
@@ -83,40 +70,25 @@ class AssetPublicationHandlerTest {
     AssetPublicationHandler disabled = context.registerInjectActivateService(
         AssetPublicationHandler.class, Map.of("enabled", false)
     );
-    assertAll(
-        () -> assertNotNull(resourceResolver.getResource(irrelevantPath)),
-        () -> assertNotNull(resourceResolver.getResource(mountainPath)),
-        () -> assertNotNull(resourceResolver.getResource(mountainContent)),
-        () -> assertTrue(enabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))),
-        () -> assertFalse(disabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))),
-        () -> assertFalse(enabled.canHandle(new ResourceInfo(irrelevantPath, "cq:Page"))),
-        () -> assertFalse(enabled.canHandle(new ResourceInfo(mountainContent, "nt:file")))
-    );
+    assertThat(resourceResolver.getResource(irrelevantPath)).isNotNull();
+    assertThat(resourceResolver.getResource(mountainPath)).isNotNull();
+    assertThat(resourceResolver.getResource(mountainContent)).isNotNull();
+    assertThat(enabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))).isTrue();
+    assertThat(disabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))).isFalse();
+    assertThat(enabled.canHandle(new ResourceInfo(irrelevantPath, "cq:Page"))).isFalse();
+    assertThat(enabled.canHandle(new ResourceInfo(mountainContent, "nt:file"))).isFalse();
   }
 
   @Test
   void canGetPublishData() {
-    Map<String, Integer> assetPaths = Map.of(
-        "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg",
-        DATA_SIZE
-    );
+    String assetPath = "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg";
     AssetPublicationHandler handler = context.registerInjectActivateService(
         AssetPublicationHandler.class, Map.of("enabled", true)
     );
-    assetPaths.forEach(
-        (assetPath, expectedSize) -> {
-          PublishData<Asset> publishData = handler.getPublishData(assetPath);
-          int length = publishData.getModel().getContent().array().length;
-          String key = publishData.getKey();
-          Asset model = publishData.getModel();
-          String channel = publishData.getChannel();
-          assertAll(
-              () -> assertEquals(expectedSize, length),
-              () -> assertEquals(key, assetPath),
-              () -> assertEquals("assets", channel),
-              () -> assertEquals(Asset.class, model.getClass())
-          );
-        }
-    );
+    PublishData<Asset> publishData = handler.getPublishData(assetPath);
+    assertThat(publishData.getModel().getContent().array()).hasSize(DATA_SIZE);
+    assertThat(publishData.getKey()).isEqualTo(assetPath);
+    assertThat(publishData.getChannel()).isEqualTo("assets");
+    assertThat(publishData.getModel()).isInstanceOf(Asset.class);
   }
 }
