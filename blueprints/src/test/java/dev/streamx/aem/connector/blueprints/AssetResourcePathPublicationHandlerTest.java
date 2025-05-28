@@ -2,6 +2,7 @@ package dev.streamx.aem.connector.blueprints;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesWriter;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
@@ -89,17 +90,23 @@ class AssetResourcePathPublicationHandlerTest {
 
   @Test
   void canGetPublishData() throws StreamxPublicationException {
-    AssetResourcePathPublicationHandler handler = context.registerInjectActivateService(
-        AssetResourcePathPublicationHandler.class, Map.of("enabled", true)
-    );
+    AssetResourcePathPublicationHandler handler = context.registerInjectActivateService(AssetResourcePathPublicationHandler.class);
     for (Entry<String, Integer> entry : assetPaths.entrySet()) {
       String assetPath = entry.getKey();
       Integer expectedSize = entry.getValue();
+      ResourceInfo resourceInfo = new ResourceInfo(assetPath, "dam:Asset");
+
+      OsgiConfigUtils.enableHandler(handler, context);
+      assertThat(handler.canHandle(resourceInfo)).isTrue();
+
       PublishData<Asset> publishData = handler.getPublishData(assetPath);
       assertThat(publishData.getModel().getContent().array()).hasSize(expectedSize);
       assertThat(publishData.getKey()).isEqualTo(assetPath);
       assertThat(publishData.getChannel()).isEqualTo("assets");
       assertThat(publishData.getModel()).isInstanceOf(Asset.class);
+
+      OsgiConfigUtils.disableHandler(handler, context);
+      assertThat(handler.canHandle(resourceInfo)).isFalse();
     }
   }
 

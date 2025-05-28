@@ -11,8 +11,8 @@ final class FranklinCheck {
 
   private static final Logger LOG = LoggerFactory.getLogger(FranklinCheck.class);
 
-  private FranklinCheck() throws InstantiationException {
-    throw new InstantiationException("Instantiation of FranklinCheck is not allowed");
+  private FranklinCheck() {
+    // no instances
   }
 
   static boolean isFranklinPage(Page pageToCheck) {

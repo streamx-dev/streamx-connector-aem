@@ -2,9 +2,11 @@ package dev.streamx.aem.connector.blueprints;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesWriter;
 import dev.streamx.blueprints.data.WebResource;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -65,17 +67,23 @@ class ClientlibsPublicationHandlerTest {
 
   @Test
   void canGetPublishData() throws StreamxPublicationException {
-    ClientlibsPublicationHandler handler = context.registerInjectActivateService(
-        ClientlibsPublicationHandler.class, Map.of("enabled", true)
-    );
+    ClientlibsPublicationHandler handler = context.registerInjectActivateService(ClientlibsPublicationHandler.class);
     for (Entry<String, Integer> entry : webResourcePaths.entrySet()) {
       String webResourcePath = entry.getKey();
       Integer expectedSize = entry.getValue();
+      ResourceInfo resourceInfo = new ResourceInfo(webResourcePath, "dam:Asset");
+
+      OsgiConfigUtils.enableHandler(handler, context);
+      assertThat(handler.canHandle(resourceInfo)).isTrue();
+
       PublishData<WebResource> publishData = handler.getPublishData(webResourcePath);
       assertThat(publishData.getModel().getContent().array()).hasSize(expectedSize);
       assertThat(publishData.getKey()).isEqualTo(webResourcePath);
       assertThat(publishData.getChannel()).isEqualTo("web-resources");
       assertThat(publishData.getModel()).isInstanceOf(WebResource.class);
+
+      OsgiConfigUtils.disableHandler(handler, context);
+      assertThat(handler.canHandle(resourceInfo)).isFalse();
     }
   }
 

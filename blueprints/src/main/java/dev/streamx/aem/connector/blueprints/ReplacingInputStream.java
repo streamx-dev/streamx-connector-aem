@@ -78,12 +78,6 @@ class ReplacingInputStream extends FilterInputStream {
   }
 
   @Override
-  public int read(byte[] b) throws IOException {
-    // call our own read
-    return read(b, 0, b.length);
-  }
-
-  @Override
   public int read() throws IOException {
     // use a simple state machine to figure out what we are doing
     int next;
@@ -158,11 +152,6 @@ class ReplacingInputStream extends FilterInputStream {
         }
         return next;
     }
-  }
-
-  @Override
-  public String toString() {
-    return state.name() + " " + matchedIndex + " " + replacedIndex + " " + unbufferIndex;
   }
 
   // simple state machine for keeping track of what we are doing

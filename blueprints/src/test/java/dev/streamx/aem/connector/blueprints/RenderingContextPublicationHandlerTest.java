@@ -2,6 +2,7 @@ package dev.streamx.aem.connector.blueprints;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesWriter;
 import dev.streamx.blueprints.data.RenderingContext;
 import dev.streamx.blueprints.data.RenderingContext.OutputType;
@@ -66,5 +67,8 @@ class RenderingContextPublicationHandlerTest {
     assertThat(context.resourceResolver().getResource(resourcePath)).isNotNull();
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
+
+    OsgiConfigUtils.disableHandler(handler, context);
+    assertThat(handler.canHandle(resource)).isFalse();
   }
 }
