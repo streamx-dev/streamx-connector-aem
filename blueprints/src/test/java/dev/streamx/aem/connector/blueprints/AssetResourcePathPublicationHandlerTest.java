@@ -1,21 +1,16 @@
 package dev.streamx.aem.connector.blueprints;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.streamx.aem.connector.test.util.RandomBytesWriter;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map;
-import java.util.Random;
-import javax.servlet.ServletResponse;
+import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -28,55 +23,41 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(AemContextExtension.class)
 class AssetResourcePathPublicationHandlerTest {
 
-  private static final int DATA_SIZE = 3024;
-
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
-  private static class BasicRequestProcessor implements SlingRequestProcessor {
+  private static final Map<String, Integer> assetPaths = Map.of(
+      "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1024.jpeg/1740144616999/lava-rock-formation.jpeg",
+      1024,
+      "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1200.jpeg/1740144616999/lava-rock-formation.jpeg",
+      1200,
+      "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1600.jpeg/1740144616999/lava-rock-formation.jpeg",
+      1600,
+      "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.320.jpeg/1740144616999/lava-rock-formation.jpeg",
+      320,
+      "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.480.jpeg/1740144616999/lava-rock-formation.jpeg",
+      480,
+      "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.600.jpeg/1740144616999/lava-rock-formation.jpeg",
+      600,
+      "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.800.jpeg/1740144616999/lava-rock-formation.jpeg",
+      800,
+      "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.jpeg/1740144616999/lava-rock-formation.jpeg",
+      3024
+  );
 
-    @SuppressWarnings({"MagicNumber", "IfCanBeSwitch", "IfStatementWithTooManyBranches"})
-    @Override
-    public void processRequest(
-        HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver
-    ) throws IOException {
-      String requestURI = request.getRequestURI();
-      if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1024.jpeg/1740144616999/lava-rock-formation.jpeg")) {
-        writeInto(response, 1024);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1200.jpeg/1740144616999/lava-rock-formation.jpeg")) {
-        writeInto(response, 1200);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1600.jpeg/1740144616999/lava-rock-formation.jpeg")) {
-        writeInto(response, 1600);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.320.jpeg/1740144616999/lava-rock-formation.jpeg")) {
-        writeInto(response, 320);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.480.jpeg/1740144616999/lava-rock-formation.jpeg")) {
-        writeInto(response, 480);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.600.jpeg/1740144616999/lava-rock-formation.jpeg")) {
-        writeInto(response, 600);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.800.jpeg/1740144616999/lava-rock-formation.jpeg")) {
-        writeInto(response, 800);
-      } else if (requestURI.equals("/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.jpeg/1740144616999/lava-rock-formation.jpeg")) {
-        writeInto(response, DATA_SIZE);
-      } else {
-        response.setContentType("text/html");
-        response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
-      }
+  private final SlingRequestProcessor basicRequestProcessor = (HttpServletRequest request, HttpServletResponse response, ResourceResolver resolver) -> {
+    String requestURI = request.getRequestURI();
+    if (assetPaths.containsKey(requestURI)) {
+      int dataSize = assetPaths.get(requestURI);
+      RandomBytesWriter.writeRandomBytes(response, dataSize);
+    } else {
+      response.setContentType("text/html");
+      response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
     }
-
-    private void writeInto(ServletResponse response, int dataSize) throws IOException {
-      response.setContentType("application/octet-stream");
-      response.setContentLength(dataSize);
-      byte[] randomData = new byte[dataSize];
-      new Random().nextBytes(randomData);
-      try (OutputStream out = response.getOutputStream()) {
-        out.write(randomData);
-        out.flush();
-      }
-    }
-  }
+  };
 
   @BeforeEach
   void setup() {
-    context.registerService(SlingRequestProcessor.class, new BasicRequestProcessor());
+    context.registerService(SlingRequestProcessor.class, basicRequestProcessor);
     context.load().json(
         "/dev/streamx/aem/connector/blueprints/sample-assets.json",
         "/content/dam/core-components-examples/library/sample-assets"
@@ -97,61 +78,29 @@ class AssetResourcePathPublicationHandlerTest {
     AssetResourcePathPublicationHandler disabled = context.registerInjectActivateService(
         AssetResourcePathPublicationHandler.class, Map.of("enabled", false)
     );
-    assertAll(
-        () -> assertNotNull(resourceResolver.getResource(irrelevantPath)),
-        () -> assertNotNull(resourceResolver.getResource(mountainPath)),
-        () -> assertNotNull(resourceResolver.getResource(mountainContent)),
-        () -> assertFalse(enabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))),
-        () -> assertFalse(disabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))),
-        () -> assertFalse(enabled.canHandle(new ResourceInfo(irrelevantPath, "cq:Page"))),
-        () -> assertFalse(enabled.canHandle(new ResourceInfo(mountainContent, "nt:file")))
-    );
+    assertThat(resourceResolver.getResource(irrelevantPath)).isNotNull();
+    assertThat(resourceResolver.getResource(mountainPath)).isNotNull();
+    assertThat(resourceResolver.getResource(mountainContent)).isNotNull();
+    assertThat(enabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))).isFalse();
+    assertThat(disabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))).isFalse();
+    assertThat(enabled.canHandle(new ResourceInfo(irrelevantPath, "cq:Page"))).isFalse();
+    assertThat(enabled.canHandle(new ResourceInfo(mountainContent, "nt:file"))).isFalse();
   }
 
   @Test
-  void canGetPublishData() {
-    @SuppressWarnings("MagicNumber")
-    Map<String, Integer> assetPaths = Map.of(
-        "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1024.jpeg/1740144616999/lava-rock-formation.jpeg",
-        1024,
-        "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1200.jpeg/1740144616999/lava-rock-formation.jpeg",
-        1200,
-        "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.1600.jpeg/1740144616999/lava-rock-formation.jpeg",
-        1600,
-        "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.320.jpeg/1740144616999/lava-rock-formation.jpeg",
-        320,
-        "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.480.jpeg/1740144616999/lava-rock-formation.jpeg",
-        480,
-        "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.600.jpeg/1740144616999/lava-rock-formation.jpeg",
-        600,
-        "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.85.800.jpeg/1740144616999/lava-rock-formation.jpeg",
-        800,
-        "/content/firsthops/us/en/_jcr_content/root/container/container/image_1057652191.coreimg.jpeg/1740144616999/lava-rock-formation.jpeg",
-        DATA_SIZE
-    );
+  void canGetPublishData() throws StreamxPublicationException {
     AssetResourcePathPublicationHandler handler = context.registerInjectActivateService(
         AssetResourcePathPublicationHandler.class, Map.of("enabled", true)
     );
-    assetPaths.forEach(
-        (assetPath, expectedSize) -> {
-          PublishData<Asset> publishData;
-          try {
-            publishData = handler.getPublishData(assetPath);
-          } catch (StreamxPublicationException e) {
-            throw new RuntimeException(e);
-          }
-          int length = publishData.getModel().getContent().array().length;
-          String key = publishData.getKey();
-          Asset model = publishData.getModel();
-          String channel = publishData.getChannel();
-          assertAll(
-              () -> assertEquals(expectedSize, length),
-              () -> assertEquals(key, assetPath),
-              () -> assertEquals("assets", channel),
-              () -> assertEquals(Asset.class, model.getClass())
-          );
-        }
-    );
+    for (Entry<String, Integer> entry : assetPaths.entrySet()) {
+      String assetPath = entry.getKey();
+      Integer expectedSize = entry.getValue();
+      PublishData<Asset> publishData = handler.getPublishData(assetPath);
+      assertThat(publishData.getModel().getContent().array()).hasSize(expectedSize);
+      assertThat(publishData.getKey()).isEqualTo(assetPath);
+      assertThat(publishData.getChannel()).isEqualTo("assets");
+      assertThat(publishData.getModel()).isInstanceOf(Asset.class);
+    }
   }
 
 }

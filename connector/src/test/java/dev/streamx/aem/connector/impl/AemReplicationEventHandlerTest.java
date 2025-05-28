@@ -19,10 +19,9 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.osgi.service.event.Event;
 
-@ExtendWith({MockitoExtension.class, AemContextExtension.class})
+@ExtendWith(AemContextExtension.class)
 class AemReplicationEventHandlerTest {
 
   private final AemContext context = new AemContext();
