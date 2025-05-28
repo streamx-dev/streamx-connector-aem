@@ -92,12 +92,12 @@ public class FragmentPublicationHandler extends BasePublicationHandler<Fragment>
   private PublishData<Fragment> toPublishData(Resource resource, ResourceResolver resourceResolver) {
     Map<String, String> messageProps = Optional.ofNullable(
             resource.getChild(
-                config.get().rel$_$path$_$to$_$node$_$with$_$jcr$_$prop$_$for$_$sx$_$type()
+                config.get().rel_path_to_node_with_jcr_prop_for_sx_type()
             )
         ).map(child -> child.adaptTo(ValueMap.class))
         .map(
             valueMap -> valueMap.get(
-                config.get().jcr$_$prop$_$name_for$_$sx$_$type(), String.class
+                config.get().jcr_prop_name_for_sx_type(), String.class
             )
         ).map(propertyValue -> Map.of(SXType.VALUE, propertyValue))
         .orElse(Map.of());

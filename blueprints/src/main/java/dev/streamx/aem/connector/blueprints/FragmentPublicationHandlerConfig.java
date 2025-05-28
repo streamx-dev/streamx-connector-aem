@@ -26,7 +26,6 @@ public @interface FragmentPublicationHandlerConfig {
   )
   boolean enabled() default true;
 
-  @SuppressWarnings("NewMethodNamingConvention")
   @AttributeDefinition(
       name = "Relative Path to Node with JCR Property for `sx:type`",
       description = "Relative path to the child node of the resource that is being published, that "
@@ -34,8 +33,7 @@ public @interface FragmentPublicationHandlerConfig {
       type = AttributeType.STRING,
       defaultValue = JcrConstants.JCR_PRIMARYTYPE
   )
-  String rel$_$path$_$to$_$node$_$with$_$jcr$_$prop$_$for$_$sx$_$type()
-      default JcrConstants.JCR_CONTENT;
+  String rel_path_to_node_with_jcr_prop_for_sx_type() default JcrConstants.JCR_CONTENT;
 
   @AttributeDefinition(
       name = "Name of JCR property for `sx:type`",
@@ -45,5 +43,5 @@ public @interface FragmentPublicationHandlerConfig {
       type = AttributeType.STRING,
       defaultValue = NameConstants.NT_TEMPLATE
   )
-  String jcr$_$prop$_$name_for$_$sx$_$type() default NameConstants.PN_TEMPLATE;
+  String jcr_prop_name_for_sx_type() default NameConstants.PN_TEMPLATE;
 }

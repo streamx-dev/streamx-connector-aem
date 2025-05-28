@@ -29,7 +29,6 @@ class AemReplicationEventHandlerTest {
   private List<ResourceInfo> publishedResources;
   private List<ResourceInfo> unpublishedResources;
 
-  @SuppressWarnings("ReturnOfNull")
   @BeforeEach
   void setup() throws Exception {
     handler = new AemReplicationEventHandler(

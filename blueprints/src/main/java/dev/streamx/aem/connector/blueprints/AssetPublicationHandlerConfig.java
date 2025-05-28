@@ -41,5 +41,5 @@ public @interface AssetPublicationHandlerConfig {
       type = AttributeType.STRING,
       defaultValue = StringUtils.EMPTY
   )
-  String jcr$_$prop$_$name_for$_$sx$_$type() default StringUtils.EMPTY;
+  String jcr_prop_name_for_sx_type() default StringUtils.EMPTY;
 }
