@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 @ServiceDescription("Publication handler for Experience Fragments")
 public class FragmentPublicationHandler extends BasePublicationHandler<Fragment> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(FragmentPublicationHandler.class);
-
   private final PageDataService pageDataService;
   private final AtomicReference<FragmentPublicationHandlerConfig> config;
 
@@ -52,16 +50,12 @@ public class FragmentPublicationHandler extends BasePublicationHandler<Fragment>
 
   @Override
   public boolean canHandle(ResourceInfo resource) {
-    boolean canHandle = config.get().enabled() && isXF(resource);
-    LOG.trace("Can handle {}? Answer: {}", resource.getPath(), canHandle);
-    return canHandle;
-  }
+    if (!config.get().enabled()) {
+      return false;
+    }
 
-  private boolean isXF(ResourceInfo resource) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      boolean isXF = ResourcePrimaryNodeTypeChecker.isXF(resource, resourceResolver);
-      LOG.trace("Is {} an XF? Answer: {}", resource.getPath(), isXF);
-      return isXF;
+      return ResourcePrimaryNodeTypeChecker.isXF(resource, resourceResolver);
     }
   }
 

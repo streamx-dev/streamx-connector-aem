@@ -53,9 +53,12 @@ public class RenderingContextPublicationHandler extends BasePublicationHandler<R
 
   @Override
   public boolean canHandle(ResourceInfo resource) {
+    if (!config.get().enabled()) {
+      return false;
+    }
+
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      return config.get().enabled()
-          && pageDataService.isPageTemplate(resource, resourceResolver);
+      return pageDataService.isPageTemplate(resource, resourceResolver);
     }
   }
 
