@@ -13,7 +13,6 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.uri.SlingUri;
 import org.apache.sling.api.uri.SlingUriBuilder;
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -75,17 +74,13 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
       Resource resource = resourceResolver.resolve(
           Optional.ofNullable(slingUri.getPath()).orElse(StringUtils.EMPTY)
       );
-      Map<String, String> messageProps = Optional.ofNullable(resource.adaptTo(ValueMap.class))
-          .map(
-              valueMap -> valueMap.get(
-                  config.get().jcr_prop_name_for_sx_type(), String.class
-              )
-          ).map(propertyValue -> Map.of(SXType.VALUE, propertyValue))
-          .orElse(Map.of());
+
       if (ResourceUtil.isNonExistingResource(resource)) {
         LOG.error("Resource not found for publish data generation: {}", slingUri);
         return null;
       }
+
+      Map<String, String> messageProps = getSxTypeAsMap(resource, config.get().jcr_prop_name_for_sx_type());
       return generatePublishData(slingUri, messageProps, resourceResolver);
     }
   }

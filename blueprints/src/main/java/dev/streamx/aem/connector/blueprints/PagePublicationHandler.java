@@ -6,12 +6,10 @@ import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.api.resource.ValueMap;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -69,17 +67,9 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
         return null;
       }
 
-      Map<String, String> messageProps = Optional.ofNullable(
-              resource.getChild(
-                  config.get().rel_path_to_node_with_jcr_prop_for_sx_type()
-              )
-          ).map(child -> child.adaptTo(ValueMap.class))
-          .map(
-              valueMap -> valueMap.get(
-                  config.get().jcr_prop_name_for_sx_type(), String.class
-              )
-          ).map(propertyValue -> Map.of(SXType.VALUE, propertyValue))
-          .orElse(Map.of());
+      Resource childResource = resource.getChild(config.get().rel_path_to_node_with_jcr_prop_for_sx_type());
+      Map<String, String> messageProps = getSxTypeAsMap(childResource, config.get().jcr_prop_name_for_sx_type());
+
       return new PublishData<>(
           getPagePath(resourcePath),
           config.get().publication_channel(),
