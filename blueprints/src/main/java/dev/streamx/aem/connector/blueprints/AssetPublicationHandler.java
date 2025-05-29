@@ -78,7 +78,7 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
       Map<String, String> messageProps = Optional.ofNullable(resource.adaptTo(ValueMap.class))
           .map(
               valueMap -> valueMap.get(
-                  config.get().jcr$_$prop$_$name_for$_$sx$_$type(), String.class
+                  config.get().jcr_prop_name_for_sx_type(), String.class
               )
           ).map(propertyValue -> Map.of(SXType.VALUE, propertyValue))
           .orElse(Map.of());
