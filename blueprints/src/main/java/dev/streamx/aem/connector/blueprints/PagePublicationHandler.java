@@ -54,9 +54,12 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
       return false;
     }
 
+    if (ResourcePrimaryNodeTypeChecker.isXFPath(resource.getPath())) {
+      return false;
+    }
+
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      return pageDataService.isPage(resource, resourceResolver)
-          && !ResourcePrimaryNodeTypeChecker.isXF(resource, resourceResolver);
+      return pageDataService.isPage(resource, resourceResolver);
     }
   }
 
