@@ -50,10 +50,16 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
 
   @Override
   public boolean canHandle(ResourceInfo resource) {
+    if (!config.get().enabled()) {
+      return false;
+    }
+
+    if (ResourcePrimaryNodeTypeChecker.isXFPath(resource.getPath())) {
+      return false;
+    }
+
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      return config.get().enabled()
-          && pageDataService.isPage(resource, resourceResolver)
-          && !ResourcePrimaryNodeTypeChecker.isXF(resource, resourceResolver);
+      return pageDataService.isPage(resource, resourceResolver);
     }
   }
 
