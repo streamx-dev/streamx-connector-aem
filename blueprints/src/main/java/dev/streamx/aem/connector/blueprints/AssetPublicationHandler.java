@@ -56,13 +56,17 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
 
   @Override
   public boolean canHandle(ResourceInfo resource) {
+    if (!config.get().enabled()) {
+      return false;
+    }
+
     String resourcePath = resource.getPath();
+    if (!resourcePath.matches(config.get().assets_path_regexp())) {
+      return false;
+    }
+
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      boolean canHandle = config.get().enabled()
-          && resourcePath.matches(config.get().assets_path_regexp())
-          && ResourcePrimaryNodeTypeChecker.isAsset(resource, resourceResolver);
-      LOG.trace("Can handle this resource path: '{}'? Answer: {}", resourcePath, canHandle);
-      return canHandle;
+      return ResourcePrimaryNodeTypeChecker.isAsset(resource, resourceResolver);
     }
   }
 

@@ -42,13 +42,17 @@ final class ResourcePrimaryNodeTypeChecker {
 
   static boolean isXF(ResourceInfo resource, ResourceResolver resourceResolver) {
     boolean isPage = isPage(resource, resourceResolver);
-    boolean isXFPath = resource.getPath().startsWith("/content/experience-fragments");
+    boolean isXFPath = isXFPath(resource.getPath());
     boolean isXF = isPage && isXFPath;
     LOG.trace(
         "Is {} an XF? Answer: {}. Is Page: {}. Is XF path: {}",
         resource.getPath(), isXF, isPage, isXFPath
     );
     return isXF;
+  }
+
+  static boolean isXFPath(String resourcePath) {
+    return resourcePath.startsWith("/content/experience-fragments");
   }
 
   private static boolean hasPrimaryNodeType(ResourceInfo resourceInfo, @NotNull String expectedPrimaryNodeType, ResourceResolver resourceResolver) {
