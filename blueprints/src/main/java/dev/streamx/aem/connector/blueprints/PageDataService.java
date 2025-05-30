@@ -11,6 +11,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -129,33 +132,35 @@ public class PageDataService {
     }
   }
 
-  private String shortenContentPaths(String path, String content) {
+  protected static String shortenContentPaths(String path, String content) {
     final String[] elements = path.split("/");
-    final String spaceName = elements.length >= 2 ? elements[2] : null;
+    final String spaceName = elements.length >= 3 ? elements[2] : null;
     if (spaceName != null) {
-      final String pagesPath = "/content/" + spaceName + "/pages";
-      final String contentPath = "/content/" + spaceName;
       // TODO this is a quick workaround to be able to use Pebble in AEM
-      InputStream input = new ByteArrayInputStream(content.getBytes(UTF_8));
-      final InputStream replacingOpeningStream =
-          new ReplacingInputStream(input, "((", "{{");
-      final InputStream replacingClosingStream =
-          new ReplacingInputStream(replacingOpeningStream, "))", "}}");
-
-      // Replace pages paths
-      final InputStream replacePages =
-          new ReplacingInputStream(replacingClosingStream, pagesPath, null);
-      // Replace generic paths
-      ReplacingInputStream replaceGenericPaths = new ReplacingInputStream(replacePages,
-          contentPath, null);
+      Map<String, String> replaces = new LinkedHashMap<>();
+      replaces.put("((", "{{");
+      replaces.put("))", "}}");
+      replaces.put("/content/" + spaceName + "/pages", null);
+      replaces.put("/content/" + spaceName, null);
       try {
-        return IOUtils.toString(replaceGenericPaths, UTF_8);
+        return replaceTokens(content, replaces);
       } catch (IOException exception) {
         String message = String.format("Error modifying content for %s", path);
         throw new UncheckedIOException(message, exception);
       }
     }
     return content;
+  }
+
+  private static String replaceTokens(String input, Map<String, String> replaces) throws IOException {
+    InputStream inputStream = new ByteArrayInputStream(input.getBytes(UTF_8));
+    for (Entry<String, String> entry : replaces.entrySet()) {
+      String pattern = entry.getKey();
+      String replacement = entry.getValue();
+      inputStream = new ReplacingInputStream(inputStream, pattern, replacement);
+    }
+
+    return IOUtils.toString(inputStream, UTF_8);
   }
 
 }
