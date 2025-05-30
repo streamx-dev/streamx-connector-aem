@@ -77,7 +77,7 @@ public class PageDataService {
         resourcePath, pageMarkup
     );
 
-    if (shouldShortenContentPaths && resourcePath.startsWith("/content")) {
+    if (shouldShortenContentPaths) {
       return shortenContentPaths(resourcePath, pageMarkupWithAdjustedLinks);
     } else {
       return pageMarkupWithAdjustedLinks;
@@ -133,6 +133,10 @@ public class PageDataService {
   }
 
   protected static String shortenContentPaths(String path, String content) {
+    if (!path.startsWith("/content")) {
+      return content;
+    }
+
     final String[] elements = path.split("/");
     final String spaceName = elements.length >= 3 ? elements[2] : null;
     if (spaceName != null) {

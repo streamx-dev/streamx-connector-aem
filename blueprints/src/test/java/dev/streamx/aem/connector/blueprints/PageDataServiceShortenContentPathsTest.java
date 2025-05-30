@@ -49,7 +49,7 @@ class PageDataServiceShortenContentPathsTest {
   @Test
   void shouldNotShortenContentPaths_WhenPathIsNotContentPath() {
     // given
-    String path = "/sites";
+    String path = "/sites/space-3";
 
     // when
     String result = PageDataService.shortenContentPaths(path, SAMPLE_INPUT_CONTENT);
