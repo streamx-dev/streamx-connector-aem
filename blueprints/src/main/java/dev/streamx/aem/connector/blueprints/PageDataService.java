@@ -73,15 +73,13 @@ public class PageDataService {
         resource, resourceResolver, slingRequestProcessor
     );
 
-    String pageMarkupWithAdjustedLinks = addNoFollowToExternalLinksIfNeeded(
-        resourcePath, pageMarkup
-    );
+    String pageMarkupWithAdjustedLinks = shouldAddNofollowToExternalLinks
+        ? addNoFollowToExternalLinks(resourcePath, pageMarkup)
+        : pageMarkup;
 
-    if (shouldShortenContentPaths) {
-      return shortenContentPaths(resourcePath, pageMarkupWithAdjustedLinks);
-    } else {
-      return pageMarkupWithAdjustedLinks;
-    }
+    return shouldShortenContentPaths
+        ? shortenContentPaths(resourcePath, pageMarkupWithAdjustedLinks)
+        : pageMarkupWithAdjustedLinks;
   }
 
   boolean isPage(ResourceInfo resource, ResourceResolver resourceResolver) {
@@ -98,28 +96,22 @@ public class PageDataService {
     return isPageTemplate;
   }
 
-  private String addNoFollowToExternalLinksIfNeeded(String pagePath, String pageMarkup) {
-    if (shouldAddNofollowToExternalLinks) {
-      try {
-        pageMarkup = addNofollowToExternalLinks(pageMarkup);
-      } catch (Exception e) {
-        LOG.warn("Cannot add 'nofollow' attributes for page: [{}]. Original content will be used.",
-            pagePath);
+  private String addNoFollowToExternalLinks(String pagePath, String pageMarkup) {
+    try {
+      Document document = Jsoup.parse(pageMarkup, UTF_8.name());
+      Elements links = document.select("a[href]");
+      for (Element link : links) {
+        String href = link.attr("href");
+        if (!StringUtils.startsWith(href, "/") && isNofollowAllowedForHost(href)) {
+          link.attr("rel", "nofollow");
+        }
       }
+      return document.outerHtml();
+    } catch (Exception e) {
+      LOG.warn("Cannot add 'nofollow' attributes for page: [{}]. Original content will be used.",
+          pagePath);
     }
     return pageMarkup;
-  }
-
-  private String addNofollowToExternalLinks(String html) {
-    Document document = Jsoup.parse(html, UTF_8.name());
-    Elements links = document.select("a[href]");
-    for (Element link : links) {
-      String href = link.attr("href");
-      if (!StringUtils.startsWith(href, "/") && isNofollowAllowedForHost(href)) {
-        link.attr("rel", "nofollow");
-      }
-    }
-    return document.outerHtml();
   }
 
   private boolean isNofollowAllowedForHost(String href) {
