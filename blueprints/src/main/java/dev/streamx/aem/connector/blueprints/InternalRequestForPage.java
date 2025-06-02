@@ -1,8 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
-import com.day.cq.wcm.api.Page;
 import dev.streamx.sling.connector.util.SimpleInternalRequest;
-import java.util.Optional;
+import java.util.Map;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.uri.SlingUri;
@@ -20,19 +19,21 @@ final class InternalRequestForPage {
   }
 
   static String generateMarkup(Resource resourceWithPage, ResourceResolver resourceResolver,
-      SlingRequestProcessor slingRequestProcessor) {
-    String[] selectors = Optional.ofNullable(resourceWithPage.adaptTo(Page.class))
-        .filter(FranklinCheck::isFranklinPage)
-        .map(isFranklinPage -> new String[]{"plain"})
-        .orElse(new String[]{});
+      SlingRequestProcessor slingRequestProcessor, Map<String, String> additionalProperties) {
     SlingUri slingUri = SlingUriBuilder.createFrom(resourceWithPage)
-        .setSelectors(selectors)
+        .setSelectors(getSelectors(resourceWithPage))
         .setExtension("html")
         .build();
     String pageMarkup = new SimpleInternalRequest(
-        slingUri, slingRequestProcessor, resourceResolver
+        slingUri, slingRequestProcessor, resourceResolver, additionalProperties
     ).getResponseAsString();
     LOG.debug("Generated markup for {} at {}", resourceWithPage, slingUri);
     return pageMarkup;
+  }
+
+  private static String[] getSelectors(Resource resourceWithPage) {
+    return FranklinCheck.isFranklinPage(resourceWithPage)
+        ? new String[]{"plain"}
+        : new String[0];
   }
 }
