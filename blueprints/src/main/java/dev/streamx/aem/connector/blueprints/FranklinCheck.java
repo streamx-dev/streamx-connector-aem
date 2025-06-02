@@ -15,11 +15,12 @@ final class FranklinCheck {
     // no instances
   }
 
-  static boolean isFranklinPage(Page pageToCheck) {
-    boolean isFranklinPage = Optional.ofNullable(pageToCheck.getContentResource())
+  static boolean isFranklinPage(Resource resource) {
+    boolean isFranklinPage = Optional.ofNullable(resource.adaptTo(Page.class))
+        .map(Page::getContentResource)
         .map(FranklinCheck::isFranklinResType)
         .orElse(false);
-    LOG.trace("Is {} a Franklin page? Answer: {}", pageToCheck, isFranklinPage);
+    LOG.trace("Is {} a Franklin page? Answer: {}", resource, isFranklinPage);
     return isFranklinPage;
   }
 
