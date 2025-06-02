@@ -136,7 +136,9 @@ public class PageDataService {
       // TODO this is a quick workaround to be able to use Pebble in AEM
       replaces.put("((", "{{");
       replaces.put("))", "}}");
+      // Replace pages paths
       replaces.put("/content/" + spaceName + "/pages", null);
+      // Replace generic paths
       replaces.put("/content/" + spaceName, null);
       try {
         return replaceTokens(content, replaces);
