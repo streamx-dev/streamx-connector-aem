@@ -1,6 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.blueprints.data.Asset;
@@ -10,14 +11,21 @@ import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.math.NumberUtils;
+import javax.jcr.Binary;
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import org.apache.commons.io.IOUtils;
 import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,15 +39,10 @@ class AssetPublicationHandlerTest {
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
-  private final SlingRequestProcessor basicRequestProcessor = (HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver) -> {
-    response.setContentType("text/html");
-    response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
-  };
-
   @SuppressWarnings("resource")
   @BeforeEach
   void setup() throws PersistenceException {
-    context.registerService(SlingRequestProcessor.class, basicRequestProcessor);
+    context.registerService(SlingRequestProcessor.class, mock(SlingRequestProcessor.class));
     context.load().json(
         "/dev/streamx/aem/connector/blueprints/sample-assets.json",
         "/content/dam/core-components-examples/library/sample-assets"
@@ -49,13 +52,10 @@ class AssetPublicationHandlerTest {
             "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg/jcr:content/renditions/original"
         ))
     );
-    byte[] bytes = new byte[DATA_SIZE];
-    Arrays.fill(bytes, NumberUtils.BYTE_ONE);
     context.load().binaryFile(
-        new ByteArrayInputStream(bytes),
+        new ByteArrayInputStream("1".repeat(DATA_SIZE).getBytes()),
         "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg/jcr:content/renditions/original"
     );
-    context.build().resource("/conf/irrelevant-resource").commit();
     context.build().resource("/conf/irrelevant-resource").commit();
   }
 
@@ -105,5 +105,100 @@ class AssetPublicationHandlerTest {
 
     OsgiConfigUtils.disableHandler(handler, context);
     assertThat(handler.canHandle(resourceInfo)).isFalse();
+  }
+
+  @Test
+  void shouldRepublishOnlyChangedAssets() throws Exception {
+    // given
+    String resourcePath = "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg";
+    AssetPublicationHandler handler = context.registerInjectActivateService(AssetPublicationHandler.class);
+
+    // when
+    PublishData<Asset> publishData1 = handler.getPublishData(resourcePath);
+
+    // then: expect the image to be published
+    assertThat(publishData1).isNotNull();
+    verifyStoredHash(resourcePath, "0a0d14967469e8679989086d22d60425a9991d4e3b2a7d3a1aa8615630990b6a");
+
+    // when: publishing unchanged image
+    PublishData<Asset> publishData2 = handler.getPublishData(resourcePath);
+
+    // then: will not be published, since its hash has not changed
+    assertThat(publishData2).isNull();
+    verifyStoredHash(resourcePath, "0a0d14967469e8679989086d22d60425a9991d4e3b2a7d3a1aa8615630990b6a");
+
+    // when: publishing edited image
+    editImageInJcr(resourcePath);
+    PublishData<Asset> publishData3 = handler.getPublishData(resourcePath);
+
+    // then: expect the image to be published, since its hash has changed
+    assertThat(publishData3).isNotNull();
+    verifyStoredHash(resourcePath, "8902de85bac26f0eeab1c8f9a1adaeb8e4887d82f6a54107f7267be25b805e10");
+  }
+
+  @Test
+  void shouldRepublishAssetAfterUnpublished() {
+    // given
+    String resourcePath = "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg";
+    AssetPublicationHandler handler = context.registerInjectActivateService(AssetPublicationHandler.class);
+
+    // when
+    PublishData<Asset> publishData1 = handler.getPublishData(resourcePath);
+
+    // then: expect the image to be published
+    assertThat(publishData1).isNotNull();
+    verifyStoredHash(resourcePath, "0a0d14967469e8679989086d22d60425a9991d4e3b2a7d3a1aa8615630990b6a");
+
+    // when: unpublishing the image
+    UnpublishData<Asset> unpublishData = handler.getUnpublishData(resourcePath);
+
+    // then: expecting also the hash to be removed
+    assertThat(unpublishData).isNotNull();
+    verifyHashNotStored(resourcePath);
+
+    // when: republishing the same image
+    PublishData<Asset> publishData2 = handler.getPublishData(resourcePath);
+
+    // then: expect the image to be published, even if it has the same hash as when published before unpublishing
+    assertThat(publishData2).isNotNull();
+    verifyStoredHash(resourcePath, "0a0d14967469e8679989086d22d60425a9991d4e3b2a7d3a1aa8615630990b6a");
+  }
+
+  @SuppressWarnings("resource")
+  private void verifyStoredHash(String resourcePath, String expected) {
+    Resource hashResource = context.resourceResolver().resolve("/var/streamx/connector/sling/hashes/assets" + resourcePath);
+    String hash = hashResource.getValueMap().get("lastPublishHash", String.class);
+    assertThat(hash).isEqualTo(expected);
+  }
+
+  @SuppressWarnings("resource")
+  private void verifyHashNotStored(String resourcePath) {
+    Resource hashResource = context.resourceResolver().resolve("/var/streamx/connector/sling/hashes/assets" + resourcePath);
+    assertThat(ResourceUtil.isNonExistingResource(hashResource)).isTrue();
+  }
+
+  @SuppressWarnings("resource")
+  private void editImageInJcr(String resourcePath) throws RepositoryException, IOException {
+    Session session = context.resourceResolver().adaptTo(Session.class);
+    assertThat(session).isNotNull();
+
+    Node binaryNode = session.getNode(resourcePath + "/jcr:content/renditions/original/jcr:content");
+    Property binaryContentProperty = binaryNode.getProperty("jcr:data");
+
+    Binary binaryContent = binaryContentProperty.getBinary();
+    try (InputStream input = binaryContent.getStream()) {
+
+      ByteArrayOutputStream output = new ByteArrayOutputStream();
+      IOUtils.copy(input, output);
+
+      // edit the image content by appending a byte
+      output.write('a');
+
+      // replace content
+      Binary newBinaryContent = session.getValueFactory().createBinary(new ByteArrayInputStream(output.toByteArray()));
+      binaryContentProperty.setValue(newBinaryContent);
+    }
+
+    session.save();
   }
 }
