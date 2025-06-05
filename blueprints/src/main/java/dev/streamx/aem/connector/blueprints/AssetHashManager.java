@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.commons.JcrUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
@@ -52,24 +52,7 @@ final class AssetHashManager {
 
   private static Node getOrCreateAssetHashNode(String assetResourcePath, Session session) throws RepositoryException {
     String hashNodePath = computeAssetHashNodePath(assetResourcePath);
-    String[] nodePathItems = StringUtils.split(hashNodePath, "/");
-    String currentPath = "";
-    Node currentNode = session.getRootNode();
-
-    for (int i = 0; i < nodePathItems.length; i++) {
-      boolean isLastPathItem = (i == nodePathItems.length - 1);
-      String pathItem = nodePathItems[i];
-
-      currentPath = String.format("%s/%s", currentPath, pathItem);
-      if (session.nodeExists(currentPath)) {
-        currentNode = session.getNode(currentPath);
-      } else {
-        String nodeType = isLastPathItem ? "nt:unstructured" : "sling:Folder";
-        currentNode = currentNode.addNode(pathItem, nodeType);
-      }
-    }
-
-    return currentNode;
+    return JcrUtils.getOrCreateByPath(hashNodePath, "sling:Folder", "nt:unstructured", session, true);
   }
 
   private static String computeAssetHashNodePath(String assetResourcePath) {
@@ -98,10 +81,10 @@ final class AssetHashManager {
     }
 
     String assetHashNodePath = computeAssetHashNodePath(assetResourcePath);
-    Resource assetResource = resourceResolver.getResource(assetHashNodePath);
-    if (assetResource != null) {
+    Resource assetHashResource = resourceResolver.getResource(assetHashNodePath);
+    if (assetHashResource != null) {
       try {
-        resourceResolver.delete(assetResource);
+        resourceResolver.delete(assetHashResource);
         session.save();
       } catch (Exception e) {
         LOG.error("Error deleting hash for Asset '{}'", assetResourcePath, e);
