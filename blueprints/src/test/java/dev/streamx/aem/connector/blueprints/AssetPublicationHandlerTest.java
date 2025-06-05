@@ -166,14 +166,14 @@ class AssetPublicationHandlerTest {
 
   @SuppressWarnings("resource")
   private void verifyStoredHash(String resourcePath, String expected) {
-    Resource hashResource = context.resourceResolver().resolve("/var/streamx/connector/sling/hashes/assets" + resourcePath);
+    Resource hashResource = context.resourceResolver().resolve("/var/streamx/connector/aem/hashes/assets" + resourcePath);
     String hash = hashResource.getValueMap().get("lastPublishHash", String.class);
     assertThat(hash).isEqualTo(expected);
   }
 
   @SuppressWarnings("resource")
   private void verifyHashNotStored(String resourcePath) {
-    Resource hashResource = context.resourceResolver().resolve("/var/streamx/connector/sling/hashes/assets" + resourcePath);
+    Resource hashResource = context.resourceResolver().resolve("/var/streamx/connector/aem/hashes/assets" + resourcePath);
     assertThat(ResourceUtil.isNonExistingResource(hashResource)).isTrue();
   }
 

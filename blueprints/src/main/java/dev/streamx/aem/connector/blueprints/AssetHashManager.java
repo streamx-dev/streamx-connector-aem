@@ -15,7 +15,7 @@ final class AssetHashManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssetHashManager.class);
 
-  private static final String BASE_NODE_PATH_FOR_HASHES = "/var/streamx/connector/sling/hashes/assets";
+  private static final String BASE_NODE_PATH_FOR_HASHES = "/var/streamx/connector/aem/hashes/assets";
   private static final String PN_LAST_PUBLISH_HASH = "lastPublishHash";
 
   private AssetHashManager() {
