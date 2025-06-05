@@ -6,9 +6,9 @@ import dev.streamx.sling.connector.PublicationAction;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -48,37 +48,40 @@ public class AemReplicationEventHandler extends BaseAemEventHandler {
 
   @Override
   protected void doHandleEvent(Event event) {
-    Optional.ofNullable(ReplicationAction.fromEvent(event))
-        .ifPresentOrElse(
-            this::handleAction, () -> LOG.warn("Cannot get action from {}", event)
-        );
+    ReplicationAction replicationAction = ReplicationAction.fromEvent(event);
+    if (replicationAction == null) {
+      LOG.warn("Cannot get action from {}", event);
+      return;
+    }
+
+    ReplicationActionType replicationActionType = replicationAction.getType();
+    if (!actionsMap.containsKey(replicationActionType)) {
+      LOG.warn("Unhandled action: {}", replicationAction);
+      return;
+    }
+
+    PublicationAction ingestionAction = actionsMap.get(replicationActionType);
+    List<ResourceInfo> resourcesToIngest = getResourcesToIngest(replicationAction.getPaths());
+    handleIngestion(ingestionAction, resourcesToIngest);
   }
 
-  private void handleAction(ReplicationAction action) {
-    ReplicationActionType replicationActionType = action.getType();
-    List<String> paths = List.of(action.getPaths());
-    Optional.ofNullable(actionsMap.get(replicationActionType))
-        .ifPresentOrElse(
-            ingestionAction -> handleIngestion(ingestionAction, paths),
-            () -> LOG.warn("Failed to add job for: {}", action)
-        );
-  }
-
-  private void handleIngestion(PublicationAction ingestionAction, List<String> paths) {
-    LOG.trace("Handling ingestion {} for {}", ingestionAction, paths);
+  private List<ResourceInfo> getResourcesToIngest(String[] paths) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      List<ResourceInfo> resourcesToIngest = paths.stream()
-          .map(path -> new ResourceInfo(
-              path,
-              PrimaryNodeTypeExtractor.extract(path, resourceResolver)
-          ))
+      return Arrays.stream(paths)
+          .map(path -> new ResourceInfo(path, PrimaryNodeTypeExtractor.extract(path, resourceResolver)))
           .collect(Collectors.toList());
+    }
+  }
+
+  private void handleIngestion(PublicationAction ingestionAction, List<ResourceInfo> resourcesToIngest) {
+    List<String> paths = resourcesToIngest.stream().map(ResourceInfo::getPath).collect(Collectors.toList());
+    LOG.trace("Handling ingestion {} for {}", ingestionAction, paths);
+
+    try {
       if (ingestionAction == PublicationAction.PUBLISH) {
         streamxPublicationService.publish(resourcesToIngest);
       } else if (ingestionAction == PublicationAction.UNPUBLISH) {
         streamxPublicationService.unpublish(resourcesToIngest);
-      } else {
-        LOG.warn("Unknown ingestion action: {}. Ignored paths: {}", ingestionAction, paths);
       }
     } catch (StreamxPublicationException exception) {
       LOG.error("Failed to handle ingestion {} for {}", ingestionAction, paths, exception);
