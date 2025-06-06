@@ -22,7 +22,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
@@ -40,10 +39,8 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
 
   @Activate
   public AssetPublicationHandler(
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      ResourceResolverFactory resolverFactory,
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      SlingRequestProcessor slingRequestProcessor,
+      @Reference ResourceResolverFactory resolverFactory,
+      @Reference SlingRequestProcessor slingRequestProcessor,
       AssetPublicationHandlerConfig config
   ) {
     super(resolverFactory);

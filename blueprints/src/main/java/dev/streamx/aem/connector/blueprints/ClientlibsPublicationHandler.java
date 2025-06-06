@@ -13,7 +13,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.metatype.annotations.Designate;
 
 @Component(
@@ -30,10 +29,8 @@ public class ClientlibsPublicationHandler extends ResourcePathPublicationHandler
 
   @Activate
   public ClientlibsPublicationHandler(
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      ResourceResolverFactory resourceResolverFactory,
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      SlingRequestProcessor slingRequestProcessor,
+      @Reference ResourceResolverFactory resourceResolverFactory,
+      @Reference SlingRequestProcessor slingRequestProcessor,
       ClientlibsPublicationHandlerConfig config
   ) {
     super(resourceResolverFactory, slingRequestProcessor);
