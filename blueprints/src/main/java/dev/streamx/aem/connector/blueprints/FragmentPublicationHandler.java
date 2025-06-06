@@ -16,7 +16,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
 
@@ -30,10 +29,8 @@ public class FragmentPublicationHandler extends BasePublicationHandler<Fragment>
 
   @Activate
   public FragmentPublicationHandler(
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      PageDataService pageDataService,
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      ResourceResolverFactory resourceResolverFactory,
+      @Reference PageDataService pageDataService,
+      @Reference ResourceResolverFactory resourceResolverFactory,
       FragmentPublicationHandlerConfig config
   ) {
     super(resourceResolverFactory);

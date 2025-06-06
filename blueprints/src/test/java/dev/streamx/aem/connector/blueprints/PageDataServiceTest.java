@@ -3,12 +3,12 @@ package dev.streamx.aem.connector.blueprints;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.streamx.aem.connector.test.util.FixedResponseSlingRequestProcessor;
 import dev.streamx.sling.connector.ResourceInfo;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.lang.annotation.Annotation;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -23,23 +23,25 @@ class PageDataServiceTest {
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
-  private final SlingRequestProcessor basicRequestProcessor = (HttpServletRequest request, HttpServletResponse response, ResourceResolver resolver) -> {
-    String requestURI = request.getRequestURI();
-    if (requestURI.equals("/content/franklin-page.plain.html")) {
-      response.getWriter().write("<html><body>"
-                                 + "<h1><a href='http://www.franklin-aem.com'>Franklin Page</a></h1>"
-                                 + "<a href='http://www.franklin-roosevelt.com'>Franklin Roosevelt Page</a>"
-                                 + "</body></html>");
-    } else if (requestURI.equals("/content/usual-aem-page.html")) {
-      response.getWriter().write("<html><body><h1>Usual AEM Page</h1></body></html>");
-    } else {
-      response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
-    }
-  };
+  private final SlingRequestProcessor requestProcessor = new FixedResponseSlingRequestProcessor(
+      Map.of(
+          "/content/franklin-page.plain.html",
+          "<html><body>"
+            + "<h1><a href='http://www.franklin-aem.com'>Franklin Page</a></h1>"
+            + "<a href='http://www.franklin-roosevelt.com'>Franklin Roosevelt Page</a>"
+            + "</body></html>",
+
+          "/content/usual-aem-page.html",
+          "<html><body><h1>Usual AEM Page</h1></body></html>",
+
+          "/content/random-page.html",
+          "<html><body><h1>Random content</h1></body></html>"
+      )
+  );
 
   @BeforeEach
   void setup() {
-    context.registerService(SlingRequestProcessor.class, basicRequestProcessor);
+    context.registerService(SlingRequestProcessor.class, requestProcessor);
     context.registerInjectActivateService(PageDataService.class);
     context.load().json(
         "/dev/streamx/aem/connector/blueprints/franklin-page.json",
@@ -64,7 +66,7 @@ class PageDataServiceTest {
     String randomMarkup = pageDataService.getStorageData(randomPageResource, resourceResolver);
     assertThat(franklinMarkup).isEqualTo("<html><body><h1><a href='http://www.franklin-aem.com'>Franklin Page</a></h1><a href='http://www.franklin-roosevelt.com'>Franklin Roosevelt Page</a></body></html>");
     assertThat(usualAEMMarkup).isEqualTo("<html><body><h1>Usual AEM Page</h1></body></html>");
-    assertThat(randomMarkup).isEqualTo("<html><body><h1>Not Found</h1></body></html>");
+    assertThat(randomMarkup).isEqualTo("<html><body><h1>Random content</h1></body></html>");
   }
 
   @Test
@@ -116,7 +118,7 @@ class PageDataServiceTest {
       }
     };
 
-    PageDataService pageDataService = new PageDataService(basicRequestProcessor, config);
+    PageDataService pageDataService = new PageDataService(requestProcessor, config);
     ResourceResolver resourceResolver = context.resourceResolver();
     Resource franklinPageResource = requireNonNull(resourceResolver.getResource("/content/franklin-page"));
     String aemPageContent = pageDataService.getStorageData(franklinPageResource, resourceResolver);
