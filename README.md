@@ -60,8 +60,7 @@ An example custom Experience Fragment:
 <sly data-sly-use.model="organization.core.models.StreamxExperienceFragmentModel" />
 
 <sly data-sly-test="${model.resolveStreamxDirectives && properties.fragmentVariationPath != null}">
-        {{#include src="${properties.fragmentVariationPath}.html"}}
-    </sly>
+    {{#include src="${properties.fragmentVariationPath}.html"}}
 </sly>
 
 <sly data-sly-test="${!model.resolveStreamxDirectives}">
