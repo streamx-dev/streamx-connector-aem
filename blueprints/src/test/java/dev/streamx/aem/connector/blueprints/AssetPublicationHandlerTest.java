@@ -1,6 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.blueprints.data.Asset;
@@ -31,15 +32,10 @@ class AssetPublicationHandlerTest {
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
-  private final SlingRequestProcessor basicRequestProcessor = (HttpServletRequest request, HttpServletResponse response, ResourceResolver resourceResolver) -> {
-    response.setContentType("text/html");
-    response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
-  };
-
   @SuppressWarnings("resource")
   @BeforeEach
   void setup() throws PersistenceException {
-    context.registerService(SlingRequestProcessor.class, basicRequestProcessor);
+    context.registerService(SlingRequestProcessor.class, mock(SlingRequestProcessor.class));
     context.load().json(
         "/dev/streamx/aem/connector/blueprints/sample-assets.json",
         "/content/dam/core-components-examples/library/sample-assets"
@@ -49,13 +45,10 @@ class AssetPublicationHandlerTest {
             "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg/jcr:content/renditions/original"
         ))
     );
-    byte[] bytes = new byte[DATA_SIZE];
-    Arrays.fill(bytes, NumberUtils.BYTE_ONE);
     context.load().binaryFile(
-        new ByteArrayInputStream(bytes),
+        new ByteArrayInputStream("1".repeat(DATA_SIZE).getBytes()),
         "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg/jcr:content/renditions/original"
     );
-    context.build().resource("/conf/irrelevant-resource").commit();
     context.build().resource("/conf/irrelevant-resource").commit();
   }
 
@@ -97,7 +90,7 @@ class AssetPublicationHandlerTest {
     assertThat(publishData.getKey()).isEqualTo(assetPath);
     assertThat(publishData.getChannel()).isEqualTo("assets");
     assertThat(publishData.getModel()).isInstanceOf(Asset.class);
-    assertThat(publishData.getProperties()).containsEntry("sx:type", "dam:Asset");
+    assertThat(publishData.getProperties()).containsEntry(BasePublicationHandler.SX_TYPE, "dam:Asset");
 
     UnpublishData<Asset> unpublishData = handler.getUnpublishData(assetPath);
     assertThat(unpublishData.getKey()).isEqualTo(assetPath);

@@ -1,10 +1,12 @@
 package dev.streamx.aem.connector.blueprints;
 
+import com.day.cq.dam.api.Rendition;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
+import dev.streamx.sling.connector.util.SimpleInternalRequest;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -81,6 +83,11 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
         return null;
       }
 
+      if (!ResourcePrimaryNodeTypeChecker.isAsset(slingUri, resourceResolver)) {
+        LOG.error("Not an Asset for publish data generation: {}", slingUri);
+        return null;
+      }
+
       Map<String, String> messageProps = getSxTypeAsMap(resource, config.get().jcr_prop_name_for_sx_type());
       return generatePublishData(slingUri, messageProps, resourceResolver);
     }
@@ -108,7 +115,11 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
 
   private Asset generateAssetModel(SlingUri slingUri, ResourceResolver resourceResolver) {
     LOG.trace("Generating {} out of {}", Asset.class, slingUri);
-    return AssetContent.get(slingUri, slingRequestProcessor, resourceResolver)
+    return Optional.of(resourceResolver.resolve(slingUri.toString()))
+        .map(assetResource -> assetResource.adaptTo(com.day.cq.dam.api.Asset.class))
+        .map(com.day.cq.dam.api.Asset::getOriginal)
+        .map(Rendition::getStream)
+        .or(() -> new SimpleInternalRequest(slingUri, slingRequestProcessor, resourceResolver).getResponseAsInputStream())
         .map(inputStream -> new Asset(InputStreamConverter.toByteBuffer(inputStream)))
         .orElseThrow();
   }

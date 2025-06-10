@@ -54,6 +54,7 @@ class RendererPublicationHandlerTest {
     assertThat(handler.canHandle(pageTemplateResource)).isTrue();
     assertThat(publishData.getModel().getTemplate().array()).hasSize(BINARY_DATA_LENGTH);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
+    assertThat(publishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
 
     OsgiConfigUtils.disableHandler(handler, context);

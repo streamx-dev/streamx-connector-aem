@@ -70,8 +70,11 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
         return null;
       }
 
-      Resource childResource = resource.getChild(config.get().rel_path_to_node_with_jcr_prop_for_sx_type());
-      Map<String, String> messageProps = getSxTypeAsMap(childResource, config.get().jcr_prop_name_for_sx_type());
+      Map<String, String> messageProps = getSxTypeAsMap(
+          resource,
+          config.get().rel_path_to_node_with_jcr_prop_for_sx_type(),
+          config.get().jcr_prop_name_for_sx_type()
+      );
 
       return new PublishData<>(
           getPagePath(resourcePath),
