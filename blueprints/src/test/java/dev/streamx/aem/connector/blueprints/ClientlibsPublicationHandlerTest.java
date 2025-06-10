@@ -3,7 +3,7 @@ package dev.streamx.aem.connector.blueprints;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
-import dev.streamx.aem.connector.test.util.RandomBytesWriter;
+import dev.streamx.aem.connector.test.util.RandomBytesSlingRequestProcessor;
 import dev.streamx.blueprints.data.WebResource;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
@@ -12,9 +12,6 @@ import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,20 +46,11 @@ class ClientlibsPublicationHandlerTest {
       10
   );
 
-  private final SlingRequestProcessor basicRequestProcessor = (HttpServletRequest request, HttpServletResponse response, ResourceResolver resolver) -> {
-    String requestURI = request.getRequestURI();
-    if (webResourcePaths.containsKey(requestURI)) {
-      int dataSize = webResourcePaths.get(requestURI);
-      RandomBytesWriter.writeRandomBytes(response, dataSize);
-    } else {
-      response.setContentType("text/html");
-      response.getWriter().write("<html><body><h1>Not Found</h1></body></html>");
-    }
-  };
+  private final SlingRequestProcessor requestProcessor = new RandomBytesSlingRequestProcessor(webResourcePaths);
 
   @BeforeEach
   void setup() {
-    context.registerService(SlingRequestProcessor.class, basicRequestProcessor);
+    context.registerService(SlingRequestProcessor.class, requestProcessor);
   }
 
   @Test

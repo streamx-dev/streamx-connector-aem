@@ -28,7 +28,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
@@ -51,8 +50,7 @@ public class PageDataService {
 
   @Activate
   public PageDataService(
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      SlingRequestProcessor slingRequestProcessor,
+      @Reference SlingRequestProcessor slingRequestProcessor,
       PageDataServiceConfig config
   ) {
     this.slingRequestProcessor = slingRequestProcessor;

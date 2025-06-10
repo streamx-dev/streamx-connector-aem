@@ -10,7 +10,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.propertytypes.ServiceRanking;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
@@ -31,10 +30,8 @@ public class AemDeletionEventHandler extends BaseAemEventHandler {
 
   @Activate
   public AemDeletionEventHandler(
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      StreamxPublicationService streamxPublicationService,
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      ResourceResolverFactory resourceResolverFactory
+      @Reference StreamxPublicationService streamxPublicationService,
+      @Reference ResourceResolverFactory resourceResolverFactory
   ) {
     super(streamxPublicationService, resourceResolverFactory);
   }

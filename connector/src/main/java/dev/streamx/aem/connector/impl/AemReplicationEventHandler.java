@@ -15,7 +15,6 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
@@ -38,10 +37,8 @@ public class AemReplicationEventHandler extends BaseAemEventHandler {
 
   @Activate
   public AemReplicationEventHandler(
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      StreamxPublicationService streamxPublicationService,
-      @Reference(cardinality = ReferenceCardinality.MANDATORY)
-      ResourceResolverFactory resourceResolverFactory
+      @Reference StreamxPublicationService streamxPublicationService,
+      @Reference ResourceResolverFactory resourceResolverFactory
   ) {
     super(streamxPublicationService, resourceResolverFactory);
   }
