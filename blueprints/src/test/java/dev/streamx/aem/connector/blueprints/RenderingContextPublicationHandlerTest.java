@@ -48,16 +48,19 @@ class RenderingContextPublicationHandlerTest {
     RenderingContextPublicationHandler handler = context.registerInjectActivateService(
         RenderingContextPublicationHandler.class
     );
-    PublishData<RenderingContext> publishData = handler.getPublishData(resourcePath);
     assertThat(handler.canHandle(resource)).isTrue();
+
+    PublishData<RenderingContext> publishData = handler.getPublishData(resourcePath);
+    assertThat(publishData.getKey()).isEqualTo(expectedKey);
     RenderingContext model = publishData.getModel();
     assertThat(model.getDataKeyMatchPattern()).isEqualTo("data.*");
     assertThat(model.getRendererKey()).isEqualTo(expectedKey);
     assertThat(model.getOutputKeyTemplate()).isEqualTo("key-1");
     assertThat(model.getOutputType()).isSameAs(OutputType.PAGE);
+    assertThat(publishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
+
     UnpublishData<RenderingContext> unpublishData = handler.getUnpublishData(resourcePath);
     assertThat(context.resourceResolver().getResource(resourcePath)).isNotNull();
-    assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
 
     OsgiConfigUtils.disableHandler(handler, context);
