@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 public class PageDataService {
 
   private static final Logger LOG = LoggerFactory.getLogger(PageDataService.class);
+  private static final Map<String, String> additionalInternalRequestProperties = Map.of("resolveStreamxDirectives", "true");
 
   private final SlingRequestProcessor slingRequestProcessor;
   private String pagesPathRegexp;
@@ -70,7 +71,7 @@ public class PageDataService {
   public String getStorageData(Resource resource, ResourceResolver resourceResolver) {
     String resourcePath = resource.getPath();
     String pageMarkup = InternalRequestForPage.generateMarkup(
-        resource, resourceResolver, slingRequestProcessor
+        resource, resourceResolver, slingRequestProcessor, additionalInternalRequestProperties
     );
 
     String pageMarkupWithAdjustedLinks = shouldAddNofollowToExternalLinks
