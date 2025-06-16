@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesSlingRequestProcessor;
 import dev.streamx.blueprints.data.RenderingContext;
-import dev.streamx.blueprints.data.RenderingContext.OutputType;
+import dev.streamx.blueprints.data.RenderingContext.OutputFormat;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
@@ -53,10 +53,12 @@ class RenderingContextPublicationHandlerTest {
     PublishData<RenderingContext> publishData = handler.getPublishData(resourcePath);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     RenderingContext model = publishData.getModel();
-    assertThat(model.getDataKeyMatchPattern()).isEqualTo("data.*");
     assertThat(model.getRendererKey()).isEqualTo(expectedKey);
+    assertThat(model.getDataKeyMatchPattern()).isEqualTo("data.*");
+    assertThat(model.getDataTypeMatchPattern()).isEqualTo("test-type/.*");
     assertThat(model.getOutputKeyTemplate()).isEqualTo("key-1");
-    assertThat(model.getOutputType()).isSameAs(OutputType.PAGE);
+    assertThat(model.getOutputTypeTemplate()).isEqualTo("data-type3-output-type-pattern-{{id}}");
+    assertThat(model.getOutputFormat()).isSameAs(OutputFormat.PAGE);
     assertThat(publishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
 
     UnpublishData<RenderingContext> unpublishData = handler.getUnpublishData(resourcePath);
