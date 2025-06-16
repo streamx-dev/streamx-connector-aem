@@ -93,6 +93,7 @@ class AssetResourcePathPublicationHandlerTest {
       assertThat(publishData.getKey()).isEqualTo(assetPath);
       assertThat(publishData.getChannel()).isEqualTo("assets");
       assertThat(publishData.getModel()).isInstanceOf(Asset.class);
+      assertThat(publishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
 
       OsgiConfigUtils.disableHandler(handler, context);
       assertThat(handler.canHandle(resourceInfo)).isFalse();

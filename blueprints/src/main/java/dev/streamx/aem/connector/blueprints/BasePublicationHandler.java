@@ -13,7 +13,7 @@ import org.apache.sling.api.resource.ValueMap;
 
 abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
 
-  private static final String SX_TYPE = "sx:type";
+  static final String SX_TYPE = "sx:type";
 
   protected final ResourceResolverFactory resolverFactory;
 
@@ -34,10 +34,14 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
     }
   }
 
-  protected static Map<String, String> getSxTypeAsMap(@Nullable Resource resource, String jcrPropNameForSxType) {
+  protected static Map<String, String> getSxTypeAsMap(Resource resource, String childRelativePath, String jcrPropertyForSxType) {
+    return getSxTypeAsMap(resource, childRelativePath + "/" + jcrPropertyForSxType);
+  }
+
+  protected static Map<String, String> getSxTypeAsMap(@Nullable Resource resource, String jcrPropertyForSxType) {
     return Optional.ofNullable(resource)
         .map(res -> res.adaptTo(ValueMap.class))
-        .map(valueMap -> valueMap.get(jcrPropNameForSxType, String.class))
+        .map(valueMap -> valueMap.get(jcrPropertyForSxType, String.class))
         .map(sxType -> Map.of(SX_TYPE, sxType))
         .orElseGet(Collections::emptyMap);
   }

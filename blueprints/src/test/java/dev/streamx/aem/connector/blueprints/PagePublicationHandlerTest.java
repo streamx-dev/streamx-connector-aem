@@ -52,7 +52,7 @@ class PagePublicationHandlerTest {
     assertThat(handler.canHandle(pageResource)).isTrue();
     assertThat(publishData.getModel().getContent().array()).hasSize(BINARY_DATA_LENGTH);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
-    assertThat(publishData.getProperties()).containsEntry("sx:type", "/conf/firsthops/settings/wcm/templates/page-content");
+    assertThat(publishData.getProperties()).containsEntry(BasePublicationHandler.SX_TYPE, "/conf/firsthops/settings/wcm/templates/page-content");
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
 
     OsgiConfigUtils.disableHandler(handler, context);

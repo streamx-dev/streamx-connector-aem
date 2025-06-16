@@ -69,6 +69,7 @@ class ClientlibsPublicationHandlerTest {
       assertThat(publishData.getKey()).isEqualTo(webResourcePath);
       assertThat(publishData.getChannel()).isEqualTo("web-resources");
       assertThat(publishData.getModel()).isInstanceOf(WebResource.class);
+      assertThat(publishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
 
       OsgiConfigUtils.disableHandler(handler, context);
       assertThat(handler.canHandle(resourceInfo)).isFalse();
