@@ -1,7 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.RenderingContext;
-import dev.streamx.blueprints.data.RenderingContext.OutputType;
+import dev.streamx.blueprints.data.RenderingContext.OutputFormat;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
@@ -92,11 +92,19 @@ public class RenderingContextPublicationHandler extends BasePublicationHandler<R
         .map(Resource::getValueMap)
         .orElse(ValueMap.EMPTY);
     String dataKeyMatchPattern = properties.get("dataKeyMatchPattern", String.class);
+    String dataTypeMatchPattern = properties.get("dataTypeMatchPattern", String.class);
     String outputKeyTemplate = properties.get("outputKeyTemplate", String.class);
+    String outputTypeTemplate = properties.get("outputTypeTemplate", String.class);
     if (StringUtils.isNoneBlank(dataKeyMatchPattern, outputKeyTemplate)) {
       String rendererKey = resource.getPath();
-      return new RenderingContext(rendererKey, dataKeyMatchPattern, outputKeyTemplate,
-          OutputType.PAGE);
+      return new RenderingContext(
+          rendererKey,
+          dataKeyMatchPattern,
+          dataTypeMatchPattern,
+          outputKeyTemplate,
+          outputTypeTemplate,
+          OutputFormat.PAGE
+      );
     }
     LOG.info("Cannot prepare publish data for {}. Resource doesn't contain required properties.",
         resource.getPath());
