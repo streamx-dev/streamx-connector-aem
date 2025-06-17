@@ -56,14 +56,18 @@ final class ResourcePrimaryNodeTypeChecker {
   }
 
   private static boolean hasPrimaryNodeType(ResourceInfo resourceInfo, @NotNull String expectedPrimaryNodeType, ResourceResolver resourceResolver) {
-    if (expectedPrimaryNodeType.equals(resourceInfo.getPrimaryNodeType())) {
+    String actualPrimaryNodeType = resourceInfo.getPrimaryNodeType();
+    if (actualPrimaryNodeType == null) {
+      return false;
+    }
+    if (expectedPrimaryNodeType.equals(actualPrimaryNodeType)) {
       return true;
     }
     try {
       Session session = Objects.requireNonNull(resourceResolver.adaptTo(Session.class));
       NodeTypeManager nodeTypeManager = session.getWorkspace().getNodeTypeManager();
       NodeType nodeType = nodeTypeManager.getNodeType(expectedPrimaryNodeType);
-      return nodeType.isNodeType(resourceInfo.getPrimaryNodeType());
+      return nodeType.isNodeType(actualPrimaryNodeType);
     } catch (Exception exception) {
       LOG.error("Failed to verify if {} is a {}", resourceInfo, expectedPrimaryNodeType, exception);
       return false;
