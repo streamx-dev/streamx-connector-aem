@@ -61,8 +61,7 @@
   <repositories>
     <repository>
       <id>streamx-maven-snapshots</id>
-      <url>https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots
-      </url>
+      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots</url>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -72,9 +71,7 @@
     </repository>
     <repository>
       <id>streamx-maven-public-releases</id>
-      <url>
-        https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases
-      </url>
+      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases</url>
       <releases>
         <enabled>true</enabled>
       </releases>
@@ -87,7 +84,7 @@
   <distributionManagement>
     <snapshotRepository>
       <id>streamx-maven-snapshots</id>
-      <url>https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots</url>
+      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 
