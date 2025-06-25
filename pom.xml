@@ -84,6 +84,13 @@
     </repository>
   </repositories>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <id>streamx-maven-snapshots</id>
+      <url>https://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <scm>
     <connection>scm:git:git@github.com:streamx-dev/streamx-connector-aem.git</connection>
     <developerConnection>scm:git:git@github.com:streamx-dev/streamx-connector-aem.git
@@ -136,20 +143,19 @@
             </execution>
           </executions>
         </plugin>
-        <!-- TODO uncomment the plugin after release succeeds -->
-<!--        <plugin>-->
-<!--          <groupId>biz.aQute.bnd</groupId>-->
-<!--          <artifactId>bnd-baseline-maven-plugin</artifactId>-->
-<!--          <version>${bnd.version}</version>-->
-<!--          <executions>-->
-<!--            <execution>-->
-<!--              <id>baseline</id>-->
-<!--              <goals>-->
-<!--                <goal>baseline</goal>-->
-<!--              </goals>-->
-<!--            </execution>-->
-<!--          </executions>-->
-<!--        </plugin>-->
+        <plugin>
+          <groupId>biz.aQute.bnd</groupId>
+          <artifactId>bnd-baseline-maven-plugin</artifactId>
+          <version>${bnd.version}</version>
+          <executions>
+            <execution>
+              <id>baseline</id>
+              <goals>
+                <goal>baseline</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
         <plugin>
           <groupId>org.apache.sling</groupId>
           <artifactId>sling-maven-plugin</artifactId>

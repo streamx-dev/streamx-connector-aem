@@ -30,4 +30,4 @@ jobs:
           cache: 'maven'
 
       - name: Build and deploy maven artifacts
-        run: ./mvnw clean deploy -P ossrhDeploy
+        run: ./mvnw clean deploy
