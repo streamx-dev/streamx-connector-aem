@@ -3,5 +3,6 @@
   "references.exclude-from-result.regex": ".*\\{\\.width\\}.*",
   "resource-path.postfix-to-append": ".html",
   "resource.required-path.regex": "^/content/.*",
-  "resource.required-primary-node-type.regex": "cq:Page"
+  "resource.required-primary-node-type.regex": "cq:Page",
+  "related-resource.processable-path.regex": ".*\\.(css|js)$"
 }
