@@ -147,6 +147,10 @@
           <groupId>biz.aQute.bnd</groupId>
           <artifactId>bnd-baseline-maven-plugin</artifactId>
           <version>${bnd.version}</version>
+          <!-- TODO Remove the <configuration> element after release passes -->
+          <configuration>
+            <failOnMissing>false</failOnMissing>
+          </configuration>
           <executions>
             <execution>
               <id>baseline</id>
