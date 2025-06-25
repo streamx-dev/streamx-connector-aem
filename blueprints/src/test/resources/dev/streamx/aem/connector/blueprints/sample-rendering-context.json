@@ -4,6 +4,8 @@
     "cq:template": "/conf/firsthops/settings/wcm/templates/page-content",
     "sling:resourceType": "firsthops/components/page",
     "dataKeyMatchPattern": "data.*",
-    "outputKeyTemplate": "key-1"
+    "dataTypeMatchPattern": "test-type/.*",
+    "outputKeyTemplate": "key-1",
+    "outputTypeTemplate": "data-type3-output-type-pattern-{{id}}"
   }
 }
