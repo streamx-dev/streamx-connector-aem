@@ -1,0 +1,100 @@
+{
+  "jcr:primaryType": "dam:Asset",
+  "jcr:versionHistory": "2f6b662e-9ce6-4d8e-bd53-49f127203b2a",
+  "jcr:predecessors": [
+    "6951bc4e-fccc-4927-9b41-b69345aff25a"
+  ],
+  "jcr:baseVersion": "6951bc4e-fccc-4927-9b41-b69345aff25a",
+  "jcr:isCheckedOut": true,
+  "jcr:uuid": "c06ad77d-9ec8-4961-960a-626c088256d7",
+  "jcr:content": {
+    "jcr:primaryType": "dam:AssetContent",
+    "jcr:title": "My content fragment",
+    "cq:isDelivered": false,
+    "cq:lastReplicationAction": "Activate",
+    "cq:lastReplicationAction_publish": "Activate",
+    "contentFragment": true,
+    "cq:name": "my-content-fragment",
+    "cq:parentPath": "/content/dam/productssite",
+    "usages": {
+      "jcr:primaryType": "nt:unstructured",
+      "usedBy": [
+        "aem"
+      ],
+      "dam:score": 2,
+      "aem": {
+        "jcr:primaryType": "nt:unstructured",
+        "count": 2
+      }
+    },
+    "renditions": {
+      "jcr:primaryType": "nt:folder"
+    },
+    "related": {
+      "jcr:primaryType": "nt:unstructured"
+    },
+    "indexedData": {
+      "jcr:primaryType": "nt:unstructured",
+      "master": {
+        "jcr:primaryType": "nt:unstructured",
+        "@string@model": "/conf/productssite/settings/dam/cfm/models/productssite-content-fragment-model",
+        "boolean@booleanField": true,
+        "@stringArray@variations": [
+          "variation_1"
+        ],
+        "jcr:uuid": "d4ae304e-cbaa-499a-af1f-9a3c4805fa96",
+        "string@textField": "I am a text field"
+      },
+      "variation_1": {
+        "jcr:primaryType": "nt:unstructured",
+        "@string@model": "/conf/productssite/settings/dam/cfm/models/productssite-content-fragment-model",
+        "boolean@booleanField": false,
+        "jcr:uuid": "868cdcef-4a0b-4a8f-b886-d35b3840c8b4",
+        "string@textField": "I am a text field 2"
+      }
+    },
+    "metadata": {
+      "jcr:primaryType": "nt:unstructured",
+      "dam:cfVariations": {
+        "jcr:primaryType": "nt:unstructured",
+        "variation_1": {
+          "jcr:primaryType": "nt:unstructured"
+        }
+      }
+    },
+    "model": {
+      "jcr:primaryType": "nt:unstructured",
+      "variations": {
+        "jcr:primaryType": "nt:unstructured",
+        "variation_1": {
+          "jcr:primaryType": "nt:unstructured",
+          "jcr:title": "variation 1",
+          "name": "variation_1",
+          "jcr:description": "",
+          "properties": {
+            "jcr:primaryType": "nt:unstructured",
+            "synchronizeWithVersion": [
+              "textField:6951bc4e-fccc-4927-9b41-b69345aff25a",
+              "booleanField:6951bc4e-fccc-4927-9b41-b69345aff25a"
+            ]
+          }
+        }
+      }
+    },
+    "data": {
+      "jcr:primaryType": "nt:unstructured",
+      "_strucVersion": 1,
+      "cq:model": "/conf/productssite/settings/dam/cfm/models/productssite-content-fragment-model",
+      "master": {
+        "jcr:primaryType": "nt:unstructured",
+        "booleanField": true,
+        "textField": "I am a text field"
+      },
+      "variation_1": {
+        "jcr:primaryType": "nt:unstructured",
+        "booleanField": false,
+        "textField": "I am a text field 2"
+      }
+    }
+  }
+}

@@ -7,6 +7,7 @@ import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import dev.streamx.sling.connector.util.SimpleInternalRequest;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -83,27 +84,17 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
         return null;
       }
 
-      if (!ResourcePrimaryNodeTypeChecker.isAsset(slingUri, resourceResolver)) {
-        LOG.error("Not an Asset for publish data generation: {}", slingUri);
+      if (isContentFragment(resource)) {
+        LOG.info("Resource is a Content Fragment, skipping publication: {}", slingUri);
         return null;
       }
 
       Map<String, String> messageProps = getSxTypeAsMap(resource, config.get().jcr_prop_name_for_sx_type());
-      return generatePublishData(slingUri, messageProps, resourceResolver);
+      return new PublishData<>(
+          resourcePath, config.get().publication_channel(), Asset.class,
+          generateAssetModel(slingUri, resourceResolver), messageProps
+      );
     }
-  }
-
-  private PublishData<Asset> generatePublishData(
-      SlingUri slingUri,
-      Map<String, String> messageProps,
-      ResourceResolver resourceResolver
-  ) {
-    LOG.trace("Generating publish data for '{}'", slingUri);
-    Asset asset = generateAssetModel(slingUri, resourceResolver);
-    return new PublishData<>(
-        slingUri.toString(), config.get().publication_channel(), Asset.class,
-        asset, messageProps
-    );
   }
 
   @Override
@@ -113,15 +104,25 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
     );
   }
 
+  private static boolean isContentFragment(Resource existingAssetResource) {
+    return Optional.ofNullable(existingAssetResource.getChild("jcr:content"))
+        .map(Resource::getValueMap)
+        .map(properties -> Boolean.TRUE.equals(properties.get("contentFragment")))
+        .orElse(false);
+  }
+
   private Asset generateAssetModel(SlingUri slingUri, ResourceResolver resourceResolver) {
     LOG.trace("Generating {} out of {}", Asset.class, slingUri);
-    return Optional.of(resourceResolver.resolve(slingUri.toString()))
-        .map(assetResource -> assetResource.adaptTo(com.day.cq.dam.api.Asset.class))
+    Resource resource = resourceResolver.resolve(slingUri.toString());
+
+    InputStream assetContentStream = Optional
+        .ofNullable(resource.adaptTo(com.day.cq.dam.api.Asset.class))
         .map(com.day.cq.dam.api.Asset::getOriginal)
         .map(Rendition::getStream)
         .or(() -> new SimpleInternalRequest(slingUri, slingRequestProcessor, resourceResolver).getResponseAsInputStream())
-        .map(inputStream -> new Asset(InputStreamConverter.toByteBuffer(inputStream)))
         .orElseThrow();
+
+    return new Asset(InputStreamConverter.toByteBuffer(assetContentStream));
   }
 
 }
