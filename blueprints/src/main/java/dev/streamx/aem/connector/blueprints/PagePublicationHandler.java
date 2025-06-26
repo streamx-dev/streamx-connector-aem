@@ -55,8 +55,12 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
       return false;
     }
 
+    if (!pageDataService.isPageByResourcePath(resource)) {
+      return false;
+    }
+
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      return pageDataService.isPage(resource, resourceResolver);
+      return ResourcePrimaryNodeTypeChecker.isPage(resource, resourceResolver);
     }
   }
 

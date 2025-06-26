@@ -70,15 +70,14 @@ class PageDataServiceTest {
   }
 
   @Test
-  void mustCheckIfPage() {
+  void mustCheckIfPageByResourcePath() {
     PageDataService pageDataService = requireNonNull(context.getService(PageDataService.class));
-    ResourceResolver resourceResolver = context.resourceResolver();
     ResourceInfo franklinPageResource = new ResourceInfo("/content/franklin-page", "cq:Page");
     ResourceInfo usualAEMPageResource = new ResourceInfo("/content/usual-aem-page", "cq:Page");
     ResourceInfo randomPageResource = new ResourceInfo("/blogs/random-page", "cq:Page");
-    assertThat(pageDataService.isPage(franklinPageResource, resourceResolver)).isTrue();
-    assertThat(pageDataService.isPage(usualAEMPageResource, resourceResolver)).isTrue();
-    assertThat(pageDataService.isPage(randomPageResource, resourceResolver)).isFalse();
+    assertThat(pageDataService.isPageByResourcePath(franklinPageResource)).isTrue();
+    assertThat(pageDataService.isPageByResourcePath(usualAEMPageResource)).isTrue();
+    assertThat(pageDataService.isPageByResourcePath(randomPageResource)).isFalse();
   }
 
   @Test
