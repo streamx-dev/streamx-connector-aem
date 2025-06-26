@@ -3,19 +3,15 @@ package dev.streamx.aem.connector.blueprints;
 import com.day.cq.dam.api.Rendition;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublicationHandler;
-import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.UnpublishData;
 import dev.streamx.sling.connector.util.SimpleInternalRequest;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.uri.SlingUri;
 import org.apache.sling.api.uri.SlingUriBuilder;
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -71,37 +67,23 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
   }
 
   @Override
-  public PublishData<Asset> getPublishData(String resourcePath) {
-    LOG.trace("Generating publish data for '{}'", resourcePath);
-    try (ResourceResolver resourceResolver = createResourceResolver()) {
-      SlingUri slingUri = SlingUriBuilder.parse(resourcePath, resourceResolver).build();
-      Resource resource = resourceResolver.resolve(
-          Optional.ofNullable(slingUri.getPath()).orElse(StringUtils.EMPTY)
-      );
-
-      if (ResourceUtil.isNonExistingResource(resource)) {
-        LOG.error("Resource not found for publish data generation: {}", slingUri);
-        return null;
-      }
-
-      if (isContentFragment(resource)) {
-        LOG.info("Resource is a Content Fragment, skipping publication: {}", slingUri);
-        return null;
-      }
-
-      Map<String, String> messageProps = getSxTypeAsMap(resource, config.get().jcr_prop_name_for_sx_type());
-      return new PublishData<>(
-          resourcePath, config.get().publication_channel(), Asset.class,
-          generateAssetModel(slingUri, resourceResolver), messageProps
-      );
-    }
+  protected String getPublicationChannel() {
+    return config.get().publication_channel();
   }
 
   @Override
-  public UnpublishData<Asset> getUnpublishData(String resourcePath) {
-    return new UnpublishData<>(
-        resourcePath, config.get().publication_channel(), Asset.class
-    );
+  protected Asset generateModel(Resource resource, ResourceResolver resourceResolver) {
+    if (isContentFragment(resource)) {
+      LOG.info("Resource is a Content Fragment, skipping publication: {}", resource.getPath());
+      return null;
+    }
+
+    return generateAssetModel(resource, resourceResolver);
+  }
+
+  @Override
+  protected Map<String, String> getMessageProps(Resource resource) {
+    return getSxTypeAsMap(resource, config.get().jcr_prop_name_for_sx_type());
   }
 
   private static boolean isContentFragment(Resource existingAssetResource) {
@@ -111,9 +93,9 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
         .orElse(false);
   }
 
-  private Asset generateAssetModel(SlingUri slingUri, ResourceResolver resourceResolver) {
-    LOG.trace("Generating {} out of {}", Asset.class, slingUri);
-    Resource resource = resourceResolver.resolve(slingUri.toString());
+  private Asset generateAssetModel(Resource resource, ResourceResolver resourceResolver) {
+    LOG.trace("Generating {} out of {}", Asset.class, resource.getPath());
+    SlingUri slingUri = SlingUriBuilder.parse(resource.getPath(), resourceResolver).build();
 
     InputStream assetContentStream = Optional
         .ofNullable(resource.adaptTo(com.day.cq.dam.api.Asset.class))
