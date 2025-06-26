@@ -2,16 +2,12 @@ package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.Fragment;
 import dev.streamx.sling.connector.PublicationHandler;
-import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.UnpublishData;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.api.resource.ResourceUtil;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -55,46 +51,28 @@ public class FragmentPublicationHandler extends BasePublicationHandler<Fragment>
   }
 
   @Override
-  public PublishData<Fragment> getPublishData(String resourcePath) {
-    try (ResourceResolver resourceResolver = createResourceResolver()) {
-      return Optional.of(resourceResolver.resolve(resourcePath))
-          .filter(resolvedResource -> !ResourceUtil.isNonExistingResource(resolvedResource))
-          .map(resource -> toPublishData(resource, resourceResolver))
-          .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + resourcePath));
-    }
+  protected String getPublicationChannel() {
+    return config.get().publication_channel();
   }
 
   @Override
-  public UnpublishData<Fragment> getUnpublishData(String resourcePath) {
-    return new UnpublishData<>(
-        toStreamXKey(resourcePath),
-        config.get().publication_channel(),
-        Fragment.class
-    );
-  }
-
-  private static String toStreamXKey(String resourcePath) {
+  protected String getPublicationKey(String resourcePath) {
     return String.format("%s.html", resourcePath);
   }
 
-  private PublishData<Fragment> toPublishData(Resource resource, ResourceResolver resourceResolver) {
-    Map<String, String> messageProps = getSxTypeAsMap(
+  @Override
+  protected Fragment generateModel(Resource resource, ResourceResolver resourceResolver) {
+    String content = pageDataService.getStorageData(resource, resourceResolver);
+    return new Fragment(content);
+  }
+
+  @Override
+  protected Map<String, String> getMessageProps(Resource resource) {
+    return getSxTypeAsMap(
         resource,
         config.get().rel_path_to_node_with_jcr_prop_for_sx_type(),
         config.get().jcr_prop_name_for_sx_type()
     );
-
-    return new PublishData<>(
-        toStreamXKey(resource.getPath()),
-        config.get().publication_channel(),
-        Fragment.class,
-        toFragment(resource, resourceResolver),
-        messageProps
-    );
   }
 
-  private Fragment toFragment(Resource resource, ResourceResolver resourceResolver) {
-    String content = pageDataService.getStorageData(resource, resourceResolver);
-    return new Fragment(content);
-  }
 }
