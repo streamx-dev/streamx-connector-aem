@@ -9,7 +9,6 @@ import dev.streamx.sling.connector.UnpublishData;
 import dev.streamx.sling.connector.util.SimpleInternalRequest;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +16,6 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.uri.SlingUri;
 import org.apache.sling.api.uri.SlingUriBuilder;
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -107,9 +105,10 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
   }
 
   private static boolean isContentFragment(Resource existingAssetResource) {
-    Resource jcrContent = Objects.requireNonNull(existingAssetResource.getChild("jcr:content"));
-    ValueMap properties = jcrContent.getValueMap();
-    return (boolean) properties.getOrDefault("contentFragment", false);
+    return Optional.ofNullable(existingAssetResource.getChild("jcr:content"))
+        .map(Resource::getValueMap)
+        .map(properties -> Boolean.TRUE.equals(properties.get("contentFragment")))
+        .orElse(false);
   }
 
   private Asset generateAssetModel(SlingUri slingUri, ResourceResolver resourceResolver) {
