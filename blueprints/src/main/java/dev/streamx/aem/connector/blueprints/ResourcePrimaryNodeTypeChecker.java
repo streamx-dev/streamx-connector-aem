@@ -5,13 +5,10 @@ import com.day.cq.wcm.api.NameConstants;
 import com.drew.lang.annotations.NotNull;
 import dev.streamx.sling.connector.ResourceInfo;
 import java.util.Objects;
-import javax.jcr.Node;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeManager;
-import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.uri.SlingUri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +22,6 @@ final class ResourcePrimaryNodeTypeChecker {
 
   static boolean isAsset(ResourceInfo resource, ResourceResolver resourceResolver) {
     return hasPrimaryNodeType(resource, DamConstants.NT_DAM_ASSET, resourceResolver);
-  }
-
-  static boolean isAsset(SlingUri slingUri, ResourceResolver resourceResolver) {
-    return hasPrimaryNodeType(slingUri, DamConstants.NT_DAM_ASSET, resourceResolver);
   }
 
   static boolean isPage(ResourceInfo resource, ResourceResolver resourceResolver) {
@@ -70,17 +63,6 @@ final class ResourcePrimaryNodeTypeChecker {
       return nodeType.isNodeType(actualPrimaryNodeType);
     } catch (Exception exception) {
       LOG.error("Failed to verify if {} is a {}", resourceInfo, expectedPrimaryNodeType, exception);
-      return false;
-    }
-  }
-
-  private static boolean hasPrimaryNodeType(SlingUri slingUri, @NotNull String expectedPrimaryNodeType, ResourceResolver resourceResolver) {
-    try {
-      Resource resource = resourceResolver.resolve(slingUri.toString());
-      Node node = Objects.requireNonNull(resource.adaptTo(Node.class));
-      return node.isNodeType(expectedPrimaryNodeType);
-    } catch (Exception exception) {
-      LOG.error("Failed to verify if {} is a {}", slingUri, expectedPrimaryNodeType, exception);
       return false;
     }
   }

@@ -40,6 +40,10 @@ class AssetPublicationHandlerTest {
         "/dev/streamx/aem/connector/blueprints/sample-assets.json",
         "/content/dam/core-components-examples/library/sample-assets"
     );
+    context.load().json(
+        "/dev/streamx/aem/connector/blueprints/sample-content-fragment.json",
+        "/content/dam/productssite/my-content-fragment"
+    );
     context.resourceResolver().delete(
         Objects.requireNonNull(context.resourceResolver().getResource(
             "/content/dam/core-components-examples/library/sample-assets/lava-rock-formation.jpg/jcr:content/renditions/original"
@@ -98,5 +102,21 @@ class AssetPublicationHandlerTest {
 
     OsgiConfigUtils.disableHandler(handler, context);
     assertThat(handler.canHandle(resourceInfo)).isFalse();
+  }
+
+  @Test
+  void shouldSkipHandlingContentFragmentAsset() {
+    String contentFragmentPath = "/content/dam/productssite/my-content-fragment";
+    AssetPublicationHandler handler = context.registerInjectActivateService(AssetPublicationHandler.class);
+
+    ResourceInfo resourceInfo = new ResourceInfo(contentFragmentPath, "dam:Asset");
+    assertThat(handler.canHandle(resourceInfo)).isTrue();
+
+    PublishData<Asset> publishData = handler.getPublishData(contentFragmentPath);
+    assertThat(publishData).isNull();
+
+    UnpublishData<Asset> unpublishData = handler.getUnpublishData(contentFragmentPath);
+    assertThat(unpublishData.getKey()).isEqualTo(contentFragmentPath);
+    assertThat(unpublishData.getChannel()).isEqualTo("assets");
   }
 }
