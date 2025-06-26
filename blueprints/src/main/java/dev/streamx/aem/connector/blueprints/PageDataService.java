@@ -66,6 +66,14 @@ public class PageDataService {
     nofollowHostsToSkip = new HashSet<>(Arrays.asList(config.nofollow_hosts_to_skip()));
   }
 
+  boolean isPageByResourcePath(ResourceInfo resource) {
+    return resource.getPath().matches(pagesPathRegexp);
+  }
+
+  boolean isPageTemplateByResourcePath(ResourceInfo resource) {
+    return resource.getPath().matches(templatesPathRegexp);
+  }
+
   public String getStorageData(Resource resource, ResourceResolver resourceResolver) {
     String resourcePath = resource.getPath();
     String pageMarkup = InternalRequestForPage.generateMarkup(
@@ -79,20 +87,6 @@ public class PageDataService {
     return shouldShortenContentPaths
         ? shortenContentPaths(resourcePath, pageMarkupWithAdjustedLinks)
         : pageMarkupWithAdjustedLinks;
-  }
-
-  boolean isPage(ResourceInfo resource, ResourceResolver resourceResolver) {
-    boolean isPage = ResourcePrimaryNodeTypeChecker.isPage(resource, resourceResolver)
-                     && resource.getPath().matches(pagesPathRegexp);
-    LOG.trace("Is {} a page? Answer: {}", resource.getPath(), isPage);
-    return isPage;
-  }
-
-  boolean isPageTemplate(ResourceInfo resource, ResourceResolver resourceResolver) {
-    boolean isPageTemplate = ResourcePrimaryNodeTypeChecker.isPage(resource, resourceResolver)
-                             && resource.getPath().matches(templatesPathRegexp);
-    LOG.trace("Is {} a page template? Answer: {}", resource.getPath(), isPageTemplate);
-    return isPageTemplate;
   }
 
   private String addNoFollowToExternalLinks(String pagePath, String pageMarkup) {

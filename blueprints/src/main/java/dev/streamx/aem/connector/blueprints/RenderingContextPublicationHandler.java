@@ -54,8 +54,12 @@ public class RenderingContextPublicationHandler extends BasePublicationHandler<R
       return false;
     }
 
+    if (!pageDataService.isPageTemplateByResourcePath(resource)) {
+      return false;
+    }
+
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      return pageDataService.isPageTemplate(resource, resourceResolver);
+      return ResourcePrimaryNodeTypeChecker.isPage(resource, resourceResolver);
     }
   }
 
