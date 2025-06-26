@@ -2,9 +2,7 @@ package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.RenderingContext;
 import dev.streamx.blueprints.data.RenderingContext.OutputFormat;
-import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.UnpublishData;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
@@ -64,34 +62,12 @@ public class RenderingContextPublicationHandler extends BasePublicationHandler<R
   }
 
   @Override
-  public PublishData<RenderingContext> getPublishData(String resourcePath) {
-    try (ResourceResolver resourceResolver = createResourceResolver()) {
-      Resource resource = resourceResolver.getResource(resourcePath);
-      if (resource == null) {
-        LOG.error("Resource not found when trying to publish it: {}", resourcePath);
-        return null;
-      }
-      RenderingContext renderingContext = resolveData(resource);
-      if (renderingContext != null) {
-        return new PublishData<>(
-            resourcePath,
-            config.get().publication_channel(),
-            RenderingContext.class,
-            renderingContext);
-      }
-      return null;
-    }
+  protected String getPublicationChannel() {
+    return config.get().publication_channel();
   }
 
   @Override
-  public UnpublishData<RenderingContext> getUnpublishData(String resourcePath) {
-    return new UnpublishData<>(
-        resourcePath,
-        config.get().publication_channel(),
-        RenderingContext.class);
-  }
-
-  private RenderingContext resolveData(Resource resource) {
+  protected RenderingContext generateModel(Resource resource, ResourceResolver resourceResolver) {
     ValueMap properties = Optional.ofNullable(resource.getChild("jcr:content"))
         .map(Resource::getValueMap)
         .orElse(ValueMap.EMPTY);
