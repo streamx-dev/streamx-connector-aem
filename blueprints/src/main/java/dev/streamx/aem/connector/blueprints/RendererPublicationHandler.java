@@ -1,9 +1,7 @@
 package dev.streamx.aem.connector.blueprints;
 
 import dev.streamx.blueprints.data.Renderer;
-import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.UnpublishData;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -14,15 +12,11 @@ import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.propertytypes.ServiceDescription;
 import org.osgi.service.metatype.annotations.Designate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 @Designate(ocd = RendererPublicationHandlerConfig.class)
 @ServiceDescription("Publication handler for renderers")
 public class RendererPublicationHandler extends BasePublicationHandler<Renderer> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RendererPublicationHandler.class);
 
   private final PageDataService pageDataService;
   private final AtomicReference<RendererPublicationHandlerConfig> config;
@@ -59,37 +53,18 @@ public class RendererPublicationHandler extends BasePublicationHandler<Renderer>
   }
 
   @Override
-  public PublishData<Renderer> getPublishData(String resourcePath) {
-    try (ResourceResolver resourceResolver = createResourceResolver()) {
-      Resource resource = resourceResolver.getResource(resourcePath);
-
-      if (resource == null) {
-        LOG.error("Resource not found when trying to publish it: {}", resourcePath);
-        return null;
-      }
-
-      return new PublishData<>(
-          getStoragePath(resourcePath),
-          config.get().publication_channel(),
-          Renderer.class,
-          resolveData(resource, resourceResolver));
-    }
+  protected String getPublicationChannel() {
+    return config.get().publication_channel();
   }
 
   @Override
-  public UnpublishData<Renderer> getUnpublishData(String resourcePath) {
-    return new UnpublishData<>(
-        getStoragePath(resourcePath),
-        config.get().publication_channel(),
-        Renderer.class);
-  }
-
-  private Renderer resolveData(Resource resource, ResourceResolver resourceResolver) {
+  protected Renderer generateModel(Resource resource, ResourceResolver resourceResolver) {
     String content = pageDataService.getStorageData(resource, resourceResolver);
     return new Renderer(content);
   }
 
-  private String getStoragePath(String resourcePath) {
+  @Override
+  protected String getPublicationKey(String resourcePath) {
     return resourcePath + ".html";
   }
 }
