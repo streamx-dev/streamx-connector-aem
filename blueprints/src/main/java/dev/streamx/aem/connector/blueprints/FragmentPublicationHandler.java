@@ -62,7 +62,7 @@ public class FragmentPublicationHandler extends BasePublicationHandler<Fragment>
 
   @Override
   protected Fragment generateModel(Resource resource, ResourceResolver resourceResolver) {
-    String content = pageDataService.getStorageData(resource, resourceResolver);
+    String content = pageDataService.readContentAsHtml(resource, resourceResolver);
     return new Fragment(content);
   }
 

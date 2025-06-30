@@ -1,7 +1,7 @@
 package dev.streamx.blueprints.data;
 
 /**
- * Represents configuration defining what should be rendered. Relates to {@link Renderer} and data.
+ * Represents configuration defining what should be rendered. Relates to {@link Renderer} and {@link Data}.
  */
 public class RenderingContext {
 

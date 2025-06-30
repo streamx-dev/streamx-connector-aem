@@ -2,6 +2,7 @@ package dev.streamx.aem.connector.blueprints;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.drew.lang.annotations.Nullable;
 import dev.streamx.sling.connector.ResourceInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -74,24 +75,36 @@ public class PageDataService {
     return resource.getPath().matches(templatesPathRegexp);
   }
 
-  public String getStorageData(Resource resource, ResourceResolver resourceResolver) {
-    String resourcePath = resource.getPath();
-    String pageMarkup = InternalRequestForPage.generateMarkup(
+  public String readContentAsHtml(Resource resource, ResourceResolver resourceResolver) {
+    String pageMarkup = InternalRequestForPage.getHtml(
         resource, resourceResolver, slingRequestProcessor, additionalInternalRequestProperties
     );
 
-    String pageMarkupWithAdjustedLinks = shouldAddNofollowToExternalLinks
-        ? addNoFollowToExternalLinks(resourcePath, pageMarkup)
-        : pageMarkup;
-
-    return shouldShortenContentPaths
-        ? shortenContentPaths(resourcePath, pageMarkupWithAdjustedLinks)
-        : pageMarkupWithAdjustedLinks;
+    return adjustedPageContent(resource.getPath(), pageMarkup);
   }
 
-  private String addNoFollowToExternalLinks(String pagePath, String pageMarkup) {
+  public String readContent(Resource resource,
+      String[] selectors, @Nullable String extension, ResourceResolver resourceResolver) {
+    String pageModel = InternalRequestForPage.getContent(
+        resource, selectors, extension, resourceResolver, slingRequestProcessor, additionalInternalRequestProperties
+    );
+
+    return adjustedPageContent(resource.getPath(), pageModel);
+  }
+
+  private String adjustedPageContent(String resourcePath, String pageContent) {
+    String pageContentWithAdjustedLinks = shouldAddNofollowToExternalLinks
+        ? addNoFollowToExternalLinks(resourcePath, pageContent)
+        : pageContent;
+
+    return shouldShortenContentPaths
+        ? shortenContentPaths(resourcePath, pageContentWithAdjustedLinks)
+        : pageContentWithAdjustedLinks;
+  }
+
+  private String addNoFollowToExternalLinks(String pagePath, String content) {
     try {
-      Document document = Jsoup.parse(pageMarkup, UTF_8.name());
+      Document document = Jsoup.parse(content, UTF_8.name());
       Elements links = document.select("a[href]");
       for (Element link : links) {
         String href = link.attr("href");
@@ -104,7 +117,7 @@ public class PageDataService {
       LOG.warn("Cannot add 'nofollow' attributes for page: [{}]. Original content will be used.",
           pagePath);
     }
-    return pageMarkup;
+    return content;
   }
 
   private boolean isNofollowAllowedForHost(String href) {

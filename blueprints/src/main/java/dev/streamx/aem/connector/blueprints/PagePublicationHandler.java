@@ -65,7 +65,7 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
 
   @Override
   protected Page generateModel(Resource resource, ResourceResolver resourceResolver) {
-    String content = pageDataService.getStorageData(resource, resourceResolver);
+    String content = pageDataService.readContentAsHtml(resource, resourceResolver);
     return new Page(content);
   }
 

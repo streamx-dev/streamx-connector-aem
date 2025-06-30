@@ -61,9 +61,9 @@ class PageDataServiceTest {
     Resource franklinPageResource = requireNonNull(resourceResolver.getResource("/content/franklin-page"));
     Resource usualAEMPageResource = requireNonNull(resourceResolver.getResource("/content/usual-aem-page"));
     Resource randomPageResource = requireNonNull(resourceResolver.getResource("/content/random-page"));
-    String franklinMarkup = pageDataService.getStorageData(franklinPageResource, resourceResolver);
-    String usualAEMMarkup = pageDataService.getStorageData(usualAEMPageResource, resourceResolver);
-    String randomMarkup = pageDataService.getStorageData(randomPageResource, resourceResolver);
+    String franklinMarkup = pageDataService.readContentAsHtml(franklinPageResource, resourceResolver);
+    String usualAEMMarkup = pageDataService.readContentAsHtml(usualAEMPageResource, resourceResolver);
+    String randomMarkup = pageDataService.readContentAsHtml(randomPageResource, resourceResolver);
     assertThat(franklinMarkup).isEqualTo("<html><body><h1><a href='http://www.franklin-aem.com'>Franklin Page</a></h1><a href='http://www.franklin-roosevelt.com'>Franklin Roosevelt Page</a></body></html>");
     assertThat(usualAEMMarkup).isEqualTo("<html><body><h1>Usual AEM Page</h1></body></html>");
     assertThat(randomMarkup).isEqualTo("<html><body><h1>Random content</h1></body></html>");
@@ -120,7 +120,7 @@ class PageDataServiceTest {
     PageDataService pageDataService = new PageDataService(requestProcessor, config);
     ResourceResolver resourceResolver = context.resourceResolver();
     Resource franklinPageResource = requireNonNull(resourceResolver.getResource("/content/franklin-page"));
-    String aemPageContent = pageDataService.getStorageData(franklinPageResource, resourceResolver);
+    String aemPageContent = pageDataService.readContentAsHtml(franklinPageResource, resourceResolver);
 
     assertThat(normalizeHtml(aemPageContent)).isEqualTo(normalizeHtml(
         "<html>"
