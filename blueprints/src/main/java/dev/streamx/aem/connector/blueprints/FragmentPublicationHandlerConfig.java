@@ -41,7 +41,7 @@ public @interface FragmentPublicationHandlerConfig {
           + "property with the specified name, the value of that property will be set as a "
           + "value of the `sx:type` property of the message ingested into StreamX.",
       type = AttributeType.STRING,
-      defaultValue = NameConstants.NT_TEMPLATE
+      defaultValue = NameConstants.PN_TEMPLATE
   )
   String jcr_prop_name_for_sx_type() default NameConstants.PN_TEMPLATE;
 }
