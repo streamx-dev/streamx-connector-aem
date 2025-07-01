@@ -1,19 +1,21 @@
 package dev.streamx.aem.connector.impl;
 
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.Collections;
+import java.util.Map;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.propertytypes.ServiceRanking;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
     configurationPolicy = ConfigurationPolicy.OPTIONAL
 )
 @ServiceRanking(Integer.MAX_VALUE)
+@Designate(ocd = AemDeletionEventHandlerConfig.class)
 public class AemDeletionEventHandler extends BaseAemEventHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(AemDeletionEventHandler.class);
@@ -31,9 +34,15 @@ public class AemDeletionEventHandler extends BaseAemEventHandler {
   @Activate
   public AemDeletionEventHandler(
       @Reference StreamxPublicationService streamxPublicationService,
-      @Reference ResourceResolverFactory resourceResolverFactory
+      @Reference ResourceResolverFactory resourceResolverFactory,
+      AemDeletionEventHandlerConfig config
   ) {
-    super(streamxPublicationService, resourceResolverFactory);
+    super(streamxPublicationService, resourceResolverFactory, config.properties_to_load_from_jcr());
+  }
+
+  @Modified
+  void configure(AemDeletionEventHandlerConfig config) {
+    super.configure(config.properties_to_load_from_jcr());
   }
 
   @Override
@@ -46,24 +55,14 @@ public class AemDeletionEventHandler extends BaseAemEventHandler {
     }
 
     String path = (String) event.getProperty("path");
-    String primaryNodeType = readPrimaryNodeType(path);
-    ResourceInfo resource = new ResourceInfo(path, primaryNodeType);
-    handleIngestion(resource);
+    Map<String, String> properties = readJcrProperties(path);
+    ResourceInfo resource = new ResourceInfo(path, properties);
+    unpublish(Collections.singletonList(resource));
   }
 
-  private String readPrimaryNodeType(String path) {
+  private Map<String, String> readJcrProperties(String path) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      return PrimaryNodeTypeExtractor.extract(path, resourceResolver);
+      return readJcrProperties(path, resourceResolver);
     }
   }
-
-  private void handleIngestion(ResourceInfo resource) {
-    LOG.trace("Unpublishing {}", resource.getPath());
-    try {
-      streamxPublicationService.unpublish(Collections.singletonList(resource));
-    } catch (StreamxPublicationException exception) {
-      LOG.error("Error unpublishing " + resource.getPath(), exception);
-    }
-  }
-
 }

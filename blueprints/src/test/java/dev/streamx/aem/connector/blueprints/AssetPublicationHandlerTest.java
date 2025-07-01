@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
@@ -11,12 +12,8 @@ import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.engine.SlingRequestProcessor;
@@ -72,10 +69,10 @@ class AssetPublicationHandlerTest {
     assertThat(resourceResolver.getResource(irrelevantPath)).isNotNull();
     assertThat(resourceResolver.getResource(mountainPath)).isNotNull();
     assertThat(resourceResolver.getResource(mountainContent)).isNotNull();
-    assertThat(enabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))).isTrue();
-    assertThat(disabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))).isFalse();
-    assertThat(enabled.canHandle(new ResourceInfo(irrelevantPath, "cq:Page"))).isFalse();
-    assertThat(enabled.canHandle(new ResourceInfo(mountainContent, "nt:file"))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.create(mountainPath, "dam:Asset"))).isTrue();
+    assertThat(disabled.canHandle(ResourceInfoFactory.create(mountainPath, "dam:Asset"))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.create(irrelevantPath, "cq:Page"))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.create(mountainContent, "nt:file"))).isFalse();
   }
 
   @Test
@@ -87,18 +84,19 @@ class AssetPublicationHandlerTest {
             "jcr.prop.name.for.sx.type", "jcr:primaryType"
         )
     );
-    ResourceInfo resourceInfo = new ResourceInfo(assetPath, "dam:Asset");
+    ResourceInfo resourceInfo = ResourceInfoFactory.create(assetPath, "dam:Asset");
     assertThat(handler.canHandle(resourceInfo)).isTrue();
-    PublishData<Asset> publishData = handler.getPublishData(assetPath);
+    PublishData<Asset> publishData = handler.getPublishData(resourceInfo);
     assertThat(publishData.getModel().getContent().array()).hasSize(DATA_SIZE);
     assertThat(publishData.getKey()).isEqualTo(assetPath);
     assertThat(publishData.getChannel()).isEqualTo("assets");
     assertThat(publishData.getModel()).isInstanceOf(Asset.class);
     assertThat(publishData.getProperties()).containsEntry(BasePublicationHandler.SX_TYPE, "dam:Asset");
 
-    UnpublishData<Asset> unpublishData = handler.getUnpublishData(assetPath);
+    UnpublishData<Asset> unpublishData = handler.getUnpublishData(resourceInfo);
     assertThat(unpublishData.getKey()).isEqualTo(assetPath);
     assertThat(unpublishData.getChannel()).isEqualTo("assets");
+    assertThat(unpublishData.getProperties()).containsEntry(BasePublicationHandler.SX_TYPE, "dam:Asset");
 
     OsgiConfigUtils.disableHandler(handler, context);
     assertThat(handler.canHandle(resourceInfo)).isFalse();
@@ -109,13 +107,13 @@ class AssetPublicationHandlerTest {
     String contentFragmentPath = "/content/dam/productssite/my-content-fragment";
     AssetPublicationHandler handler = context.registerInjectActivateService(AssetPublicationHandler.class);
 
-    ResourceInfo resourceInfo = new ResourceInfo(contentFragmentPath, "dam:Asset");
+    ResourceInfo resourceInfo = ResourceInfoFactory.create(contentFragmentPath, "dam:Asset");
     assertThat(handler.canHandle(resourceInfo)).isTrue();
 
-    PublishData<Asset> publishData = handler.getPublishData(contentFragmentPath);
+    PublishData<Asset> publishData = handler.getPublishData(resourceInfo);
     assertThat(publishData).isNull();
 
-    UnpublishData<Asset> unpublishData = handler.getUnpublishData(contentFragmentPath);
+    UnpublishData<Asset> unpublishData = handler.getUnpublishData(resourceInfo);
     assertThat(unpublishData.getKey()).isEqualTo(contentFragmentPath);
     assertThat(unpublishData.getChannel()).isEqualTo("assets");
   }

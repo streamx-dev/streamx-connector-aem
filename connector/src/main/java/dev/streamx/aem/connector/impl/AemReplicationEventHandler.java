@@ -4,7 +4,6 @@ import com.day.cq.replication.ReplicationAction;
 import com.day.cq.replication.ReplicationActionType;
 import dev.streamx.sling.connector.PublicationAction;
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.Arrays;
 import java.util.List;
@@ -14,10 +13,12 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
     immediate = true,
     property = EventConstants.EVENT_TOPIC + "=" + ReplicationAction.EVENT_TOPIC
 )
+@Designate(ocd = AemReplicationEventHandlerConfig.class)
 public class AemReplicationEventHandler extends BaseAemEventHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(AemReplicationEventHandler.class);
@@ -38,9 +40,15 @@ public class AemReplicationEventHandler extends BaseAemEventHandler {
   @Activate
   public AemReplicationEventHandler(
       @Reference StreamxPublicationService streamxPublicationService,
-      @Reference ResourceResolverFactory resourceResolverFactory
+      @Reference ResourceResolverFactory resourceResolverFactory,
+      AemReplicationEventHandlerConfig config
   ) {
-    super(streamxPublicationService, resourceResolverFactory);
+    super(streamxPublicationService, resourceResolverFactory, config.properties_to_load_from_jcr());
+  }
+
+  @Modified
+  void configure(AemReplicationEventHandlerConfig config) {
+    super.configure(config.properties_to_load_from_jcr());
   }
 
   @Override
@@ -65,21 +73,16 @@ public class AemReplicationEventHandler extends BaseAemEventHandler {
   private List<ResourceInfo> getResourcesToIngest(String[] paths) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       return Arrays.stream(paths)
-          .map(path -> new ResourceInfo(path, PrimaryNodeTypeExtractor.extract(path, resourceResolver)))
+          .map(path -> new ResourceInfo(path, readJcrProperties(path, resourceResolver)))
           .collect(Collectors.toList());
     }
   }
 
   private void handleIngestion(PublicationAction ingestionAction, List<ResourceInfo> resourcesToIngest) {
-    LOG.trace("Handling ingestion {} for {}", ingestionAction, resourcesToIngest);
-    try {
-      if (ingestionAction == PublicationAction.PUBLISH) {
-        streamxPublicationService.publish(resourcesToIngest);
-      } else if (ingestionAction == PublicationAction.UNPUBLISH) {
-        streamxPublicationService.unpublish(resourcesToIngest);
-      }
-    } catch (StreamxPublicationException exception) {
-      LOG.error("Failed to handle ingestion {} for {}", ingestionAction, resourcesToIngest, exception);
+    if (ingestionAction == PublicationAction.PUBLISH) {
+      publish(resourcesToIngest);
+    } else if (ingestionAction == PublicationAction.UNPUBLISH) {
+      unpublish(resourcesToIngest);
     }
   }
 }

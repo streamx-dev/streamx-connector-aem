@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesSlingRequestProcessor;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.blueprints.data.Asset;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
@@ -71,10 +72,10 @@ class AssetResourcePathPublicationHandlerTest {
     assertThat(resourceResolver.getResource(irrelevantPath)).isNotNull();
     assertThat(resourceResolver.getResource(mountainPath)).isNotNull();
     assertThat(resourceResolver.getResource(mountainContent)).isNotNull();
-    assertThat(enabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))).isFalse();
-    assertThat(disabled.canHandle(new ResourceInfo(mountainPath, "dam:Asset"))).isFalse();
-    assertThat(enabled.canHandle(new ResourceInfo(irrelevantPath, "cq:Page"))).isFalse();
-    assertThat(enabled.canHandle(new ResourceInfo(mountainContent, "nt:file"))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.create(mountainPath, "dam:Asset"))).isFalse();
+    assertThat(disabled.canHandle(ResourceInfoFactory.create(mountainPath, "dam:Asset"))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.create(irrelevantPath, "cq:Page"))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.create(mountainContent, "nt:file"))).isFalse();
   }
 
   @Test
@@ -83,12 +84,12 @@ class AssetResourcePathPublicationHandlerTest {
     for (Entry<String, Integer> entry : assetPaths.entrySet()) {
       String assetPath = entry.getKey();
       Integer expectedSize = entry.getValue();
-      ResourceInfo resourceInfo = new ResourceInfo(assetPath, "dam:Asset");
+      ResourceInfo resourceInfo = ResourceInfoFactory.create(assetPath, "dam:Asset");
 
       OsgiConfigUtils.enableHandler(handler, context);
       assertThat(handler.canHandle(resourceInfo)).isTrue();
 
-      PublishData<Asset> publishData = handler.getPublishData(assetPath);
+      PublishData<Asset> publishData = handler.getPublishData(resourceInfo);
       assertThat(publishData.getModel().getContent().array()).hasSize(expectedSize);
       assertThat(publishData.getKey()).isEqualTo(assetPath);
       assertThat(publishData.getChannel()).isEqualTo("assets");
