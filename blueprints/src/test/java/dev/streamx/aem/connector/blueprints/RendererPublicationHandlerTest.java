@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesSlingRequestProcessor;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.blueprints.data.Renderer;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
@@ -43,19 +44,20 @@ class RendererPublicationHandlerTest {
   @Test
   void mustHandle() {
     String pageTemplatePath = "/content/experience-fragments/templates/template";
-    ResourceInfo pageTemplateResource = new ResourceInfo(pageTemplatePath, "cq:Page");
+    ResourceInfo pageTemplateResource = ResourceInfoFactory.create(pageTemplatePath, "cq:Page");
     String expectedKey = "/content/experience-fragments/templates/template.html";
     RendererPublicationHandler handler = context.registerInjectActivateService(
         RendererPublicationHandler.class
     );
-    PublishData<Renderer> publishData = handler.getPublishData(pageTemplatePath);
-    UnpublishData<Renderer> unpublishData = handler.getUnpublishData(pageTemplatePath);
+    PublishData<Renderer> publishData = handler.getPublishData(pageTemplateResource);
+    UnpublishData<Renderer> unpublishData = handler.getUnpublishData(pageTemplateResource);
     assertThat(context.resourceResolver().getResource(pageTemplatePath)).isNotNull();
     assertThat(handler.canHandle(pageTemplateResource)).isTrue();
     assertThat(publishData.getModel().getTemplate().array()).hasSize(BINARY_DATA_LENGTH);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(publishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
+    assertThat(unpublishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
 
     OsgiConfigUtils.disableHandler(handler, context);
     assertThat(handler.canHandle(pageTemplateResource)).isFalse();

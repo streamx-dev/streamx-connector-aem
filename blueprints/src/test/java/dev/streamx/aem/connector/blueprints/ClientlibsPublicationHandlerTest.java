@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesSlingRequestProcessor;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.blueprints.data.WebResource;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
@@ -59,12 +60,12 @@ class ClientlibsPublicationHandlerTest {
     for (Entry<String, Integer> entry : webResourcePaths.entrySet()) {
       String webResourcePath = entry.getKey();
       Integer expectedSize = entry.getValue();
-      ResourceInfo resourceInfo = new ResourceInfo(webResourcePath, "dam:Asset");
+      ResourceInfo resourceInfo = ResourceInfoFactory.create(webResourcePath, "dam:Asset");
 
       OsgiConfigUtils.enableHandler(handler, context);
       assertThat(handler.canHandle(resourceInfo)).isTrue();
 
-      PublishData<WebResource> publishData = handler.getPublishData(webResourcePath);
+      PublishData<WebResource> publishData = handler.getPublishData(resourceInfo);
       assertThat(publishData.getModel().getContent().array()).hasSize(expectedSize);
       assertThat(publishData.getKey()).isEqualTo(webResourcePath);
       assertThat(publishData.getChannel()).isEqualTo("web-resources");

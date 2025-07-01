@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.FixedResponseSlingRequestProcessor;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.sling.connector.ResourceInfo;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -72,9 +73,9 @@ class PageDataServiceTest {
   @Test
   void mustCheckIfPageByResourcePath() {
     PageDataService pageDataService = requireNonNull(context.getService(PageDataService.class));
-    ResourceInfo franklinPageResource = new ResourceInfo("/content/franklin-page", "cq:Page");
-    ResourceInfo usualAEMPageResource = new ResourceInfo("/content/usual-aem-page", "cq:Page");
-    ResourceInfo randomPageResource = new ResourceInfo("/blogs/random-page", "cq:Page");
+    ResourceInfo franklinPageResource = ResourceInfoFactory.create("/content/franklin-page", "cq:Page");
+    ResourceInfo usualAEMPageResource = ResourceInfoFactory.create("/content/usual-aem-page", "cq:Page");
+    ResourceInfo randomPageResource = ResourceInfoFactory.create("/blogs/random-page", "cq:Page");
     assertThat(pageDataService.isPageByResourcePath(franklinPageResource)).isTrue();
     assertThat(pageDataService.isPageByResourcePath(usualAEMPageResource)).isTrue();
     assertThat(pageDataService.isPageByResourcePath(randomPageResource)).isFalse();

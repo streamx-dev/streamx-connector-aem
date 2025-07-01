@@ -1,66 +1,40 @@
 package dev.streamx.aem.connector.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.day.cq.replication.ReplicationAction;
 import com.day.cq.replication.ReplicationActionType;
 import dev.streamx.aem.connector.test.util.ResourceResolverFactoryMocks;
-import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.StreamxPublicationException;
-import dev.streamx.sling.connector.StreamxPublicationService;
-import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import java.util.List;
 import java.util.Map;
+import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.testing.mock.osgi.MockOsgi;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.osgi.framework.Constants;
 import org.osgi.service.event.Event;
 
 @ExtendWith(AemContextExtension.class)
-class AemReplicationEventHandlerTest {
+class AemReplicationEventHandlerTest extends BaseAemEventHandlerTest {
 
-  private final AemContext context = new AemContext();
   private AemReplicationEventHandler handler;
-  private List<ResourceInfo> publishedResources;
-  private List<ResourceInfo> unpublishedResources;
 
   @BeforeEach
   void setup() throws Exception {
-    handler = new AemReplicationEventHandler(
-        createStreamxPublicationServiceMock(),
-        ResourceResolverFactoryMocks.withFixedResourcePrimaryNodeType("dam:Asset", context)
+    context.registerService(
+        ResourceResolverFactory.class,
+        ResourceResolverFactoryMocks.withFixedResourcePrimaryNodeType("dam:Asset", context),
+        Constants.SERVICE_RANKING, Integer.MAX_VALUE
+    );
+
+    handler = context.registerInjectActivateService(
+        AemReplicationEventHandler.class,
+        Map.of("properties.to.load.from.jcr", new String[]{"jcr:primaryType"})
     );
   }
 
-  private StreamxPublicationService createStreamxPublicationServiceMock() throws StreamxPublicationException {
-    StreamxPublicationService streamxPublicationService = mock(StreamxPublicationService.class);
-    doAnswer(
-        invocation -> {
-          @SuppressWarnings("unchecked")
-          List<ResourceInfo> resources = (List<ResourceInfo>) invocation.getArgument(0, List.class);
-          publishedResources = resources;
-          return null;
-        }
-    ).when(streamxPublicationService).publish(anyList());
-    doAnswer(
-        invocation -> {
-          @SuppressWarnings("unchecked")
-          List<ResourceInfo> resources = (List<ResourceInfo>) invocation.getArgument(0, List.class);
-          unpublishedResources = resources;
-          return null;
-        }
-    ).when(streamxPublicationService).unpublish(anyList());
-    when(streamxPublicationService.isEnabled()).thenReturn(true);
-    return streamxPublicationService;
-  }
-
   @Test
-  void test() {
+  void shouldHandleEvents() throws Exception {
+    // given
     Event activate = new Event(
         ReplicationAction.EVENT_TOPIC,
         Map.of(
@@ -94,21 +68,50 @@ class AemReplicationEventHandlerTest {
             "userId", "admin"
         )
     );
+
+    // when
     handler.handleEvent(activate);
     handler.handleEvent(deactivate);
     handler.handleEvent(delete);
 
-    assertThat(publishedResources).hasSize(2);
-    assertResource(publishedResources.get(0), "http://localhost:4502/content/we-retail/us/en", "dam:Asset");
-    assertResource(publishedResources.get(1), "/content/wknd/us/en", "dam:Asset");
+    // then
+    verifyPublishedResources(1, Map.of(
+        "http://localhost:4502/content/we-retail/us/en", "dam:Asset",
+        "/content/wknd/us/en", "dam:Asset"
+    ));
 
-    assertThat(unpublishedResources).hasSize(2);
-    assertResource(unpublishedResources.get(0), "http://localhost:4502/content/we-retail/us/pl", "dam:Asset");
-    assertResource(unpublishedResources.get(1), "/content/wknd/us/pl", "dam:Asset");
+    // and
+    verifyUnpublishedResources(1, Map.of(
+        "http://localhost:4502/content/we-retail/us/pl", "dam:Asset",
+        "/content/wknd/us/pl", "dam:Asset"
+    ));
   }
 
-  private static void assertResource(ResourceInfo resource, String expectedPath, String expectedPrimaryNodeType) {
-    assertThat(resource.getPath()).isEqualTo(expectedPath);
-    assertThat(resource.getPrimaryNodeType()).isEqualTo(expectedPrimaryNodeType);
+  @Test
+  void shouldNotHandleUnexpectedEvents() throws Exception {
+    // given
+    Event event = new Event(
+        "some/unexpected/event",
+        Map.of("type", "UNEXPECTED_ACTION")
+    );
+
+    // when
+    handler.handleEvent(event);
+
+    // then
+    verifyNoPublishedResources();
+    verifyNoUnpublishedResources();
+  }
+
+  @Test
+  void shouldAdjustToModifiedConfiguration() throws ReflectiveOperationException {
+    // given
+    assertPropertiesToLoadFromJcr(handler, "jcr:primaryType");
+
+    // when
+    MockOsgi.modified(handler, context.bundleContext(), Map.of("properties.to.load.from.jcr", new String[]{"foobar"}));
+
+    // then
+    assertPropertiesToLoadFromJcr(handler, "foobar");
   }
 }
