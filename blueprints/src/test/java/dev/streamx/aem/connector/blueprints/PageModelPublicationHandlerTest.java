@@ -49,7 +49,10 @@ class PageModelPublicationHandlerTest {
 
   @Test
   void shouldHandlePageModelPublication() throws Exception {
-    PageModelPublicationHandler handler = registerHandler("enabled", true);
+    PageModelPublicationHandler handler = registerHandler(
+        "enabled", true,
+        "page.resource.path.regex", "^/content/pages/.*"
+    );
 
     assertPageIsIngestedWithKeySuffix(handler, ".model.json");
   }
@@ -58,6 +61,7 @@ class PageModelPublicationHandlerTest {
   void shouldHandlePageModelPublicationWithAnySelectorsAndExtensionConfiguration() throws Exception {
     PageModelPublicationHandler handler = registerHandler(
         "enabled", true,
+        "page.resource.path.regex", "^/content/pages/.*",
         "selectors.to.append", new String[]{"abc", "def", "ghi"},
         "extension.to.append", "txt"
     );
@@ -69,6 +73,7 @@ class PageModelPublicationHandlerTest {
   void shouldHandlePageModelPublicationWithNullSelectorsAndExtensionInConfiguration() throws Exception {
     PageModelPublicationHandler handler = registerHandler(
         "enabled", true,
+        "page.resource.path.regex", "^/content/pages/.*",
         "selectors.to.append", null,
         "extension.to.append", null
     );
@@ -125,7 +130,10 @@ class PageModelPublicationHandlerTest {
   void shouldNotHandleNonPages() {
     ResourceInfo resource = new ResourceInfo("/data/file-1", "dam:Asset");
 
-    PageModelPublicationHandler handler = registerHandler("enabled", true);
+    PageModelPublicationHandler handler = registerHandler(
+        "enabled", true,
+        "page.resource.path.regex", "/data/file-1"
+    );
 
     assertThat(handler.canHandle(resource)).isFalse();
   }

@@ -29,10 +29,9 @@ public @interface PageModelPublicationHandlerConfig {
   @AttributeDefinition(
       name = "Page Resource Path Regex",
       description = "A regular expression used to match the resource path of pages that should be published or unpublished by this service.",
-      type = AttributeType.STRING,
-      defaultValue = ".*"
+      type = AttributeType.STRING
   )
-  String page_resource_path_regex() default ".*";
+  String page_resource_path_regex();
 
   @AttributeDefinition(
       name = "Selectors to append to page resource path when retrieving page model",

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
@@ -49,8 +48,8 @@ public class PageModelPublicationHandler extends BasePublicationHandler<Data> {
     enabled.set(config.enabled());
     publicationChannel.set(config.publication_channel());
 
-    String pathRegex = ObjectUtils.defaultIfNull(config.page_resource_path_regex(), ".*");
-    pageResourcePathRegex.set(Pattern.compile(pathRegex));
+    String pathRegex = config.page_resource_path_regex();
+    pageResourcePathRegex.set(Optional.ofNullable(pathRegex).map(Pattern::compile).orElse(null));
 
     selectorsToAppend.set(Optional.ofNullable(config.selectors_to_append()).orElse(new String[0]));
     extensionToAppend.set(config.extension_to_append());
@@ -68,7 +67,8 @@ public class PageModelPublicationHandler extends BasePublicationHandler<Data> {
       return false;
     }
 
-    if (!pageResourcePathRegex.get().matcher(resource.getPath()).matches()) {
+    Pattern pathPattern = pageResourcePathRegex.get();
+    if (pathPattern == null || !pathPattern.matcher(resource.getPath()).matches()) {
       return false;
     }
 
