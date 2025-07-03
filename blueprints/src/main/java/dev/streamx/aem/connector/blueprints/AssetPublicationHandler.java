@@ -82,7 +82,7 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
   }
 
   @Override
-  protected Map<String, String> getMessageProps(ResourceInfo resourceInfo) {
+  protected Map<String, String> getMessageProperties(ResourceInfo resourceInfo) {
     return getSxTypeAsMap(resourceInfo, config.get().jcr_prop_name_for_sx_type());
   }
 

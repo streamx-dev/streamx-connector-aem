@@ -52,7 +52,7 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
           getPublicationChannel(),
           dataClass,
           model,
-          getMessageProps(resourceInfo)
+          getMessageProperties(resourceInfo)
       );
     }
   }
@@ -63,7 +63,7 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
         getPublicationKey(resourceInfo.getPath()),
         getPublicationChannel(),
         dataClass,
-        getMessageProps(resourceInfo)
+        getMessageProperties(resourceInfo)
     );
   }
 
@@ -71,7 +71,7 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
     return resourcePath;
   }
 
-  protected Map<String, String> getMessageProps(ResourceInfo resourceInfo) {
+  protected Map<String, String> getMessageProperties(ResourceInfo resourceInfo) {
     return Collections.emptyMap();
   }
 

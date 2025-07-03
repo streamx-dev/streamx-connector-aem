@@ -67,7 +67,7 @@ public class FragmentPublicationHandler extends BasePublicationHandler<Fragment>
   }
 
   @Override
-  protected Map<String, String> getMessageProps(ResourceInfo resourceInfo) {
+  protected Map<String, String> getMessageProperties(ResourceInfo resourceInfo) {
     return getSxTypeAsMap(
         resourceInfo,
         config.get().rel_path_to_node_with_jcr_prop_for_sx_type(),

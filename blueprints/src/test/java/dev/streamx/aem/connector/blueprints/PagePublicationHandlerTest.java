@@ -4,14 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesSlingRequestProcessor;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.blueprints.data.Page;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import java.util.Map;
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
@@ -42,15 +41,12 @@ class PagePublicationHandlerTest {
     );
   }
 
-  @SuppressWarnings("resource")
   @Test
   void mustHandle() throws RepositoryException {
     String pagePath = "/content/pages/usual-aem-page";
-    Node pageNode = context.resourceResolver().getResource(pagePath).adaptTo(Node.class);
-    ResourceInfo resourceInfo = new ResourceInfo(pagePath, Map.of(
-        "jcr:primaryType", pageNode.getProperty("jcr:primaryType").getString(),
-        "jcr:content/cq:template", pageNode.getProperty("jcr:content/cq:template").getString()
-    ));
+    ResourceInfo resourceInfo = ResourceInfoFactory.createWithProperties(
+        context, pagePath, "jcr:primaryType", "jcr:content/cq:template"
+    );
 
     String expectedKey = "/content/pages/usual-aem-page.html";
     PagePublicationHandler handler = context.registerInjectActivateService(PagePublicationHandler.class);
@@ -67,14 +63,12 @@ class PagePublicationHandlerTest {
     assertThat(handler.canHandle(resourceInfo)).isFalse();
   }
 
-  @SuppressWarnings("resource")
   @Test
   void shouldNotFailWhenPropertiesForLoadingSxTypeAreNotPresentInReceivedResourceInfoObject() throws RepositoryException {
     String pagePath = "/content/pages/usual-aem-page";
-    Node pageNode = context.resourceResolver().getResource(pagePath).adaptTo(Node.class);
-    ResourceInfo resourceInfo = new ResourceInfo(pagePath, Map.of(
-        "jcr:primaryType", pageNode.getProperty("jcr:primaryType").getString()
-    ));
+    ResourceInfo resourceInfo = ResourceInfoFactory.createWithProperties(
+        context, pagePath, "jcr:primaryType"
+    );
 
     PagePublicationHandler handler = context.registerInjectActivateService(PagePublicationHandler.class);
     assertThat(handler.canHandle(resourceInfo)).isTrue();

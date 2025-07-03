@@ -44,7 +44,7 @@ class RenderingContextPublicationHandlerTest {
   @Test
   void mustHandle() {
     String resourcePath = "/content/experience-fragments/templates/sample-rendering-context";
-    ResourceInfo resource = ResourceInfoFactory.create(resourcePath, "cq:Page");
+    ResourceInfo resource = ResourceInfoFactory.page(resourcePath);
     String expectedKey = "/content/experience-fragments/templates/sample-rendering-context";
     RenderingContextPublicationHandler handler = context.registerInjectActivateService(
         RenderingContextPublicationHandler.class

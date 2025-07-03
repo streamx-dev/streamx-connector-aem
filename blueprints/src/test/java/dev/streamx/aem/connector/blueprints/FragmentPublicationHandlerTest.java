@@ -11,8 +11,6 @@ import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import java.util.Map;
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
@@ -52,15 +50,12 @@ class FragmentPublicationHandlerTest {
     context.build().resource("/content/random-page").commit();
   }
 
-  @SuppressWarnings("resource")
   @Test
   void mustHandle() throws RepositoryException {
     String fragmentPath = "/content/experience-fragments/fragment";
-    Node fragmentNode = context.resourceResolver().getResource(fragmentPath).adaptTo(Node.class);
-    ResourceInfo fragmentResourceInfo = new ResourceInfo(fragmentPath, Map.of(
-        "jcr:primaryType", fragmentNode.getProperty("jcr:primaryType").getString(),
-        "jcr:content/cq:template", fragmentNode.getProperty("jcr:content/cq:template").getString()
-    ));
+    ResourceInfo fragmentResourceInfo = ResourceInfoFactory.createWithProperties(
+        context, fragmentPath, "jcr:primaryType", "jcr:content/cq:template"
+    );
 
     String expectedKey = "/content/experience-fragments/fragment.html";
     FragmentPublicationHandler handler = context.registerInjectActivateService(FragmentPublicationHandler.class);
@@ -80,7 +75,7 @@ class FragmentPublicationHandlerTest {
   @Test
   void shouldNotHandleUsualPage() {
     String pagePath = "/content/usual-aem-page";
-    ResourceInfo pageResourceInfo = ResourceInfoFactory.create(pagePath, "cq:Page");
+    ResourceInfo pageResourceInfo = ResourceInfoFactory.page(pagePath);
 
     FragmentPublicationHandler handler = context.registerInjectActivateService(FragmentPublicationHandler.class);
     assertThat(handler.canHandle(pageResourceInfo)).isFalse();

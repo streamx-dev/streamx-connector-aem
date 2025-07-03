@@ -69,10 +69,10 @@ class AssetPublicationHandlerTest {
     assertThat(resourceResolver.getResource(irrelevantPath)).isNotNull();
     assertThat(resourceResolver.getResource(mountainPath)).isNotNull();
     assertThat(resourceResolver.getResource(mountainContent)).isNotNull();
-    assertThat(enabled.canHandle(ResourceInfoFactory.create(mountainPath, "dam:Asset"))).isTrue();
-    assertThat(disabled.canHandle(ResourceInfoFactory.create(mountainPath, "dam:Asset"))).isFalse();
-    assertThat(enabled.canHandle(ResourceInfoFactory.create(irrelevantPath, "cq:Page"))).isFalse();
-    assertThat(enabled.canHandle(ResourceInfoFactory.create(mountainContent, "nt:file"))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.asset(mountainPath))).isTrue();
+    assertThat(disabled.canHandle(ResourceInfoFactory.asset(mountainPath))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.page(irrelevantPath))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.file(mountainContent))).isFalse();
   }
 
   @Test
@@ -84,7 +84,7 @@ class AssetPublicationHandlerTest {
             "jcr.prop.name.for.sx.type", "jcr:primaryType"
         )
     );
-    ResourceInfo resourceInfo = ResourceInfoFactory.create(assetPath, "dam:Asset");
+    ResourceInfo resourceInfo = ResourceInfoFactory.asset(assetPath);
     assertThat(handler.canHandle(resourceInfo)).isTrue();
     PublishData<Asset> publishData = handler.getPublishData(resourceInfo);
     assertThat(publishData.getModel().getContent().array()).hasSize(DATA_SIZE);
@@ -107,7 +107,7 @@ class AssetPublicationHandlerTest {
     String contentFragmentPath = "/content/dam/productssite/my-content-fragment";
     AssetPublicationHandler handler = context.registerInjectActivateService(AssetPublicationHandler.class);
 
-    ResourceInfo resourceInfo = ResourceInfoFactory.create(contentFragmentPath, "dam:Asset");
+    ResourceInfo resourceInfo = ResourceInfoFactory.asset(contentFragmentPath);
     assertThat(handler.canHandle(resourceInfo)).isTrue();
 
     PublishData<Asset> publishData = handler.getPublishData(resourceInfo);

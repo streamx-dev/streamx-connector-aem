@@ -44,7 +44,7 @@ class RendererPublicationHandlerTest {
   @Test
   void mustHandle() {
     String pageTemplatePath = "/content/experience-fragments/templates/template";
-    ResourceInfo pageTemplateResource = ResourceInfoFactory.create(pageTemplatePath, "cq:Page");
+    ResourceInfo pageTemplateResource = ResourceInfoFactory.page(pageTemplatePath);
     String expectedKey = "/content/experience-fragments/templates/template.html";
     RendererPublicationHandler handler = context.registerInjectActivateService(
         RendererPublicationHandler.class

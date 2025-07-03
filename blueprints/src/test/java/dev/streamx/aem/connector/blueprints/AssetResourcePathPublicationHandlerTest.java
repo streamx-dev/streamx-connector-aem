@@ -72,10 +72,10 @@ class AssetResourcePathPublicationHandlerTest {
     assertThat(resourceResolver.getResource(irrelevantPath)).isNotNull();
     assertThat(resourceResolver.getResource(mountainPath)).isNotNull();
     assertThat(resourceResolver.getResource(mountainContent)).isNotNull();
-    assertThat(enabled.canHandle(ResourceInfoFactory.create(mountainPath, "dam:Asset"))).isFalse();
-    assertThat(disabled.canHandle(ResourceInfoFactory.create(mountainPath, "dam:Asset"))).isFalse();
-    assertThat(enabled.canHandle(ResourceInfoFactory.create(irrelevantPath, "cq:Page"))).isFalse();
-    assertThat(enabled.canHandle(ResourceInfoFactory.create(mountainContent, "nt:file"))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.asset(mountainPath))).isFalse();
+    assertThat(disabled.canHandle(ResourceInfoFactory.asset(mountainPath))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.page(irrelevantPath))).isFalse();
+    assertThat(enabled.canHandle(ResourceInfoFactory.file(mountainContent))).isFalse();
   }
 
   @Test
@@ -84,7 +84,7 @@ class AssetResourcePathPublicationHandlerTest {
     for (Entry<String, Integer> entry : assetPaths.entrySet()) {
       String assetPath = entry.getKey();
       Integer expectedSize = entry.getValue();
-      ResourceInfo resourceInfo = ResourceInfoFactory.create(assetPath, "dam:Asset");
+      ResourceInfo resourceInfo = ResourceInfoFactory.asset(assetPath);
 
       OsgiConfigUtils.enableHandler(handler, context);
       assertThat(handler.canHandle(resourceInfo)).isTrue();

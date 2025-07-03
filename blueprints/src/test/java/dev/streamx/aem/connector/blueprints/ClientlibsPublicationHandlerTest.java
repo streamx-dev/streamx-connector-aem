@@ -60,7 +60,7 @@ class ClientlibsPublicationHandlerTest {
     for (Entry<String, Integer> entry : webResourcePaths.entrySet()) {
       String webResourcePath = entry.getKey();
       Integer expectedSize = entry.getValue();
-      ResourceInfo resourceInfo = ResourceInfoFactory.create(webResourcePath, "dam:Asset");
+      ResourceInfo resourceInfo = ResourceInfoFactory.asset(webResourcePath);
 
       OsgiConfigUtils.enableHandler(handler, context);
       assertThat(handler.canHandle(resourceInfo)).isTrue();
