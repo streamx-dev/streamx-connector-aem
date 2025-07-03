@@ -1,5 +1,5 @@
 {
-  "references.search-regexes": "$[env:STREAMX_REFERENCES_SEARCH_REGEXES;type=String[];delimiter=,;default=(/content[^\"'\\s]*\\.coreimg\\.[^\"'\\s]*),(/[^\"'\\s]*etc\\.clientlibs[^\"'\\s]*)]",
+  "references.search-regexes": "$[env:STREAMX_REFERENCES_SEARCH_REGEXES;type=String[];delimiter=,;default=(/content[^\"'\\s]*\\.coreimg\\.[^\"'\\s]*),(/[^\"'\\s]*etc\\.clientlibs[^\"'\\)\\s]*),url\\([\"']?([^\\)\"']+)[\"']?\\)]",
   "references.exclude-from-result.regex": ".*\\{\\.width\\}.*",
   "resource-path.postfix-to-append": ".html",
   "resource.required-path.regex": "^/content/.*",
