@@ -59,7 +59,7 @@ public class RendererPublicationHandler extends BasePublicationHandler<Renderer>
 
   @Override
   protected Renderer generateModel(Resource resource, ResourceResolver resourceResolver) {
-    String content = pageDataService.getStorageData(resource, resourceResolver);
+    String content = pageDataService.readContentAsHtml(resource, resourceResolver);
     return new Renderer(content);
   }
 
