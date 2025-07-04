@@ -87,8 +87,8 @@ class BaseAemEventHandlerTest {
   }
 
   @SuppressWarnings("unchecked")
-  protected void assertPropertiesToLoadFromJcr(BaseAemEventHandler handler, String... expectedProperties) throws ReflectiveOperationException {
-    Field field = BaseAemEventHandler.class.getDeclaredField("propertiesToLoadFromJcr");
+  protected void assertResourcePropertiesToLoad(BaseAemEventHandler handler, String... expectedProperties) throws ReflectiveOperationException {
+    Field field = BaseAemEventHandler.class.getDeclaredField("resourcePropertiesToLoad");
     field.setAccessible(true);
     Set<String> actualProperties = ((AtomicReference<Set<String>>) field.get(handler)).get();
 

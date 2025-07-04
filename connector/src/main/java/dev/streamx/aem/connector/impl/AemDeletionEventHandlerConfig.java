@@ -13,10 +13,11 @@ public @interface AemDeletionEventHandlerConfig {
   String PRIMARY_TYPE = JcrConstants.JCR_PRIMARYTYPE;
 
   @AttributeDefinition(
-      name = "Properties to load from JCR",
-      description = "Names of JCR properties from the processed resource that should be loaded and passed to publication handlers.",
+      name = "Resource properties to load",
+      description = "Names of properties of the processed resource that should be loaded and passed to publication handlers."
+                    + "Nested properties are supported.",
       type = AttributeType.STRING,
       defaultValue = {CONTENT_TEMPLATE, PRIMARY_TYPE}
   )
-  String[] properties_to_load_from_jcr() default {CONTENT_TEMPLATE, PRIMARY_TYPE};
+  String[] resource_properties_to_load() default {CONTENT_TEMPLATE, PRIMARY_TYPE};
 }

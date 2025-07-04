@@ -43,12 +43,12 @@ public class AemReplicationEventHandler extends BaseAemEventHandler {
       @Reference ResourceResolverFactory resourceResolverFactory,
       AemReplicationEventHandlerConfig config
   ) {
-    super(streamxPublicationService, resourceResolverFactory, config.properties_to_load_from_jcr());
+    super(streamxPublicationService, resourceResolverFactory, config.resource_properties_to_load());
   }
 
   @Modified
   void configure(AemReplicationEventHandlerConfig config) {
-    super.configure(config.properties_to_load_from_jcr());
+    super.configure(config.resource_properties_to_load());
   }
 
   @Override
@@ -73,7 +73,7 @@ public class AemReplicationEventHandler extends BaseAemEventHandler {
   private List<ResourceInfo> getResourcesToIngest(String[] paths) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       return Arrays.stream(paths)
-          .map(path -> new ResourceInfo(path, readJcrProperties(path, resourceResolver)))
+          .map(path -> new ResourceInfo(path, loadResourceProperties(path, resourceResolver)))
           .collect(Collectors.toList());
     }
   }

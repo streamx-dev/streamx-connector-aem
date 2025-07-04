@@ -37,12 +37,12 @@ public class AemDeletionEventHandler extends BaseAemEventHandler {
       @Reference ResourceResolverFactory resourceResolverFactory,
       AemDeletionEventHandlerConfig config
   ) {
-    super(streamxPublicationService, resourceResolverFactory, config.properties_to_load_from_jcr());
+    super(streamxPublicationService, resourceResolverFactory, config.resource_properties_to_load());
   }
 
   @Modified
   void configure(AemDeletionEventHandlerConfig config) {
-    super.configure(config.properties_to_load_from_jcr());
+    super.configure(config.resource_properties_to_load());
   }
 
   @Override
@@ -55,14 +55,14 @@ public class AemDeletionEventHandler extends BaseAemEventHandler {
     }
 
     String path = (String) event.getProperty("path");
-    Map<String, String> properties = readJcrProperties(path);
+    Map<String, String> properties = loadResourceProperties(path);
     ResourceInfo resource = new ResourceInfo(path, properties);
     unpublish(Collections.singletonList(resource));
   }
 
-  private Map<String, String> readJcrProperties(String path) {
+  private Map<String, String> loadResourceProperties(String path) {
     try (ResourceResolver resourceResolver = createResourceResolver()) {
-      return readJcrProperties(path, resourceResolver);
+      return loadResourceProperties(path, resourceResolver);
     }
   }
 }

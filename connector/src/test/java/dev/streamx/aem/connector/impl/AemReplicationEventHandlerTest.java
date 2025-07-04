@@ -28,7 +28,7 @@ class AemReplicationEventHandlerTest extends BaseAemEventHandlerTest {
 
     handler = context.registerInjectActivateService(
         AemReplicationEventHandler.class,
-        Map.of("properties.to.load.from.jcr", new String[]{"jcr:primaryType"})
+        Map.of("resource.properties.to.load", new String[]{"jcr:primaryType"})
     );
   }
 
@@ -106,12 +106,12 @@ class AemReplicationEventHandlerTest extends BaseAemEventHandlerTest {
   @Test
   void shouldAdjustToModifiedConfiguration() throws ReflectiveOperationException {
     // given
-    assertPropertiesToLoadFromJcr(handler, "jcr:primaryType");
+    assertResourcePropertiesToLoad(handler, "jcr:primaryType");
 
     // when
-    MockOsgi.modified(handler, context.bundleContext(), Map.of("properties.to.load.from.jcr", new String[]{"foobar"}));
+    MockOsgi.modified(handler, context.bundleContext(), Map.of("resource.properties.to.load", new String[]{"foobar"}));
 
     // then
-    assertPropertiesToLoadFromJcr(handler, "foobar");
+    assertResourcePropertiesToLoad(handler, "foobar");
   }
 }
