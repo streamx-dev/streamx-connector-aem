@@ -1,5 +1,6 @@
 package dev.streamx.aem.connector.impl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
@@ -13,6 +14,7 @@ import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Comparator;
@@ -48,29 +50,42 @@ class BaseAemEventHandlerTest {
     );
   }
 
+  protected void registerResource(String resourcePath, String primaryNodeType) {
+    String resourceJson =
+        "{" +
+        "  \"jcr:primaryType\": \"" + primaryNodeType + "\"" +
+        "}";
+    registerCustomResource(resourcePath, resourceJson);
+  }
+
+  protected void registerCustomResource(String resourcePath, String resourceJson) {
+    var inputStream = new ByteArrayInputStream(resourceJson.getBytes(UTF_8));
+    context.load().json(inputStream, resourcePath);
+  }
+
   protected void disableStreamxPublicationService() {
     doReturn(false).when(streamxPublicationService).isEnabled();
   }
 
-  protected void verifyPublishedResources(int expectedNumberOfPublishes, Map<String, String> expectedResources) throws StreamxPublicationException {
+  protected List<ResourceInfo> verifyPublishedResources(int expectedNumberOfPublishes, Map<String, String> expectedResources) throws StreamxPublicationException {
     verify(streamxPublicationService, times(expectedNumberOfPublishes)).publish(publishedResourcesCaptor.capture());
-    verifyIngestedResources(publishedResourcesCaptor, expectedResources);
+    return verifyIngestedResources(publishedResourcesCaptor, expectedResources);
   }
 
   protected void verifyNoPublishedResources() throws StreamxPublicationException {
     verify(streamxPublicationService, never()).publish(anyList());
   }
 
-  protected void verifyUnpublishedResources(int expectedNumberOfUnpublishes, Map<String, String> expectedResources) throws StreamxPublicationException {
+  protected List<ResourceInfo> verifyUnpublishedResources(int expectedNumberOfUnpublishes, Map<String, String> expectedResources) throws StreamxPublicationException {
     verify(streamxPublicationService, times(expectedNumberOfUnpublishes)).unpublish(unpublishedResourcesCaptor.capture());
-    verifyIngestedResources(unpublishedResourcesCaptor, expectedResources);
+    return verifyIngestedResources(unpublishedResourcesCaptor, expectedResources);
   }
 
   protected void verifyNoUnpublishedResources() throws StreamxPublicationException {
     verify(streamxPublicationService, never()).unpublish(anyList());
   }
 
-  private void verifyIngestedResources(ArgumentCaptor<List<ResourceInfo>> captor, Map<String, String> expectedResources) {
+  private List<ResourceInfo> verifyIngestedResources(ArgumentCaptor<List<ResourceInfo>> captor, Map<String, String> expectedResources) {
     List<ResourceInfo> ingestedResources = captor.getAllValues().stream()
         .flatMap(Collection::stream)
         .sorted(Comparator.comparing(ResourceInfo::getPath))
@@ -84,6 +99,8 @@ class BaseAemEventHandlerTest {
       assertThat(resource.getPath()).isEqualTo(expectedResource.getKey());
       assertThat(resource.getProperties()).containsEntry("jcr:primaryType", expectedResource.getValue());
     }
+
+    return ingestedResources;
   }
 
   @SuppressWarnings("unchecked")
