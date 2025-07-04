@@ -70,9 +70,9 @@ public class PagePublicationHandler extends BasePublicationHandler<Page> {
   }
 
   @Override
-  protected Map<String, String> getMessageProps(Resource resource) {
+  protected Map<String, String> getMessageProperties(ResourceInfo resourceInfo) {
     return getSxTypeAsMap(
-        resource,
+        resourceInfo,
         config.get().rel_path_to_node_with_jcr_prop_for_sx_type(),
         config.get().jcr_prop_name_for_sx_type()
     );

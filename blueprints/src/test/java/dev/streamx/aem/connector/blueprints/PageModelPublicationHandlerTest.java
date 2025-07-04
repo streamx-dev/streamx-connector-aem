@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import dev.streamx.aem.connector.test.util.FixedResponseSlingRegexRequestProcessor;
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.blueprints.data.Data;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
@@ -28,7 +29,6 @@ class PageModelPublicationHandlerTest {
 
   private static final String PAGE_RESOURCE_PATH = "/content/pages/usual-aem-page";
   private static final String PAGE_MODEL_JSON = "{'id': '1', 'title': 'API page', 'items': { 'item1': {} }'";
-  private static final ResourceInfo PAGE_RESOURCE = new ResourceInfo(PAGE_RESOURCE_PATH, "cq:Page");
 
   private final AemContext context = new AemContext(ResourceResolverType.JCR_OAK);
 
@@ -82,17 +82,20 @@ class PageModelPublicationHandlerTest {
   }
 
   private void assertPageIsIngestedWithKeySuffix(PageModelPublicationHandler handler, String expectedKeySuffix) throws Exception {
-    assertThat(handler.canHandle(PAGE_RESOURCE)).isTrue();
+    ResourceInfo pageResource = ResourceInfoFactory.createWithProperties(
+        context, PAGE_RESOURCE_PATH, "jcr:primaryType", "jcr:content/cq:template"
+    );
+    assertThat(handler.canHandle(pageResource)).isTrue();
 
-    PublishData<Data> publishData = handler.getPublishData(PAGE_RESOURCE_PATH);
+    PublishData<Data> publishData = handler.getPublishData(pageResource);
     assertThat(publishData).isNotNull();
     assertThat(publishData.getKey()).isEqualTo(PAGE_RESOURCE_PATH + expectedKeySuffix);
     assertThat(publishData.getModel().getContent().array()).asString().isEqualTo(PAGE_MODEL_JSON);
     assertThat(publishData.getProperties()).containsEntry(BasePublicationHandler.SX_TYPE, "/conf/firsthops/settings/wcm/templates/page-content");
 
-    UnpublishData<Data> unpublishData = handler.getUnpublishData(PAGE_RESOURCE_PATH);
+    UnpublishData<Data> unpublishData = handler.getUnpublishData(pageResource);
     assertThat(unpublishData.getKey()).isEqualTo(PAGE_RESOURCE_PATH + expectedKeySuffix);
-    assertThat(unpublishData.getProperties()).isEmpty();
+    assertThat(unpublishData.getProperties()).containsEntry(BasePublicationHandler.SX_TYPE, "/conf/firsthops/settings/wcm/templates/page-content");
 
     // verify internal request was sent with the same url suffix, and that it was called only once (not for getUnpublishData)
     verify(requestProcessor).processRequest(
@@ -104,22 +107,24 @@ class PageModelPublicationHandlerTest {
     );
 
     OsgiConfigUtils.disableHandler(handler, context);
-    assertThat(handler.canHandle(PAGE_RESOURCE)).isFalse();
+    assertThat(handler.canHandle(pageResource)).isFalse();
   }
 
   @Test
   void shouldNotHandlePageModelPublicationWhenPageResourcePathDoesNotMatchTheConfiguredRegex() {
+    ResourceInfo resource = ResourceInfoFactory.page(PAGE_RESOURCE_PATH);
+
     PageModelPublicationHandler handler = registerHandler(
         "enabled", true,
         "page.resource.path.regex", "/foo" + PAGE_RESOURCE_PATH
     );
 
-    assertThat(handler.canHandle(PAGE_RESOURCE)).isFalse();
+    assertThat(handler.canHandle(resource)).isFalse();
   }
 
   @Test
   void shouldNotHandleExperienceFragments() {
-    ResourceInfo resource = new ResourceInfo("/content/experience-fragments/fragment-1", "cq:Page");
+    ResourceInfo resource = ResourceInfoFactory.page("/content/experience-fragments/fragment-1");
 
     PageModelPublicationHandler handler = registerHandler("enabled", true);
 
@@ -128,7 +133,7 @@ class PageModelPublicationHandlerTest {
 
   @Test
   void shouldNotHandleNonPages() {
-    ResourceInfo resource = new ResourceInfo("/data/file-1", "dam:Asset");
+    ResourceInfo resource = ResourceInfoFactory.asset("/data/file-1");
 
     PageModelPublicationHandler handler = registerHandler(
         "enabled", true,
@@ -140,9 +145,11 @@ class PageModelPublicationHandlerTest {
 
   @Test
   void shouldBeDisabledByDefault() {
+    ResourceInfo resource = ResourceInfoFactory.page(PAGE_RESOURCE_PATH);
+
     PageModelPublicationHandler handler = registerHandler();
 
-    assertThat(handler.canHandle(PAGE_RESOURCE)).isFalse();
+    assertThat(handler.canHandle(resource)).isFalse();
   }
 
   private PageModelPublicationHandler registerHandler(Object... properties) {

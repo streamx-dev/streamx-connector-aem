@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesSlingRequestProcessor;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.blueprints.data.Page;
 import dev.streamx.sling.connector.PublishData;
 import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import javax.jcr.RepositoryException;
 import org.apache.sling.engine.SlingRequestProcessor;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,23 +41,42 @@ class PagePublicationHandlerTest {
     );
   }
 
-  @SuppressWarnings("resource")
   @Test
-  void mustHandle() {
+  void mustHandle() throws RepositoryException {
     String pagePath = "/content/pages/usual-aem-page";
-    ResourceInfo pageResource = new ResourceInfo(pagePath, "cq:Page");
+    ResourceInfo resourceInfo = ResourceInfoFactory.createWithProperties(
+        context, pagePath, "jcr:primaryType", "jcr:content/cq:template"
+    );
+
     String expectedKey = "/content/pages/usual-aem-page.html";
     PagePublicationHandler handler = context.registerInjectActivateService(PagePublicationHandler.class);
-    PublishData<Page> publishData = handler.getPublishData(pagePath);
-    UnpublishData<Page> unpublishData = handler.getUnpublishData(pagePath);
-    assertThat(context.resourceResolver().getResource(pagePath)).isNotNull();
-    assertThat(handler.canHandle(pageResource)).isTrue();
+    PublishData<Page> publishData = handler.getPublishData(resourceInfo);
+    UnpublishData<Page> unpublishData = handler.getUnpublishData(resourceInfo);
+    assertThat(handler.canHandle(resourceInfo)).isTrue();
     assertThat(publishData.getModel().getContent().array()).hasSize(BINARY_DATA_LENGTH);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     assertThat(publishData.getProperties()).containsEntry(BasePublicationHandler.SX_TYPE, "/conf/firsthops/settings/wcm/templates/page-content");
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
+    assertThat(unpublishData.getProperties()).containsEntry(BasePublicationHandler.SX_TYPE, "/conf/firsthops/settings/wcm/templates/page-content");
 
     OsgiConfigUtils.disableHandler(handler, context);
-    assertThat(handler.canHandle(pageResource)).isFalse();
+    assertThat(handler.canHandle(resourceInfo)).isFalse();
+  }
+
+  @Test
+  void shouldNotFailWhenPropertiesForLoadingSxTypeAreNotPresentInReceivedResourceInfoObject() throws RepositoryException {
+    String pagePath = "/content/pages/usual-aem-page";
+    ResourceInfo resourceInfo = ResourceInfoFactory.createWithProperties(
+        context, pagePath, "jcr:primaryType"
+    );
+
+    PagePublicationHandler handler = context.registerInjectActivateService(PagePublicationHandler.class);
+    assertThat(handler.canHandle(resourceInfo)).isTrue();
+
+    PublishData<Page> publishData = handler.getPublishData(resourceInfo);
+    assertThat(publishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
+
+    UnpublishData<Page> unpublishData = handler.getUnpublishData(resourceInfo);
+    assertThat(unpublishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
   }
 }

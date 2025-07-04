@@ -1,18 +1,16 @@
 package dev.streamx.aem.connector.blueprints;
 
-import com.drew.lang.annotations.Nullable;
 import dev.streamx.sling.connector.PublicationHandler;
 import dev.streamx.sling.connector.PublishData;
+import dev.streamx.sling.connector.ResourceInfo;
 import dev.streamx.sling.connector.UnpublishData;
 import java.lang.reflect.ParameterizedType;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.api.resource.ValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +33,8 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
   }
 
   @Override
-  public final PublishData<T> getPublishData(String resourcePath) {
+  public final PublishData<T> getPublishData(ResourceInfo resourceInfo) {
+    String resourcePath = resourceInfo.getPath();
     try (ResourceResolver resourceResolver = createResourceResolver()) {
       Resource resource = resourceResolver.getResource(resourcePath);
       if (resource == null) {
@@ -53,17 +52,18 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
           getPublicationChannel(),
           dataClass,
           model,
-          getMessageProps(resource)
+          getMessageProperties(resourceInfo)
       );
     }
   }
 
   @Override
-  public final UnpublishData<T> getUnpublishData(String resourcePath) {
+  public final UnpublishData<T> getUnpublishData(ResourceInfo resourceInfo) {
     return new UnpublishData<>(
-        getPublicationKey(resourcePath),
+        getPublicationKey(resourceInfo.getPath()),
         getPublicationChannel(),
-        dataClass
+        dataClass,
+        getMessageProperties(resourceInfo)
     );
   }
 
@@ -71,7 +71,7 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
     return resourcePath;
   }
 
-  protected Map<String, String> getMessageProps(Resource resource) {
+  protected Map<String, String> getMessageProperties(ResourceInfo resourceInfo) {
     return Collections.emptyMap();
   }
 
@@ -87,15 +87,15 @@ abstract class BasePublicationHandler<T> implements PublicationHandler<T> {
     }
   }
 
-  protected static Map<String, String> getSxTypeAsMap(Resource resource, String childRelativePath, String jcrPropertyForSxType) {
-    return getSxTypeAsMap(resource, childRelativePath + "/" + jcrPropertyForSxType);
+  protected static Map<String, String> getSxTypeAsMap(ResourceInfo resourceInfo, String childRelativePath, String jcrPropertyForSxType) {
+    return getSxTypeAsMap(resourceInfo, childRelativePath + "/" + jcrPropertyForSxType);
   }
 
-  protected static Map<String, String> getSxTypeAsMap(@Nullable Resource resource, String jcrPropertyForSxType) {
-    return Optional.ofNullable(resource)
-        .map(res -> res.adaptTo(ValueMap.class))
-        .map(valueMap -> valueMap.get(jcrPropertyForSxType, String.class))
-        .map(sxType -> Map.of(SX_TYPE, sxType))
-        .orElseGet(Collections::emptyMap);
+  protected static Map<String, String> getSxTypeAsMap(ResourceInfo resourceInfo, String jcrPropertyForSxType) {
+    String sxType = resourceInfo.getProperty(jcrPropertyForSxType);
+    if (sxType == null) {
+      return Collections.emptyMap();
+    }
+    return Map.of(SX_TYPE, sxType);
   }
 }

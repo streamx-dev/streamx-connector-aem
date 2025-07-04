@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import dev.streamx.aem.connector.test.util.OsgiConfigUtils;
 import dev.streamx.aem.connector.test.util.RandomBytesSlingRequestProcessor;
+import dev.streamx.aem.connector.test.util.ResourceInfoFactory;
 import dev.streamx.blueprints.data.RenderingContext;
 import dev.streamx.blueprints.data.RenderingContext.OutputFormat;
 import dev.streamx.sling.connector.PublishData;
@@ -43,14 +44,14 @@ class RenderingContextPublicationHandlerTest {
   @Test
   void mustHandle() {
     String resourcePath = "/content/experience-fragments/templates/sample-rendering-context";
-    ResourceInfo resource = new ResourceInfo(resourcePath, "cq:Page");
+    ResourceInfo resource = ResourceInfoFactory.page(resourcePath);
     String expectedKey = "/content/experience-fragments/templates/sample-rendering-context";
     RenderingContextPublicationHandler handler = context.registerInjectActivateService(
         RenderingContextPublicationHandler.class
     );
     assertThat(handler.canHandle(resource)).isTrue();
 
-    PublishData<RenderingContext> publishData = handler.getPublishData(resourcePath);
+    PublishData<RenderingContext> publishData = handler.getPublishData(resource);
     assertThat(publishData.getKey()).isEqualTo(expectedKey);
     RenderingContext model = publishData.getModel();
     assertThat(model.getRendererKey()).isEqualTo(expectedKey);
@@ -61,9 +62,10 @@ class RenderingContextPublicationHandlerTest {
     assertThat(model.getOutputFormat()).isSameAs(OutputFormat.PAGE);
     assertThat(publishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
 
-    UnpublishData<RenderingContext> unpublishData = handler.getUnpublishData(resourcePath);
+    UnpublishData<RenderingContext> unpublishData = handler.getUnpublishData(resource);
     assertThat(context.resourceResolver().getResource(resourcePath)).isNotNull();
     assertThat(unpublishData.getKey()).isEqualTo(expectedKey);
+    assertThat(unpublishData.getProperties()).doesNotContainKey(BasePublicationHandler.SX_TYPE);
 
     OsgiConfigUtils.disableHandler(handler, context);
     assertThat(handler.canHandle(resource)).isFalse();
