@@ -82,8 +82,8 @@ public class AssetPublicationHandler extends BasePublicationHandler<Asset> {
   }
 
   @Override
-  protected Map<String, String> getMessageProps(Resource resource) {
-    return getSxTypeAsMap(resource, config.get().jcr_prop_name_for_sx_type());
+  protected Map<String, String> getMessageProperties(ResourceInfo resourceInfo) {
+    return getSxTypeAsMap(resourceInfo, config.get().jcr_prop_name_for_sx_type());
   }
 
   private static boolean isContentFragment(Resource existingAssetResource) {

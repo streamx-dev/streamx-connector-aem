@@ -20,6 +20,13 @@ This means that content is published or unpublished to/from StreamX from Author 
 It should change in the future versions of the connector as ideally content should be published to
 StreamX from Publish instances, not from Author instances.
 
+Both event handlers are configured to load values of the `jcr:content/cq:template` and `jcr:primaryType` properties for each resource they process.
+These properties are then passed to the publication handlers, which can determine which of them should be included in the ingestion message sent to StreamX.
+The default set of properties is defined in the OSGi configuration classes:
+`dev.streamx.aem.connector.impl.AemReplicationEventHandlerConfig` and `dev.streamx.aem.connector.impl.AemDeletionEventHandlerConfig`.
+These configurations can be edited via the `Adobe Experience Manager Web Console Configuration`.
+Note: only single-valued properties are supported.
+
 # Blueprints
 
 This module provides out-of-the-box `PublicationHandler` implementations. Those services perform publication of usual assets, assets embedded in page components, client libraries, pages and templates. See documentation for those services configurations for more details.

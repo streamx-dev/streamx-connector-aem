@@ -1,97 +1,131 @@
 package dev.streamx.aem.connector.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import dev.streamx.aem.connector.test.util.ResourceResolverFactoryMocks;
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.StreamxPublicationService;
-import io.wcm.testing.mock.aem.junit5.AemContext;
-import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.testing.mock.osgi.MockOsgi;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.osgi.service.event.Event;
 
-@ExtendWith(AemContextExtension.class)
-class AemDeletionEventHandlerTest {
+class AemDeletionEventHandlerTest extends BaseAemEventHandlerTest {
 
-  private final AemContext context = new AemContext();
-  private final StreamxPublicationService streamxPublicationServiceMock = mock(StreamxPublicationService.class);
-  private final ArgumentCaptor<List<ResourceInfo>> unpublishedResourcesCaptor = ArgumentCaptor.forClass(List.class);
+  private AemDeletionEventHandler handler;
+
+  @BeforeEach
+  void setup() {
+    handler = spy(context.registerInjectActivateService(
+        AemDeletionEventHandler.class,
+        Map.of("resource.properties.to.load", new String[]{"jcr:primaryType"})
+    ));
+  }
 
   @Test
   void shouldHandleEvents() throws Exception {
-    // given
-    doReturn(true).when(streamxPublicationServiceMock).isEnabled();
-
-    AemDeletionEventHandler handler = new AemDeletionEventHandler(
-        streamxPublicationServiceMock,
-        ResourceResolverFactoryMocks.withFixedResourcePrimaryNodeType("cq:Page", context)
-    );
-
     // when
-    handler.handleEvent(createDeleteEvent("preDelete", "http://localhost:4502/content/we-retail/us/en"));
-    handler.handleEvent(createDeleteEvent("preDelete", "http://localhost:4502/content/we-purchase/us/en"));
-    handler.handleEvent(createDeleteEvent("postDelete", "http://localhost:4502/content/we-sell/us/en"));
+    handler.handleEvent(
+        createDeleteEventForRegisteredPageResource("preDelete", "/content/we-retail/us/en"));
+    handler.handleEvent(
+        createDeleteEventForRegisteredPageResource("preDelete", "/content/we-purchase/us/en"));
+    handler.handleEvent(
+        createDeleteEventForRegisteredPageResource("postDelete", "/content/we-sell/us/en"));
 
     // then
-    verify(streamxPublicationServiceMock, times(2)).unpublish(unpublishedResourcesCaptor.capture());
-    List<ResourceInfo> allUnpublishedResources = unpublishedResourcesCaptor.getAllValues().stream()
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
-
-    assertThat(allUnpublishedResources).hasSize(2);
-    assertResource(allUnpublishedResources.get(0), "http://localhost:4502/content/we-retail/us/en", "cq:Page");
-    assertResource(allUnpublishedResources.get(1), "http://localhost:4502/content/we-purchase/us/en", "cq:Page");
+    verifyUnpublishedResources(2, Map.of(
+        "/content/we-retail/us/en", "cq:Page",
+        "/content/we-purchase/us/en", "cq:Page"
+    ));
 
     // and
-    verify(streamxPublicationServiceMock, never()).publish(anyList());
+    verifyNoPublishedResources();
   }
 
   @Test
   void shouldSkipHandlingEventIfPublicationServiceIsDisabled() throws Exception {
     // given
-    doReturn(false).when(streamxPublicationServiceMock).isEnabled();
-
-    AemDeletionEventHandler handler = spy(new AemDeletionEventHandler(
-        streamxPublicationServiceMock,
-        mock(ResourceResolverFactory.class)
-    ));
+    disableStreamxPublicationService();
 
     // when
-    handler.handleEvent(createDeleteEvent("preDelete", "http://localhost:4502/content/we-retail/us/en"));
+    handler.handleEvent(
+        createDeleteEventForRegisteredPageResource("preDelete", "/content/we-retail/us/en"));
 
     // then
     verify(handler, never()).createResourceResolver();
-    verify(streamxPublicationServiceMock, never()).unpublish(anyList());
-    verify(streamxPublicationServiceMock, never()).publish(anyList());
+    verifyNoPublishedResources();
+    verifyNoUnpublishedResources();
   }
 
-  private static Event createDeleteEvent(String type, String resourcePath) {
+  @Test
+  void shouldParseNonStringProperties() throws Exception {
+    handler = spy(context.registerInjectActivateService(
+        AemDeletionEventHandler.class,
+        Map.of("resource.properties.to.load", new String[]{
+            "stringProp", "intProp", "boolProp", "multiStringProp", "nullProp", "jcr:primaryType"
+        })
+    ));
+
+    String resourcePath = "/content/we-retail/us/en";
+    String resourceJson =
+        "{" +
+        "  \"stringProp\": \"abc\"," +
+        "  \"intProp\": 123," +
+        "  \"boolProp\": true," +
+        "  \"multiStringProp\": [\"def\", \"ghi\", \"jkl\"]," +
+        "  \"nullProp\": null," +
+        "  \"jcr:primaryType\": \"cq:Page\"" +
+        "}";
+    registerCustomResource(resourcePath, resourceJson);
+
+    Event event = createDeleteEvent("preDelete", resourcePath);
+    handler.handleEvent(event);
+
+    // then
+    List<ResourceInfo> unpublishedResources = verifyUnpublishedResources(
+        1, Map.of(resourcePath, "cq:Page")
+    );
+
+    assertThat(unpublishedResources.get(0).getProperties())
+        .hasSize(5)
+        .containsEntry("stringProp", "abc")
+        .containsEntry("intProp", "123")
+        .containsEntry("boolProp", "true")
+        .containsEntry("nullProp", null)
+        .containsEntry("jcr:primaryType", "cq:Page");
+
+    // and
+    verifyNoPublishedResources();
+  }
+
+  @Test
+  void shouldAdjustToModifiedConfiguration() throws ReflectiveOperationException {
+    // given
+    assertResourcePropertiesToLoad(handler, "jcr:primaryType");
+
+    // when
+    MockOsgi.modified(handler, context.bundleContext(), Map.of("resource.properties.to.load", new String[]{"foobar"}));
+
+    // then
+    assertResourcePropertiesToLoad(handler, "foobar");
+  }
+
+  private Event createDeleteEventForRegisteredPageResource(String type, String pageResourcePath) {
+    registerResource(pageResourcePath, "cq:Page");
+    return createDeleteEvent(type, pageResourcePath);
+  }
+
+  private static Event createDeleteEvent(String type, String pageResourcePath) {
     return new Event(
         "com/adobe/cq/resource/delete",
         Map.of(
             "type", type,
-            "path", resourcePath,
+            "path", pageResourcePath,
             "userId", "admin"
         )
     );
-  }
-
-  private static void assertResource(ResourceInfo resource, String expectedPath, String expectedPrimaryNodeType) {
-    assertThat(resource.getPath()).isEqualTo(expectedPath);
-    assertThat(resource.getPrimaryNodeType()).isEqualTo(expectedPrimaryNodeType);
   }
 }

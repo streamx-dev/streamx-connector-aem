@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeManager;
+import org.apache.jackrabbit.JcrConstants;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ final class ResourcePrimaryNodeTypeChecker {
   }
 
   private static boolean hasPrimaryNodeType(ResourceInfo resourceInfo, @NotNull String expectedPrimaryNodeType, ResourceResolver resourceResolver) {
-    String actualPrimaryNodeType = resourceInfo.getPrimaryNodeType();
+    String actualPrimaryNodeType = resourceInfo.getProperty(JcrConstants.JCR_PRIMARYTYPE);
     if (actualPrimaryNodeType == null) {
       return false;
     }
