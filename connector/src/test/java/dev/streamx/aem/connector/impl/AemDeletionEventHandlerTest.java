@@ -90,11 +90,10 @@ class AemDeletionEventHandlerTest extends BaseAemEventHandlerTest {
     );
 
     assertThat(unpublishedResources.get(0).getProperties())
-        .hasSize(6)
+        .hasSize(5)
         .containsEntry("stringProp", "abc")
         .containsEntry("intProp", "123")
         .containsEntry("boolProp", "true")
-        .containsEntry("multiStringProp", "def")
         .containsEntry("nullProp", null)
         .containsEntry("jcr:primaryType", "cq:Page");
 

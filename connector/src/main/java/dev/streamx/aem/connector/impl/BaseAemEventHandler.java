@@ -66,7 +66,12 @@ abstract class BaseAemEventHandler implements EventHandler {
     if (resource != null) {
       ValueMap valueMap = resource.getValueMap();
       for (String propertyName : resourcePropertiesToLoad.get()) {
-        result.put(propertyName, valueMap.get(propertyName, String.class));
+        Object propertyValue = valueMap.get(propertyName);
+        if (propertyValue == null) {
+          result.put(propertyName, null);
+        } else if (!propertyValue.getClass().isArray()) {
+          result.put(propertyName, String.valueOf(propertyValue));
+        }
       }
     }
     return result;
