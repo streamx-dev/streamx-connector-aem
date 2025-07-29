@@ -1,0 +1,10 @@
+{
+  "queue.name": "StreamX Publications Queue",
+  "queue.topics": [
+    "dev/streamx/publications"
+  ],
+  "queue.type": "UNORDERED",
+  "queue.retries": 10000,
+  "queue.maxparallel": 0.5,
+  "service.ranking:Integer": 1
+}

@@ -103,7 +103,7 @@ class AemReplicationEventHandlerTest extends BaseAemEventHandlerTest {
   }
 
   @Test
-  void shouldAdjustToModifiedConfiguration() throws ReflectiveOperationException {
+  void shouldAdjustToModifiedConfiguration() {
     // given
     assertResourcePropertiesToLoad(handler, "jcr:primaryType");
 

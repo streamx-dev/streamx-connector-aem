@@ -1,7 +1,6 @@
 package dev.streamx.aem.connector.impl;
 
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -87,19 +86,11 @@ abstract class BaseAemEventHandler implements EventHandler {
 
   protected void publish(List<ResourceInfo> resources) {
     LOG.trace("Publishing {}", resources);
-    try {
-      streamxPublicationService.publish(resources);
-    } catch (StreamxPublicationException exception) {
-      LOG.error("Failed to handle publish for {}", resources, exception);
-    }
+    streamxPublicationService.publish(resources);
   }
 
   protected void unpublish(List<ResourceInfo> resources) {
     LOG.trace("Unpublishing {}", resources);
-    try {
-      streamxPublicationService.unpublish(resources);
-    } catch (StreamxPublicationException exception) {
-      LOG.error("Failed to handle unpublish for {}", resources, exception);
-    }
+    streamxPublicationService.unpublish(resources);
   }
 }

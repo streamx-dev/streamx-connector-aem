@@ -31,6 +31,11 @@ The Cloud Package with AEM Connector includes an OSGi configuration `dev.streamx
 
 > **Tip:** Refer to the [Adobe documentation](https://experienceleague.adobe.com/en/docs/experience-manager-cloud-service/content/implementing/using-cloud-manager/environment-variables) to learn how to configure environment variables in AEM as a Cloud Service.
 
+> **Warning:** The AEM Connector tracks shared assets that have already been published to StreamX, preventing them from being republished unnecessarily.  
+> If the Connector is reconfigured to publish to a different StreamX instance, it's recommended to clear this tracking data by deleting the following nodes from the JCR:
+> - /var/streamx/connector/sling/referenced-related-resources
+> - /var/streamx/connector/sling/related-resources
+
 ### Optional Configuration Changes
 
 The following OSGi configurations, included in the Cloud Package with AEM Connector, _can_ be adjusted via environment variables if required. Consult the respective OSGi configuration documentation for more details on each setting.
