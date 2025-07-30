@@ -2,6 +2,7 @@ package dev.streamx.aem.connector.impl;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -10,7 +11,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import dev.streamx.sling.connector.ResourceInfo;
-import dev.streamx.sling.connector.StreamxPublicationException;
 import dev.streamx.sling.connector.StreamxPublicationService;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -67,21 +67,21 @@ class BaseAemEventHandlerTest {
     doReturn(false).when(streamxPublicationService).isEnabled();
   }
 
-  protected List<ResourceInfo> verifyPublishedResources(int expectedNumberOfPublishes, Map<String, String> expectedResources) throws StreamxPublicationException {
+  protected List<ResourceInfo> verifyPublishedResources(int expectedNumberOfPublishes, Map<String, String> expectedResources) {
     verify(streamxPublicationService, times(expectedNumberOfPublishes)).publish(publishedResourcesCaptor.capture());
     return verifyIngestedResources(publishedResourcesCaptor, expectedResources);
   }
 
-  protected void verifyNoPublishedResources() throws StreamxPublicationException {
+  protected void verifyNoPublishedResources() {
     verify(streamxPublicationService, never()).publish(anyList());
   }
 
-  protected List<ResourceInfo> verifyUnpublishedResources(int expectedNumberOfUnpublishes, Map<String, String> expectedResources) throws StreamxPublicationException {
+  protected List<ResourceInfo> verifyUnpublishedResources(int expectedNumberOfUnpublishes, Map<String, String> expectedResources) {
     verify(streamxPublicationService, times(expectedNumberOfUnpublishes)).unpublish(unpublishedResourcesCaptor.capture());
     return verifyIngestedResources(unpublishedResourcesCaptor, expectedResources);
   }
 
-  protected void verifyNoUnpublishedResources() throws StreamxPublicationException {
+  protected void verifyNoUnpublishedResources() {
     verify(streamxPublicationService, never()).unpublish(anyList());
   }
 
@@ -104,11 +104,15 @@ class BaseAemEventHandlerTest {
   }
 
   @SuppressWarnings("unchecked")
-  protected void assertResourcePropertiesToLoad(BaseAemEventHandler handler, String... expectedProperties) throws ReflectiveOperationException {
-    Field field = BaseAemEventHandler.class.getDeclaredField("resourcePropertiesToLoad");
-    field.setAccessible(true);
-    Set<String> actualProperties = ((AtomicReference<Set<String>>) field.get(handler)).get();
+  protected void assertResourcePropertiesToLoad(BaseAemEventHandler handler, String... expectedProperties) {
+    try {
+      Field field = BaseAemEventHandler.class.getDeclaredField("resourcePropertiesToLoad");
+      field.setAccessible(true);
+      Set<String> actualProperties = ((AtomicReference<Set<String>>) field.get(handler)).get();
 
-    assertThat(actualProperties).containsExactly(expectedProperties);
+      assertThat(actualProperties).containsExactly(expectedProperties);
+    } catch (ReflectiveOperationException ex) {
+      fail(ex);
+    }
   }
 }

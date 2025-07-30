@@ -26,7 +26,7 @@ class AemDeletionEventHandlerTest extends BaseAemEventHandlerTest {
   }
 
   @Test
-  void shouldHandleEvents() throws Exception {
+  void shouldHandleEvents() {
     // when
     handler.handleEvent(
         createDeleteEventForRegisteredPageResource("preDelete", "/content/we-retail/us/en"));
@@ -46,7 +46,7 @@ class AemDeletionEventHandlerTest extends BaseAemEventHandlerTest {
   }
 
   @Test
-  void shouldSkipHandlingEventIfPublicationServiceIsDisabled() throws Exception {
+  void shouldSkipHandlingEventIfPublicationServiceIsDisabled() {
     // given
     disableStreamxPublicationService();
 
@@ -61,7 +61,7 @@ class AemDeletionEventHandlerTest extends BaseAemEventHandlerTest {
   }
 
   @Test
-  void shouldParseNonStringProperties() throws Exception {
+  void shouldParseNonStringProperties() {
     handler = spy(context.registerInjectActivateService(
         AemDeletionEventHandler.class,
         Map.of("resource.properties.to.load", new String[]{
@@ -102,7 +102,7 @@ class AemDeletionEventHandlerTest extends BaseAemEventHandlerTest {
   }
 
   @Test
-  void shouldAdjustToModifiedConfiguration() throws ReflectiveOperationException {
+  void shouldAdjustToModifiedConfiguration() {
     // given
     assertResourcePropertiesToLoad(handler, "jcr:primaryType");
 
